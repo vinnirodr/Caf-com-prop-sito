@@ -74,10 +74,14 @@ const ui = {
   light: {
     fundo: '#FAF7F2', superficie: '#FFFFFF', texto: '#2A2422',
     textoSuave: '#6E625A', linha: '#EAE0D4', papel: '#F2E9D8',
+    // superfície "elevada"/painel — comum a claro e escuro (claro = papel)
+    painel: '#F2E9D8',
   },
   dark: {
     fundo: '#1C1714', superficie: '#261F1A', texto: '#ECE6DD',
     textoSuave: '#B3A599', linha: '#3A2F27', realce: '#2E251F',
+    // superfície "elevada"/painel — comum a claro e escuro (escuro = realce)
+    painel: '#2E251F',
   },
 } as const;
 

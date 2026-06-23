@@ -19,11 +19,13 @@ de um backend Django (repositório separado).
 - `src/app/(tabs)/` — as 3 abas: `index` (Início), `biblioteca`, `meu-espaco`
 - `src/api/config.ts` — URL da API (detecta o IP da máquina em dev; trocar para a URL do Render em produção)
 - `src/api/content.ts` — tipos + funções (`getAllChapters`, `getChapter`, `getSpecialPages`)
-- `src/theme/ccpTheme.ts` — **fonte canônica dos tokens** (cor claro/escuro, espaçamento,
-  raio, elevação, tipografia, movimento; `theme.light`/`theme.dark`), resolvida de
-  `src/theme/ccp.tokens.json` (Style Dictionary, exportado do design system)
-- `src/theme/theme.ts` — reexpõe os tokens com os nomes usados pelas telas atuais
-  (`palette`, `readingThemes`, `fonts`, `spacing`, `radius`)
+- `src/theme/ccpTheme.ts` — **fonte canônica e única dos tokens** (cor claro/escuro,
+  espaçamento, raio, elevação, tipografia, movimento; `theme.light`/`theme.dark`),
+  resolvida de `src/theme/ccp.tokens.json` (Style Dictionary, exportado do design system)
+- `src/theme/useTheme.ts` — hook `useTheme()` que devolve o tema resolvido
+  (`light`/`dark`) conforme o esquema de cor do sistema. Telas usam
+  `const t = useTheme()` e aplicam `t.ui.*`, `t.palette.*`, mais `typography`/
+  `spacing`/`radius`/`elevation` importados de `ccpTheme`.
 
 ## Princípios de design (guiam toda decisão de UI)
 1. **Acolhimento** — convite, nunca cobrança.
