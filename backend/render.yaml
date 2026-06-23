@@ -1,0 +1,33 @@
+# Infraestrutura como código para o Render.
+# Ao conectar o repositório como Blueprint, o Render cria tudo automaticamente.
+services:
+  - type: web
+    name: cafe-com-proposito-api
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn cafe_backend.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true            # o Render gera uma chave segura
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cafe-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      # Login do painel administrativo (a conta da autora).
+      # O Render vai te pedir o e-mail e a senha durante a criação.
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+
+databases:
+  - name: cafe-db
+    plan: free
+    databaseName: cafe
