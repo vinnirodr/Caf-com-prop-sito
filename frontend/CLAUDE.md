@@ -19,7 +19,13 @@ de um backend Django (repositório separado).
 - `src/app/(tabs)/` — as 3 abas: `index` (Início), `biblioteca`, `meu-espaco`
 - `src/api/config.ts` — URL da API (detecta o IP da máquina em dev; trocar para a URL do Render em produção)
 - `src/api/content.ts` — tipos + funções (`getAllChapters`, `getChapter`, `getSpecialPages`)
-- `src/theme/theme.ts` — **tokens de design** (cores, fontes, espaçamentos, temas de leitura)
+- `src/theme/ccpTheme.ts` — **fonte canônica e única dos tokens** (cor claro/escuro,
+  espaçamento, raio, elevação, tipografia, movimento; `theme.light`/`theme.dark`),
+  resolvida de `src/theme/ccp.tokens.json` (Style Dictionary, exportado do design system)
+- `src/theme/useTheme.ts` — hook `useTheme()` que devolve o tema resolvido
+  (`light`/`dark`) conforme o esquema de cor do sistema. Telas usam
+  `const t = useTheme()` e aplicam `t.ui.*`, `t.palette.*`, mais `typography`/
+  `spacing`/`radius`/`elevation` importados de `ccpTheme`.
 
 ## Princípios de design (guiam toda decisão de UI)
 1. **Acolhimento** — convite, nunca cobrança.
@@ -28,7 +34,7 @@ de um backend Django (repositório separado).
 4. **Conforto de uso** — leitura/escuta pensadas para o bem-estar.
 Movimento sempre lento e suave (fades, leve deslize); respeitar "reduzir movimento".
 
-## Tokens (usar sempre os de `theme.ts`, nunca cores cravadas no código)
+## Tokens (usar sempre os de `ccpTheme.ts`/`theme.ts`, nunca cores cravadas no código)
 - Marca: café `#5B4636`, dourado `#C8924A`, dourado suave `#E0B878`, sálvia `#8B9D83`
 - Interface clara: bg `#FAF7F2`, surface `#FFF`, texto `#2A2422`, suave `#6E625A`, linha `#EAE0D4`
 - Temas de leitura: claro (`#FAF7F2`/`#2A2422`), papel (`#F2E9D8`/`#3A3128`), escuro (`#15120F`/`#ECE6DD`)

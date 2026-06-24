@@ -16,7 +16,10 @@ Siga na ordem. Tempo estimado: 20–30 minutos na primeira vez.
 4. A **carga inicial** dos 75 capítulos.
 5. (Importante) O **armazenamento de áudios na nuvem**, antes da autora subir narrações.
 
-Já incluí no projeto os arquivos `build.sh` e `render.yaml`, que automatizam quase tudo.
+Já incluí no projeto os arquivos `build.sh` (em `backend/`) e `render.yaml` (na
+**raiz do repositório**), que automatizam quase tudo. Como este repositório é um
+**monorepo** (`backend/` + `frontend/`), o `render.yaml` usa `rootDir: backend`
+para o Render rodar tudo dentro da pasta do backend.
 
 ---
 
@@ -82,16 +85,20 @@ https://SEU-DOMINIO.onrender.com/api/capitulos/
 
 ## Passo 5 — Carregar os 75 capítulos e criar o login da autora
 
-No Render, abra o web service → aba **Shell** (terminal dentro do servidor).
+**Boa notícia: isso já acontece sozinho.** A planilha está versionada em
+`backend/dados/`, e o `build.sh` roda a cada deploy:
 
-Primeiro, suba a planilha para o servidor — o jeito mais simples é versioná-la
-no repositório (ex.: numa pasta `dados/`) ou usar o Shell para baixá-la. Depois:
+- `import_planilha …` (idempotente — importa os 75 capítulos + páginas especiais);
+- `createsuperuser --no-input` (cria a conta da autora a partir das variáveis
+  `DJANGO_SUPERUSER_USERNAME/_EMAIL/_PASSWORD`).
+
+Ou seja: defina `DJANGO_SUPERUSER_EMAIL` e `DJANGO_SUPERUSER_PASSWORD` no Render
+(o `render.yaml` já pede esses valores) e, no primeiro deploy, conteúdo e login
+já ficam prontos. Se algum dia precisar rodar à mão, use a aba **Shell** do web
+service:
 
 ```bash
-# importar os 75 capítulos + páginas especiais
 python manage.py import_planilha dados/Cafe-com-Proposito-CONTEUDO-75-capitulos.xlsx
-
-# criar o usuário administrador (o login da sua mãe)
 python manage.py createsuperuser
 ```
 
@@ -141,6 +148,7 @@ Se preferir não usar o `render.yaml`:
 
 1. **New + → PostgreSQL** → crie o banco, copie a *Internal Database URL*.
 2. **New + → Web Service** → conecte o repositório.
+   - Root Directory: `backend`
    - Build Command: `./build.sh`
    - Start Command: `gunicorn cafe_backend.wsgi:application`
 3. Em **Environment**, adicione: `SECRET_KEY` (uma chave longa qualquer),

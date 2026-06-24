@@ -5,6 +5,9 @@ services:
     name: cafe-com-proposito-api
     runtime: python
     plan: free
+    # Monorepo: o backend Django fica em backend/. O Render roda os comandos
+    # e resolve build.sh / dados/ a partir desta pasta.
+    rootDir: backend
     buildCommand: "./build.sh"
     startCommand: "gunicorn cafe_backend.wsgi:application"
     envVars:

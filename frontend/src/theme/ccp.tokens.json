@@ -1,0 +1,143 @@
+{
+  "$description": "Café com Propósito — design tokens (Style Dictionary v3+ source). Gera temas claro/escuro para React Native + Expo.",
+  "color": {
+    "brand": {
+      "cafe":          { "value": "#5B4636", "type": "color", "comment": "Identidade, títulos, botão secundário" },
+      "cafeEscuro":    { "value": "#3A2D22", "type": "color", "comment": "Fundos escuros quentes, gradientes" },
+      "douradoAmanhecer": { "value": "#C8924A", "type": "color", "comment": "Destaque: ação principal, Ouvir, links, foco" },
+      "douradoSuave":  { "value": "#E0B878", "type": "color", "comment": "Acentos claros, brilhos, detalhes do sol" },
+      "salvia":        { "value": "#8B9D83", "type": "color", "comment": "Secundária calma: rótulos, concluído" }
+    },
+    "ui": {
+      "light": {
+        "fundo":      { "value": "#FAF7F2", "type": "color" },
+        "superficie": { "value": "#FFFFFF", "type": "color" },
+        "texto":      { "value": "#2A2422", "type": "color" },
+        "textoSuave": { "value": "#6E625A", "type": "color" },
+        "linha":      { "value": "#EAE0D4", "type": "color" },
+        "papel":      { "value": "#F2E9D8", "type": "color" }
+      },
+      "dark": {
+        "fundo":      { "value": "#1C1714", "type": "color" },
+        "superficie": { "value": "#261F1A", "type": "color" },
+        "texto":      { "value": "#ECE6DD", "type": "color" },
+        "textoSuave": { "value": "#B3A599", "type": "color" },
+        "linha":      { "value": "#3A2F27", "type": "color" },
+        "realce":     { "value": "#2E251F", "type": "color" }
+      }
+    },
+    "reading": {
+      "claroFundo":  { "value": "#FAF7F2", "type": "color" },
+      "claroTexto":  { "value": "#2A2422", "type": "color" },
+      "papelFundo":  { "value": "#F2E9D8", "type": "color" },
+      "papelTexto":  { "value": "#3A3128", "type": "color" },
+      "escuroFundo": { "value": "#15120F", "type": "color" },
+      "escuroTexto": { "value": "#ECE6DD", "type": "color" }
+    },
+    "feedback": {
+      "sucesso":     { "value": "#5E7256", "type": "color" },
+      "sucessoFundo":{ "value": "#EEF3EA", "type": "color" },
+      "erro":        { "value": "#B4493C", "type": "color" },
+      "erroFundo":   { "value": "#FBF1ED", "type": "color" }
+    }
+  },
+  "spacing": {
+    "xs": { "value": 4,  "type": "spacing", "comment": "Ajuste fino" },
+    "sm": { "value": 8,  "type": "spacing", "comment": "Itens próximos" },
+    "md": { "value": 16, "type": "spacing", "comment": "Padrão / padding de cartão" },
+    "lg": { "value": 24, "type": "spacing", "comment": "Cartões maiores, margem de tela" },
+    "xl": { "value": 32, "type": "spacing", "comment": "Respiro entre seções" },
+    "screenMargin": { "value": 24, "type": "spacing" }
+  },
+  "radius": {
+    "sm":   { "value": 10,  "type": "borderRadius", "comment": "Campos, chips, botões pequenos" },
+    "md":   { "value": 16,  "type": "borderRadius", "comment": "Botões, painéis, listas, sheets" },
+    "lg":   { "value": 22,  "type": "borderRadius", "comment": "Cartões-herói, modais" },
+    "pill": { "value": 999, "type": "borderRadius", "comment": "Chips, badges, avatar" }
+  },
+  "elevation": {
+    "1": {
+      "shadowColor":   { "value": "#5B4636", "type": "color" },
+      "shadowOpacity": { "value": 0.10, "type": "number" },
+      "shadowRadius":  { "value": 6,    "type": "number" },
+      "shadowOffsetY": { "value": 2,    "type": "number" },
+      "androidElevation": { "value": 1, "type": "number" }
+    },
+    "2": {
+      "shadowColor":   { "value": "#5B4636", "type": "color" },
+      "shadowOpacity": { "value": 0.16, "type": "number" },
+      "shadowRadius":  { "value": 16,   "type": "number" },
+      "shadowOffsetY": { "value": 8,    "type": "number" },
+      "androidElevation": { "value": 4, "type": "number" }
+    },
+    "3": {
+      "shadowColor":   { "value": "#5B4636", "type": "color" },
+      "shadowOpacity": { "value": 0.24, "type": "number" },
+      "shadowRadius":  { "value": 28,   "type": "number" },
+      "shadowOffsetY": { "value": 16,   "type": "number" },
+      "androidElevation": { "value": 8, "type": "number" }
+    }
+  },
+  "typography": {
+    "family": {
+      "display":   { "value": "Lora",  "type": "fontFamily" },
+      "interface": { "value": "Inter", "type": "fontFamily" }
+    },
+    "display": {
+      "fontFamily":     { "value": "Lora",  "type": "fontFamily" },
+      "fontWeight":     { "value": "500",   "type": "fontWeight" },
+      "fontSize":       { "value": 48,      "type": "fontSize" },
+      "lineHeight":     { "value": 50,      "type": "lineHeight" },
+      "letterSpacing":  { "value": -0.7,    "type": "letterSpacing" }
+    },
+    "title": {
+      "fontFamily":     { "value": "Lora",  "type": "fontFamily" },
+      "fontWeight":     { "value": "500",   "type": "fontWeight" },
+      "fontSize":       { "value": 32,      "type": "fontSize" },
+      "lineHeight":     { "value": 37,      "type": "lineHeight" },
+      "letterSpacing":  { "value": -0.3,    "type": "letterSpacing" }
+    },
+    "subtitle": {
+      "fontFamily":     { "value": "Lora",  "type": "fontFamily" },
+      "fontWeight":     { "value": "500",   "type": "fontWeight" },
+      "fontSize":       { "value": 22,      "type": "fontSize" },
+      "lineHeight":     { "value": 29,      "type": "lineHeight" }
+    },
+    "body": {
+      "fontFamily":     { "value": "Lora",  "type": "fontFamily" },
+      "fontWeight":     { "value": "400",   "type": "fontWeight" },
+      "fontSize":       { "value": 18,      "type": "fontSize" },
+      "lineHeight":     { "value": 31,      "type": "lineHeight" }
+    },
+    "bodyUi": {
+      "fontFamily":     { "value": "Inter", "type": "fontFamily" },
+      "fontWeight":     { "value": "400",   "type": "fontWeight" },
+      "fontSize":       { "value": 16,      "type": "fontSize" },
+      "lineHeight":     { "value": 26,      "type": "lineHeight" }
+    },
+    "caption": {
+      "fontFamily":     { "value": "Inter", "type": "fontFamily" },
+      "fontWeight":     { "value": "400",   "type": "fontWeight" },
+      "fontSize":       { "value": 13,      "type": "fontSize" },
+      "lineHeight":     { "value": 20,      "type": "lineHeight" }
+    },
+    "label": {
+      "fontFamily":     { "value": "Inter", "type": "fontFamily" },
+      "fontWeight":     { "value": "600",   "type": "fontWeight" },
+      "fontSize":       { "value": 12,      "type": "fontSize" },
+      "lineHeight":     { "value": 16,      "type": "lineHeight" },
+      "letterSpacing":  { "value": 0.5,     "type": "letterSpacing" }
+    }
+  },
+  "motion": {
+    "duration": {
+      "fast":     { "value": 180, "type": "duration", "comment": "Toque, toggle" },
+      "default":  { "value": 280, "type": "duration", "comment": "Transição de tela" },
+      "slow":     { "value": 420, "type": "duration", "comment": "Sheets, entradas" },
+      "stagger":  { "value": 60,  "type": "duration", "comment": "Atraso entre itens da home" }
+    },
+    "easing": {
+      "standard": { "value": "cubic-bezier(0.22, 0.61, 0.36, 1)", "type": "cubicBezier", "comment": "Desacelera no fim — natural" }
+    }
+  }
+}

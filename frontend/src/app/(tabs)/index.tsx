@@ -1,8 +1,13 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { palette, fonts, spacing } from '@/theme/theme';
+import { fonts, spacing, typography } from '@/theme/ccpTheme';
+import { useTheme, type Theme } from '@/theme/useTheme';
 
 export default function Inicio() {
+  const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.container}>
@@ -21,28 +26,25 @@ export default function Inicio() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: palette.bg },
-  container: { flex: 1, justifyContent: 'center', padding: spacing.xl },
-  kicker: {
-    fontFamily: fonts.sansBold,
-    fontSize: 12,
-    letterSpacing: 1.5,
-    color: palette.salvia,
-    marginBottom: spacing.md,
-  },
-  phrase: {
-    fontFamily: fonts.serif,
-    fontSize: 24,
-    lineHeight: 34,
-    fontStyle: 'italic',
-    color: palette.cafe,
-  },
-  note: {
-    fontFamily: fonts.sans,
-    fontSize: 14,
-    lineHeight: 21,
-    color: palette.textSoft,
-    marginTop: spacing.xl,
-  },
-});
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: t.ui.fundo },
+    container: { flex: 1, justifyContent: 'center', padding: spacing.xl },
+    kicker: {
+      ...typography.label,
+      fontFamily: fonts.sansBold,
+      letterSpacing: 1.5,
+      color: t.palette.salvia,
+      marginBottom: spacing.md,
+    },
+    phrase: {
+      ...typography.title,
+      fontStyle: 'italic',
+      color: t.palette.cafe,
+    },
+    note: {
+      ...typography.bodyUi,
+      color: t.ui.textoSuave,
+      marginTop: spacing.xl,
+    },
+  });

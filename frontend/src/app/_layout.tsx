@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
+import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
+  Lora_400Regular,
   Lora_500Medium,
   Lora_600SemiBold,
   Lora_700Bold,
@@ -13,12 +15,15 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
 } from '@expo-google-fonts/inter';
-import { palette } from '@/theme/theme';
+import { useTheme } from '@/theme/useTheme';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const t = useTheme();
+  const scheme = useColorScheme();
   const [loaded] = useFonts({
+    Lora_400Regular,
     Lora_500Medium,
     Lora_600SemiBold,
     Lora_700Bold,
@@ -37,14 +42,15 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: palette.bg },
+          contentStyle: { backgroundColor: t.ui.fundo },
         }}
       >
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="capitulo/[numero]" />
       </Stack>
     </>
   );
