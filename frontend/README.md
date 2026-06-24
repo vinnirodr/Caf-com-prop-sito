@@ -45,6 +45,29 @@ EXPO_PUBLIC_API_BASE=https://SEU-APP.onrender.com npx expo start
 Escaneie o QR no **Expo Go**. Como o app nativo chama a API direto, não há
 problema de CORS. Sem essa variável, o app volta a usar o backend local (dev).
 
+## Gerar um APK de teste (recomendado para testar no celular)
+
+Em vez de *dev client* (que precisa do Metro rodando e pode parecer "bugado" se
+não estiver conectado), gere um **APK standalone** com a URL do Render já
+embutida — é um app fechado, instala e abre, sem QR nem rede local.
+
+A config está no `eas.json` (perfil `preview`: `distribution: internal`,
+`buildType: apk`, com `EXPO_PUBLIC_API_BASE` apontando pro Render).
+
+```bash
+npm install -g eas-cli      # uma vez
+eas login                   # conta Expo (grátis)
+eas init                    # vincula o projeto à sua conta (cria o projectId)
+eas build -p android --profile preview
+```
+
+Ao final o EAS devolve um **link de download do `.apk`**. Baixe no celular,
+instale (permita "fontes desconhecidas") e abra — já abre conectado à API do
+Render. Nada de Metro/QR.
+
+> O perfil `development` (dev client) e o `production` (app-bundle para a Play
+> Store) também estão no `eas.json` para os próximos passos.
+
 ## Estrutura
 ```
 src/
