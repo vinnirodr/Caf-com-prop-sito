@@ -44,11 +44,14 @@ export default function RootLayout() {
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack
+        initialRouteName="splash"
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: t.ui.fundo },
         }}
       >
+        <Stack.Screen name="splash" options={{ animation: 'fade' }} />
+        <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="capitulo/[numero]" />
       </Stack>

@@ -11,14 +11,25 @@ de um backend Django (repositório separado).
 ## Stack
 - **React Native + Expo + TypeScript**, roteamento com **expo-router** (rotas em `src/app`)
 - Fontes: **Lora** (serifada, títulos/citações) e **Inter** (interface), via `@expo-google-fonts`
-- Ícones: `@expo/vector-icons` (Ionicons)
+- Ícones: `@expo/vector-icons` (Ionicons); selo da marca em `react-native-svg`
+- Gradientes: `expo-linear-gradient` (tokens em `src/theme/gradients.ts`)
+- Clima: `expo-location` + Open-Meteo (`src/api/weather.ts`)
+- Persistência local: `@react-native-async-storage/async-storage` (`src/lib/storage.ts`)
 - Estado: React hooks (sem libs extras por enquanto)
 
 ## Estrutura
-- `src/app/_layout.tsx` — carrega fontes + Stack raiz
+- `src/app/_layout.tsx` — carrega fontes + Stack raiz (`initialRouteName: splash`)
+- `src/app/splash.tsx` — abertura animada; decide onboarding × abas
+- `src/app/onboarding.tsx` — boas-vindas (marca `onboarding_done` no storage)
 - `src/app/(tabs)/` — as 3 abas: `index` (Início), `biblioteca`, `meu-espaco`
-- `src/api/config.ts` — URL da API (detecta o IP da máquina em dev; trocar para a URL do Render em produção)
+- `src/app/(tabs)/_layout.tsx` — usa a `TabBar` customizada (prop `tabBar`)
+- `src/app/capitulo/[numero].tsx` — Tela de Leitura (8 partes + barra de controles)
+- `src/components/` — `BrandSeal` (selo SVG), `Button` (DS), `TabBar` (flutuante)
+- `src/lib/` — `greeting` (saudação por horário), `storage` (AsyncStorage)
+- `src/api/config.ts` — URL da API (`EXPO_PUBLIC_API_BASE` ou IP da máquina em dev)
 - `src/api/content.ts` — tipos + funções (`getAllChapters`, `getChapter`, `getSpecialPages`)
+- `src/api/weather.ts` — clima atual (Open-Meteo + localização)
+- `src/theme/gradients.ts` — gradientes da marca (céu, escuro quente, avatar)
 - `src/theme/ccpTheme.ts` — **fonte canônica e única dos tokens** (cor claro/escuro,
   espaçamento, raio, elevação, tipografia, movimento; `theme.light`/`theme.dark`),
   resolvida de `src/theme/ccp.tokens.json` (Style Dictionary, exportado do design system)
@@ -53,8 +64,12 @@ Movimento sempre lento e suave (fades, leve deslize); respeitar "reduzir movimen
 - Conectar à API via funções de `src/api/`, com estados de carregando/erro/vazio.
 
 ## Estado atual
-- **Bloco 1 — Fundação (pronto):** navegação das 3 abas, tema/fontes, e a Biblioteca
-  já consumindo os capítulos reais da API. Type-check passa.
+- **Fundação + refino visual (pronto):** Splash, Onboarding, Início (header "céu"
+  + clima real + leitura de hoje), Biblioteca (busca/filtros/badges), Leitura
+  (controles + temas claro/papel/escuro persistidos) e Meu Espaço, todos fiéis ao
+  protótipo. Tab bar customizada. Ícone oficial (selo da marca). Type-check passa.
+- **Placeholders honestos:** dados pessoais (progresso, favoritos, jornada, perfil)
+  só entram com auth/engagement — hoje as telas convidam ao login, sem números fake.
 
 ## Roadmap (próximos blocos, nesta ordem)
 2. **Leitura** — tela do capítulo (molde de 8 partes), ajuste de tamanho/família de

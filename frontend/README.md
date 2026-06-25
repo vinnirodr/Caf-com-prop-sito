@@ -1,20 +1,25 @@
 # Café com Propósito — App (React Native + Expo)
 
-App em **React Native + Expo + TypeScript**. Este é o **Bloco 1 — Fundação**:
-tema da marca, navegação das 3 abas (Início, Biblioteca, Meu Espaço) e conexão
-com a API do backend Django.
+App em **React Native + Expo + TypeScript**. As telas seguem o **handoff de
+design** (alta fidelidade): abertura, onboarding, início, biblioteca, leitura e
+meu espaço — sobre o design system da marca, conectadas à API do backend Django.
 
 ## O que já funciona
 
-- **Navegação das 3 abas** com os ícones e cores da marca.
-- **Tema** com a paleta aprovada (café, dourado, sálvia) e as fontes Lora e Inter.
-- **Biblioteca conectada à API:** busca os capítulos reais do backend e os
-  exibe em lista clicável, com estados de carregando, erro e "puxar para atualizar".
-- **Tela de Leitura:** capítulo no molde de 8 partes, com ajuste de tamanho de
-  fonte, temas de leitura (claro/papel/escuro) e navegação anterior/próximo.
-- **Design system aplicado 100%:** tokens em `theme/ccpTheme.ts` (fonte única),
-  com suporte a modo claro/escuro do sistema via `useTheme()`.
-- **Início** e **Meu Espaço**: telas-base (completadas nos próximos blocos).
+- **Abertura (Splash) + Onboarding** com o selo da marca; o onboarding só aparece
+  na 1ª vez (lembrado localmente).
+- **Início ("céu"):** saudação por horário, **clima real** (Open-Meteo +
+  localização) e o card "Leitura de hoje" vindo da API.
+- **Biblioteca:** capítulos reais em cartão, com **busca**, **chips de filtro** e
+  badges (áudio/cadeado); estados de carregando/erro/"puxar para atualizar".
+- **Tela de Leitura:** molde de 8 partes, **barra de controles** (tamanho de fonte
+  + temas claro/papel/escuro, persistidos) e navegação anterior/próximo.
+- **Meu Espaço:** convite de conta + menu (favoritos, anotações, lembrete, ajustes).
+- **Tab bar customizada** e **ícone oficial** (selo da marca) em iOS/Android.
+- **Design system 100%:** tokens em `theme/ccpTheme.ts` (fonte única) + `useTheme()`.
+
+> Dados pessoais (progresso, favoritos, perfil) entram com auth/engagement nos
+> próximos blocos — por ora as telas convidam ao login, sem números fictícios.
 
 ## Como rodar
 
