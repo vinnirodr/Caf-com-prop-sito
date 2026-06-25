@@ -1,0 +1,83 @@
+/**
+ * Estado global de autenticação. Carrega a sessão salva no boot e expõe
+ * login/registro/logout. Use via `useAuth()`.
+ */
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  type ReactNode,
+} from 'react';
+import {
+  login as apiLogin,
+  registrar as apiRegistrar,
+  buscarEu,
+  sair as apiSair,
+  type Usuario,
+  type RegistroPayload,
+} from '@/api/auth';
+import { getTokens } from '@/lib/storage';
+
+type AuthValue = {
+  user: Usuario | null;
+  loading: boolean;
+  entrar: (email: string, senha: string) => Promise<void>;
+  cadastrar: (payload: RegistroPayload) => Promise<void>;
+  sair: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<Usuario | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Boot: se houver tokens salvos, tenta recuperar o usuário.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const tokens = await getTokens();
+      if (tokens) {
+        try {
+          const u = await buscarEu();
+          if (active) setUser(u);
+        } catch {
+          if (active) setUser(null);
+        }
+      }
+      if (active) setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const entrar = useCallback(async (email: string, senha: string) => {
+    const { user } = await apiLogin(email, senha);
+    setUser(user);
+  }, []);
+
+  const cadastrar = useCallback(async (payload: RegistroPayload) => {
+    const { user } = await apiRegistrar(payload);
+    setUser(user);
+  }, []);
+
+  const sair = useCallback(async () => {
+    await apiSair();
+    setUser(null);
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, loading, entrar, cadastrar, sair }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth deve ser usado dentro de <AuthProvider>.');
+  return ctx;
+}

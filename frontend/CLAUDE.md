@@ -23,6 +23,9 @@ de um backend Django (repositório separado).
 - `src/app/onboarding.tsx` — boas-vindas (marca `onboarding_done` no storage)
 - `src/app/(tabs)/` — as 3 abas: `index` (Início), `biblioteca`, `meu-espaco`
 - `src/app/(tabs)/_layout.tsx` — usa a `TabBar` customizada (prop `tabBar`)
+- `src/app/(auth)/` — telas `entrar` (03) e `cadastro` (11); login opcional
+- `src/auth/AuthContext.tsx` — `useAuth()` (user/entrar/cadastrar/sair); sessão JWT
+- `src/api/auth.ts` — login/registro/eu/refresh + `authFetch` (Bearer + refresh em 401)
 - `src/app/capitulo/[numero].tsx` — Tela de Leitura (8 partes + barra de controles)
 - `src/components/` — `BrandSeal` (selo SVG), `Button` (DS), `TabBar` (flutuante)
 - `src/lib/` — `greeting` (saudação por horário), `storage` (AsyncStorage)

@@ -1,13 +1,15 @@
 /**
- * 09 · Meu Espaço. Cabeçalho + cartão de conta (convite de login, pois ainda não
- * há auth) e a lista de menu. Sem números pessoais inventados (jornada/favoritos
- * entram quando houver conta e engagement).
+ * 09 · Meu Espaço. Cabeçalho + cartão de conta e a lista de menu.
+ * Logado: mostra nome/e-mail e "Sair". Deslogado: convite para entrar.
+ * Dados de jornada/favoritos entram com o bloco de engajamento.
  */
 import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/auth/AuthContext';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
@@ -22,24 +24,35 @@ const MENU: { icon: IconName; label: string }[] = [
 ];
 
 const emBreve = () =>
-  Alert.alert('Em breve', 'Esta área chega com a sua conta, nos próximos blocos.');
+  Alert.alert('Em breve', 'Esta área chega nos próximos blocos do desenvolvimento.');
 
 export default function MeuEspaco() {
   const t = useTheme();
+  const router = useRouter();
+  const { user, sair } = useAuth();
   const styles = useMemo(() => makeStyles(t), [t]);
   const [lembrete, setLembrete] = useState(true);
+
+  const inicial = (user?.nome?.trim()?.[0] ?? '?').toUpperCase();
+  const nomeCompleto = user ? `${user.nome} ${user.sobrenome}`.trim() : null;
+
+  const confirmarSair = () =>
+    Alert.alert('Sair da conta', 'Quer mesmo sair?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Sair', style: 'destructive', onPress: () => sair() },
+    ]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Meu Espaço</Text>
 
-        {/* Cartão de conta (convite de login) */}
+        {/* Cartão de conta */}
         <Pressable
           style={styles.profileCard}
-          onPress={emBreve}
+          onPress={user ? emBreve : () => router.push('/(auth)/entrar')}
           accessibilityRole="button"
-          accessibilityLabel="Entrar na sua conta"
+          accessibilityLabel={user ? 'Ver dados da conta' : 'Entrar na sua conta'}
         >
           <LinearGradient
             colors={gradients.avatar.colors}
@@ -47,12 +60,16 @@ export default function MeuEspaco() {
             end={gradients.avatar.end}
             style={styles.avatar}
           >
-            <Ionicons name="person" size={24} color="#FAF7F2" />
+            {user ? (
+              <Text style={styles.avatarLetra}>{inicial}</Text>
+            ) : (
+              <Ionicons name="person" size={24} color="#FAF7F2" />
+            )}
           </LinearGradient>
           <View style={styles.profileText}>
-            <Text style={styles.profileName}>Entre na sua conta</Text>
+            <Text style={styles.profileName}>{nomeCompleto ?? 'Entre na sua conta'}</Text>
             <Text style={styles.profileSub}>
-              Para salvar progresso, favoritos e anotações
+              {user?.email ?? 'Para salvar progresso, favoritos e anotações'}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#C9BAA8" />
@@ -60,10 +77,10 @@ export default function MeuEspaco() {
 
         {/* Menu */}
         <View style={styles.menu}>
-          {MENU.map((m, i) => (
+          {MENU.map((m) => (
             <Pressable
               key={m.label}
-              style={[styles.menuItem, i < MENU.length && styles.menuDivider]}
+              style={[styles.menuItem, styles.menuDivider]}
               onPress={emBreve}
               accessibilityRole="button"
               accessibilityLabel={m.label}
@@ -90,9 +107,14 @@ export default function MeuEspaco() {
           </View>
         </View>
 
-        <Text style={styles.footer}>
-          Café com Propósito · 75 capítulos para ler ou ouvir
-        </Text>
+        {user && (
+          <Pressable style={styles.sair} onPress={confirmarSair} accessibilityRole="button">
+            <Ionicons name="log-out-outline" size={18} color={t.palette.erro} />
+            <Text style={styles.sairText}>Sair da conta</Text>
+          </Pressable>
+        )}
+
+        <Text style={styles.footer}>Café com Propósito · 75 capítulos para ler ou ouvir</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -116,6 +138,7 @@ const makeStyles = (t: Theme) =>
       ...t.elevation.level1,
     },
     avatar: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center' },
+    avatarLetra: { fontFamily: fonts.serif, fontSize: 22, color: '#FAF7F2' },
     profileText: { flex: 1, minWidth: 0 },
     profileName: { fontFamily: fonts.serif, fontSize: 18, color: t.palette.cafeEscuro },
     profileSub: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave, marginTop: 2 },
@@ -144,6 +167,15 @@ const makeStyles = (t: Theme) =>
     knob: { width: 21, height: 21, borderRadius: 999, backgroundColor: '#fff' },
     knobOn: { alignSelf: 'flex-end' },
     knobOff: { alignSelf: 'flex-start' },
+
+    sair: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      paddingVertical: 14,
+    },
+    sairText: { fontFamily: fonts.sansBold, fontSize: 14, color: t.palette.erro },
 
     footer: {
       fontFamily: fonts.sans,

@@ -11,7 +11,51 @@ const KEYS = {
   onboardingDone: 'ccp.onboarding_done',
   readingTheme: 'ccp.reading.theme',
   readingFontStep: 'ccp.reading.fontStep',
+  accessToken: 'ccp.auth.access',
+  refreshToken: 'ccp.auth.refresh',
 } as const;
+
+export type Tokens = { access: string; refresh: string };
+
+export async function getTokens(): Promise<Tokens | null> {
+  try {
+    const [access, refresh] = await Promise.all([
+      AsyncStorage.getItem(KEYS.accessToken),
+      AsyncStorage.getItem(KEYS.refreshToken),
+    ]);
+    if (access && refresh) return { access, refresh };
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveTokens(tokens: Tokens): Promise<void> {
+  try {
+    await AsyncStorage.multiSet([
+      [KEYS.accessToken, tokens.access],
+      [KEYS.refreshToken, tokens.refresh],
+    ]);
+  } catch {
+    // ignora
+  }
+}
+
+export async function saveAccessToken(access: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.accessToken, access);
+  } catch {
+    // ignora
+  }
+}
+
+export async function clearTokens(): Promise<void> {
+  try {
+    await AsyncStorage.multiRemove([KEYS.accessToken, KEYS.refreshToken]);
+  } catch {
+    // ignora
+  }
+}
 
 export async function getOnboardingDone(): Promise<boolean> {
   try {
