@@ -50,13 +50,20 @@ O app mobile (React Native/Expo) vive em repositório separado e consome esta AP
 - Em produção (Render), `build.sh` roda migrate + import + cria o superusuário automaticamente.
 
 ## API (consumida pelo app)
-- `GET /api/capitulos/` — lista (paginada) de capítulos publicados
-- `GET /api/capitulos/<numero>/` — capítulo completo (8 partes)
-- `GET /api/paginas-especiais/` — páginas de abertura/encerramento
+- `GET /api/capitulos/` — lista (paginada) de capítulos publicados (público)
+- `GET /api/capitulos/<numero>/` — capítulo completo (8 partes) (público)
+- `GET /api/paginas-especiais/` — páginas de abertura/encerramento (público)
+- `POST /api/auth/registro/` — cria conta, devolve `access`+`refresh`+`user`
+- `POST /api/auth/login/` — login por e-mail+senha (JWT)
+- `POST /api/auth/refresh/` — renova o access token
+- `GET /api/auth/eu/` — dados do usuário logado (requer Bearer)
+
+> Auth: app `accounts` (User padrão + `Profile` com telefone/nascimento),
+> JWT via `djangorestframework-simplejwt`. Login por e-mail (username=email).
 
 ## Próximos passos (roadmap do backend)
-1. **Autenticação do app:** cadastro, login, recuperação de senha, login Google/Apple
-   (sugerido: `dj-rest-auth` + `django-allauth` + JWT).
+1. ~~**Autenticação do app:** cadastro, login~~ ✅ (app `accounts`, JWT). Falta:
+   recuperação de senha (e-mail/SMTP) e login Google/Apple (allauth/OAuth).
 2. **Endpoints de usuário:** CRUD de anotações, favoritos e progresso (modelos já existem).
 3. **Armazenamento em nuvem (Cloudflare R2)** para áudios/imagens — necessário ANTES
    de subir narrações em produção (disco do Render é efêmero). Ativar via env vars,

@@ -20,6 +20,11 @@ export default function Onboarding() {
     router.replace('/(tabs)');
   };
 
+  const irParaEntrar = async () => {
+    await setOnboardingDone();
+    router.replace('/(auth)/entrar');
+  };
+
   return (
     <View style={styles.fill}>
       <StatusBar style="light" />
@@ -49,7 +54,7 @@ export default function Onboarding() {
         <View style={styles.spacer} />
 
         <Button label="Começar" onPress={começar} />
-        <Pressable style={styles.signin} onPress={começar} accessibilityRole="button">
+        <Pressable style={styles.signin} onPress={irParaEntrar} accessibilityRole="button">
           <Text style={styles.signinText}>
             Já tenho conta · <Text style={styles.signinLink}>Entrar</Text>
           </Text>
