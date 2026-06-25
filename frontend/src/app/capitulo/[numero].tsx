@@ -101,11 +101,18 @@ export default function CapituloLeitura() {
 
   // Logado: marca "em andamento" ao abrir e busca a anotação deste capítulo.
   useEffect(() => {
+    setNotaDoCapitulo(null); // zera ao trocar de capítulo (mesma instância de tela)
     if (!user || Number.isNaN(num)) return;
+    let ativo = true;
     registrarLeitura(num);
     listarAnotacoes(num)
-      .then((notas) => setNotaDoCapitulo(notas[0] ?? null))
+      .then((notas) => {
+        if (ativo) setNotaDoCapitulo(notas[0] ?? null);
+      })
       .catch(() => {});
+    return () => {
+      ativo = false;
+    };
   }, [user, num, registrarLeitura]);
 
   const exigirLogin = () =>

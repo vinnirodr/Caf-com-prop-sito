@@ -92,7 +92,7 @@ class ProgressDetail(APIView):
         return Response(ProgressSerializer(prog).data)
 
     def put(self, request, numero):
-        capitulo = get_object_or_404(Chapter, numero=numero)
+        capitulo = get_object_or_404(Chapter, numero=numero, publicado=True)
         prog, _ = ReadingProgress.objects.get_or_create(usuario=request.user, capitulo=capitulo)
         if "lido" in request.data:
             prog.lido = bool(request.data["lido"])

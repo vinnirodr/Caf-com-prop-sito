@@ -6,7 +6,9 @@ from .models import Note, Favorite, ReadingProgress
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    capitulo = serializers.SlugRelatedField(slug_field="numero", queryset=Chapter.objects.all())
+    capitulo = serializers.SlugRelatedField(
+        slug_field="numero", queryset=Chapter.objects.filter(publicado=True)
+    )
     titulo = serializers.CharField(source="capitulo.titulo", read_only=True)
     versiculo_ref = serializers.CharField(source="capitulo.versiculo_ref", read_only=True)
     tem_audio = serializers.BooleanField(source="capitulo.tem_audio", read_only=True)
@@ -18,7 +20,9 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class NoteSerializer(serializers.ModelSerializer):
-    capitulo = serializers.SlugRelatedField(slug_field="numero", queryset=Chapter.objects.all())
+    capitulo = serializers.SlugRelatedField(
+        slug_field="numero", queryset=Chapter.objects.filter(publicado=True)
+    )
     capitulo_titulo = serializers.CharField(source="capitulo.titulo", read_only=True)
     versiculo_ref = serializers.CharField(source="capitulo.versiculo_ref", read_only=True)
 
