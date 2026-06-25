@@ -10,16 +10,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/auth/AuthContext';
+import { useEngagement } from '@/engagement/EngagementContext';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type Rota = '/anotacoes' | '/favoritos';
 
-const MENU: { icon: IconName; label: string }[] = [
+const MENU: { icon: IconName; label: string; rota?: Rota }[] = [
   { icon: 'person-outline', label: 'Dados pessoais' },
-  { icon: 'document-text-outline', label: 'Minhas anotações' },
-  { icon: 'heart-outline', label: 'Favoritos' },
+  { icon: 'document-text-outline', label: 'Minhas anotações', rota: '/anotacoes' },
+  { icon: 'heart-outline', label: 'Favoritos', rota: '/favoritos' },
   { icon: 'settings-outline', label: 'Ajustes' },
 ];
 
@@ -30,8 +32,16 @@ export default function MeuEspaco() {
   const t = useTheme();
   const router = useRouter();
   const { user, sair } = useAuth();
+  const { resumo } = useEngagement();
   const styles = useMemo(() => makeStyles(t), [t]);
   const [lembrete, setLembrete] = useState(true);
+
+  const pct = resumo && resumo.total > 0 ? Math.round((resumo.lidos / resumo.total) * 100) : 0;
+  const abrirItem = (item: { rota?: Rota }) => {
+    if (!item.rota) return emBreve();
+    if (!user) return router.push('/(auth)/entrar');
+    router.push(item.rota);
+  };
 
   const inicial = (user?.nome?.trim()?.[0] ?? '?').toUpperCase();
   const nomeCompleto = user ? `${user.nome} ${user.sobrenome}`.trim() : null;
@@ -75,13 +85,39 @@ export default function MeuEspaco() {
           <Ionicons name="chevron-forward" size={20} color="#C9BAA8" />
         </Pressable>
 
+        {/* Jornada (logado) */}
+        {user && resumo && (
+          <View style={styles.jornada}>
+            <View style={styles.jornadaHead}>
+              <Text style={styles.jornadaLabel}>Sua jornada</Text>
+              <Text style={styles.jornadaValor}>{resumo.lidos} de {resumo.total}</Text>
+            </View>
+            <View style={styles.barra}>
+              <LinearGradient
+                colors={gradients.progresso.colors}
+                start={gradients.progresso.start}
+                end={gradients.progresso.end}
+                style={[styles.barraFill, { width: `${pct}%` }]}
+              />
+            </View>
+            <View style={styles.chips}>
+              <View style={styles.chip}>
+                <Text style={styles.chipText}>{resumo.favoritos} favoritos</Text>
+              </View>
+              <View style={styles.chip}>
+                <Text style={styles.chipText}>{resumo.anotacoes} anotações</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* Menu */}
         <View style={styles.menu}>
           {MENU.map((m) => (
             <Pressable
               key={m.label}
               style={[styles.menuItem, styles.menuDivider]}
-              onPress={emBreve}
+              onPress={() => abrirItem(m)}
               accessibilityRole="button"
               accessibilityLabel={m.label}
             >
@@ -142,6 +178,23 @@ const makeStyles = (t: Theme) =>
     profileText: { flex: 1, minWidth: 0 },
     profileName: { fontFamily: fonts.serif, fontSize: 18, color: t.palette.cafeEscuro },
     profileSub: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave, marginTop: 2 },
+
+    jornada: {
+      backgroundColor: t.ui.superficie,
+      borderWidth: 1,
+      borderColor: t.ui.linha,
+      borderRadius: 18,
+      padding: 18,
+      ...t.elevation.level1,
+    },
+    jornadaHead: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+    jornadaLabel: { fontFamily: fonts.sans, fontSize: 13, color: t.ui.textoSuave },
+    jornadaValor: { fontFamily: fonts.sansBold, fontSize: 13, color: t.palette.cafeEscuro },
+    barra: { height: 10, borderRadius: 5, backgroundColor: t.ui.linha, overflow: 'hidden' },
+    barraFill: { height: 10, borderRadius: 5 },
+    chips: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' },
+    chip: { backgroundColor: t.ui.painel, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
+    chipText: { fontFamily: fonts.sansBold, fontSize: 12, color: '#B07F3C' },
 
     menu: {
       backgroundColor: t.ui.superficie,

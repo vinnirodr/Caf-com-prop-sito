@@ -18,6 +18,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { getChapter, Chapter } from '@/api/content';
+import { listarAnotacoes, type Anotacao } from '@/api/engagement';
+import { useAuth } from '@/auth/AuthContext';
+import { useEngagement } from '@/engagement/EngagementContext';
+import NoteSheet from '@/components/NoteSheet';
 import { fonts, spacing, radius, palette, reading } from '@/theme/ccpTheme';
 import { getReadingPrefs, saveReadingPrefs } from '@/lib/storage';
 
@@ -49,9 +53,15 @@ export default function CapituloLeitura() {
   const insets = useSafeAreaInsets();
   const num = Number(numero);
 
+  const { user } = useAuth();
+  const { isFavorito, statusCapitulo, alternarFavorito, marcarLido, registrarLeitura } = useEngagement();
+
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [notaSheet, setNotaSheet] = useState(false);
+  const [notaDoCapitulo, setNotaDoCapitulo] = useState<Anotacao | null>(null);
 
   const [themeName, setThemeName] = useState<ReadingThemeName>('claro');
   const [fontStepIndex, setFontStepIndex] = useState(1);
@@ -88,6 +98,33 @@ export default function CapituloLeitura() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Logado: marca "em andamento" ao abrir e busca a anotação deste capítulo.
+  useEffect(() => {
+    setNotaDoCapitulo(null); // zera ao trocar de capítulo (mesma instância de tela)
+    if (!user || Number.isNaN(num)) return;
+    let ativo = true;
+    registrarLeitura(num);
+    listarAnotacoes(num)
+      .then((notas) => {
+        if (ativo) setNotaDoCapitulo(notas[0] ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, [user, num, registrarLeitura]);
+
+  const exigirLogin = () =>
+    Alert.alert('Entre na sua conta', 'Crie uma conta ou entre para salvar favoritos, anotações e progresso.', [
+      { text: 'Agora não', style: 'cancel' },
+      { text: 'Entrar', onPress: () => router.push('/(auth)/entrar') },
+    ]);
+
+  const favoritar = () => (user ? alternarFavorito(num) : exigirLogin());
+  const anotar = () => (user ? setNotaSheet(true) : exigirLogin());
+  const alternarLido = () =>
+    user ? marcarLido(num, statusCapitulo(num) !== 'lido') : exigirLogin();
 
   const goTo = (n: number) => router.replace(`/capitulo/${n}`);
   const setTheme = (name: ReadingThemeName) => {
@@ -137,11 +174,19 @@ export default function CapituloLeitura() {
           CAPÍTULO {chapter.numero} · {minutos} MIN
         </Text>
         <View style={styles.topActions}>
-          <Pressable onPress={emBreve} hitSlop={8} accessibilityLabel="Favoritar">
-            <Ionicons name="heart-outline" size={21} color={palette.douradoAmanhecer} />
+          <Pressable onPress={favoritar} hitSlop={8} accessibilityLabel="Favoritar">
+            <Ionicons
+              name={user && isFavorito(num) ? 'heart' : 'heart-outline'}
+              size={21}
+              color={palette.douradoAmanhecer}
+            />
           </Pressable>
-          <Pressable onPress={emBreve} hitSlop={8} accessibilityLabel="Anotar">
-            <Ionicons name="create-outline" size={21} color={tema.texto} />
+          <Pressable onPress={anotar} hitSlop={8} accessibilityLabel="Anotar">
+            <Ionicons
+              name={user && notaDoCapitulo ? 'create' : 'create-outline'}
+              size={21}
+              color={tema.texto}
+            />
           </Pressable>
         </View>
       </View>
@@ -184,6 +229,21 @@ export default function CapituloLeitura() {
             ))}
           </Section>
         )}
+
+        <Pressable
+          style={[styles.lido, statusCapitulo(num) === 'lido' && styles.lidoOn]}
+          onPress={alternarLido}
+          accessibilityRole="button"
+        >
+          <Ionicons
+            name={statusCapitulo(num) === 'lido' ? 'checkmark-circle' : 'checkmark-circle-outline'}
+            size={20}
+            color={statusCapitulo(num) === 'lido' ? palette.sucesso : c.soft}
+          />
+          <Text style={[styles.lidoText, statusCapitulo(num) === 'lido' && styles.lidoTextOn]}>
+            {statusCapitulo(num) === 'lido' ? 'Lido' : 'Marcar como lido'}
+          </Text>
+        </Pressable>
       </ScrollView>
 
       {/* Barra de controles fixa */}
@@ -255,6 +315,15 @@ export default function CapituloLeitura() {
           </Pressable>
         </View>
       </View>
+
+      <NoteSheet
+        visible={notaSheet}
+        onClose={() => setNotaSheet(false)}
+        capitulo={num}
+        tituloCapitulo={chapter.titulo}
+        anotacaoExistente={notaDoCapitulo}
+        onSaved={(a) => setNotaDoCapitulo(a)}
+      />
     </View>
   );
 }
@@ -388,4 +457,19 @@ const makeStyles = (
     navText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.douradoAmanhecer },
     navTextGold: { fontFamily: fonts.sansBold, fontSize: 14, color: palette.douradoAmanhecer },
     navTextDisabled: { color: c.soft },
+
+    lido: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      borderWidth: 1.5,
+      borderColor: c.line,
+      borderRadius: radius.md,
+      paddingVertical: 14,
+      marginTop: spacing.md,
+    },
+    lidoOn: { borderColor: palette.sucesso, backgroundColor: palette.sucessoFundo },
+    lidoText: { fontFamily: fonts.sansBold, fontSize: 14, color: c.soft },
+    lidoTextOn: { color: palette.sucesso },
   });

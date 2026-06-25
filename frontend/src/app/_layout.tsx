@@ -17,6 +17,7 @@ import {
 } from '@expo-google-fonts/inter';
 import { useTheme } from '@/theme/useTheme';
 import { AuthProvider } from '@/auth/AuthContext';
+import { EngagementProvider } from '@/engagement/EngagementContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,20 +44,24 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <Stack
-        initialRouteName="splash"
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: t.ui.fundo },
-        }}
-      >
-        <Stack.Screen name="splash" options={{ animation: 'fade' }} />
-        <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="capitulo/[numero]" />
-      </Stack>
+      <EngagementProvider>
+        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        <Stack
+          initialRouteName="splash"
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: t.ui.fundo },
+          }}
+        >
+          <Stack.Screen name="splash" options={{ animation: 'fade' }} />
+          <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="capitulo/[numero]" />
+          <Stack.Screen name="anotacoes" />
+          <Stack.Screen name="favoritos" />
+        </Stack>
+      </EngagementProvider>
     </AuthProvider>
   );
 }

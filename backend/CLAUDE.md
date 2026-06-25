@@ -64,7 +64,8 @@ O app mobile (React Native/Expo) vive em repositório separado e consome esta AP
 ## Próximos passos (roadmap do backend)
 1. ~~**Autenticação do app:** cadastro, login~~ ✅ (app `accounts`, JWT). Falta:
    recuperação de senha (e-mail/SMTP) e login Google/Apple (allauth/OAuth).
-2. **Endpoints de usuário:** CRUD de anotações, favoritos e progresso (modelos já existem).
+2. ~~**Endpoints de usuário:** CRUD de anotações, favoritos e progresso~~ ✅
+   (`/api/favoritos/`, `/api/anotacoes/`, `/api/progresso/`, `/api/resumo/`).
 3. **Armazenamento em nuvem (Cloudflare R2)** para áudios/imagens — necessário ANTES
    de subir narrações em produção (disco do Render é efêmero). Ativar via env vars,
    sem quebrar o uso local.
