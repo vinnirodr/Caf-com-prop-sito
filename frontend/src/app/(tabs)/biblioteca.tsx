@@ -18,6 +18,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getAllChapters, ChapterListItem } from '@/api/content';
+import { useAuth } from '@/auth/AuthContext';
+import { useEngagement } from '@/engagement/EngagementContext';
 import { fonts, spacing, radius, typography } from '@/theme/ccpTheme';
 import { useTheme, type Theme } from '@/theme/useTheme';
 
@@ -33,6 +35,8 @@ export default function Biblioteca() {
   const t = useTheme();
   const styles = useMemo(() => makeStyles(t), [t]);
   const router = useRouter();
+  const { user } = useAuth();
+  const { isFavorito, statusCapitulo } = useEngagement();
 
   const [items, setItems] = useState<ChapterListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,14 +63,21 @@ export default function Biblioteca() {
 
   const filtrados = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      (c) =>
-        c.titulo.toLowerCase().includes(q) ||
-        c.versiculo_ref.toLowerCase().includes(q) ||
-        String(c.numero) === q
-    );
-  }, [items, query]);
+    let base = items;
+    if (q) {
+      base = base.filter(
+        (c) =>
+          c.titulo.toLowerCase().includes(q) ||
+          c.versiculo_ref.toLowerCase().includes(q) ||
+          String(c.numero) === q
+      );
+    }
+    if (user) {
+      if (filtro === 'favoritos') base = base.filter((c) => isFavorito(c.numero));
+      else if (filtro === 'andamento') base = base.filter((c) => statusCapitulo(c.numero) === 'andamento');
+    }
+    return base;
+  }, [items, query, filtro, user, isFavorito, statusCapitulo]);
 
   if (loading) {
     return (
@@ -136,8 +147,8 @@ export default function Biblioteca() {
     );
   }
 
-  // "Em andamento" e "Favoritos" precisam de conta/engagement (ainda não há).
-  const semConta = filtro !== 'todos';
+  // Filtros pessoais sem login → convite para entrar.
+  const semConta = !user && filtro !== 'todos';
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -159,7 +170,7 @@ export default function Biblioteca() {
         }
         ListEmptyComponent={
           semConta ? (
-            <View style={styles.empty}>
+            <Pressable style={styles.empty} onPress={() => router.push('/(auth)/entrar')}>
               <Ionicons
                 name={filtro === 'favoritos' ? 'heart-outline' : 'bookmark-outline'}
                 size={34}
@@ -167,13 +178,20 @@ export default function Biblioteca() {
               />
               <Text style={styles.emptyText}>
                 {filtro === 'favoritos'
-                  ? 'Seus favoritos aparecerão aqui quando você tiver uma conta.'
-                  : 'Seu progresso de leitura aparecerá aqui quando você tiver uma conta.'}
+                  ? 'Entre na sua conta para ver seus favoritos aqui.'
+                  : 'Entre na sua conta para acompanhar seu progresso aqui.'}
               </Text>
-            </View>
+              <Text style={styles.emptyLink}>Entrar</Text>
+            </Pressable>
           ) : (
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>Nenhum capítulo encontrado para "{query}".</Text>
+              <Text style={styles.emptyText}>
+                {filtro === 'favoritos'
+                  ? 'Você ainda não favoritou nenhum capítulo.'
+                  : filtro === 'andamento'
+                    ? 'Nenhuma leitura em andamento por enquanto.'
+                    : `Nenhum capítulo encontrado para "${query}".`}
+              </Text>
             </View>
           )
         }
@@ -194,14 +212,24 @@ export default function Biblioteca() {
                 </Text>
                 <Text style={styles.rowMeta}>{item.versiculo_ref}</Text>
               </View>
-              {item.tem_audio ? (
-                <View style={styles.badgeAudio}>
-                  <Ionicons name="play" size={11} color="#B07F3C" />
-                  <Text style={styles.badgeAudioText}>Áudio</Text>
-                </View>
-              ) : item.audio_acesso === 'premium' ? (
-                <Ionicons name="lock-closed" size={16} color={t.ui.linha} />
-              ) : null}
+              <View style={styles.trailing}>
+                {user && isFavorito(item.numero) && (
+                  <Ionicons name="heart" size={15} color={t.palette.douradoAmanhecer} />
+                )}
+                {user && statusCapitulo(item.numero) === 'lido' ? (
+                  <View style={styles.badgeLido}>
+                    <Ionicons name="checkmark" size={11} color={t.palette.sucesso} />
+                    <Text style={styles.badgeLidoText}>Lido</Text>
+                  </View>
+                ) : item.tem_audio ? (
+                  <View style={styles.badgeAudio}>
+                    <Ionicons name="play" size={11} color="#B07F3C" />
+                    <Text style={styles.badgeAudioText}>Áudio</Text>
+                  </View>
+                ) : item.audio_acesso === 'premium' ? (
+                  <Ionicons name="lock-closed" size={16} color={t.ui.linha} />
+                ) : null}
+              </View>
             </Pressable>
           </View>
         )}
@@ -282,6 +310,7 @@ const makeStyles = (t: Theme) =>
     rowTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
     rowMeta: { fontFamily: fonts.sans, fontSize: 11.5, color: t.palette.salvia, marginTop: 2 },
 
+    trailing: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     badgeAudio: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -292,6 +321,17 @@ const makeStyles = (t: Theme) =>
       paddingVertical: 5,
     },
     badgeAudioText: { fontFamily: fonts.sansBold, fontSize: 11, color: '#B07F3C' },
+    badgeLido: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: t.palette.sucessoFundo,
+      borderRadius: radius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+    },
+    badgeLidoText: { fontFamily: fonts.sansBold, fontSize: 11, color: t.palette.sucesso },
+    emptyLink: { fontFamily: fonts.sansBold, fontSize: 14, color: t.palette.douradoAmanhecer, marginTop: 4 },
 
     empty: { alignItems: 'center', gap: spacing.md, padding: spacing.xl, paddingTop: spacing.xl * 2 },
     emptyText: { ...typography.bodyUi, color: t.ui.textoSuave, textAlign: 'center' },
