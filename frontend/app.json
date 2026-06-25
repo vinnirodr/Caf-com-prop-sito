@@ -8,13 +8,12 @@
     "scheme": "cafecomproposito",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.cafecomproposito.app"
     },
     "android": {
       "package": "com.cafecomproposito.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#3A2D22",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -27,6 +26,12 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O Café com Propósito usa sua localização apenas para mostrar o clima do dia na tela inicial."
+        }
+      ],
       [
         "expo-splash-screen",
         {

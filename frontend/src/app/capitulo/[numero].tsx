@@ -1,3 +1,8 @@
+/**
+ * 05 · Leitura. Capítulo no molde de 8 partes (conteúdo real da API), com barra
+ * de controles fixa embaixo: tamanho de fonte, tema de leitura (Claro/Papel/
+ * Escuro) e "Ouvir". Preferências de leitura persistem localmente.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -8,28 +13,40 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { getChapter, Chapter } from '@/api/content';
 import { fonts, spacing, radius, palette, reading } from '@/theme/ccpTheme';
+import { getReadingPrefs, saveReadingPrefs } from '@/lib/storage';
 
-/** O livro tem um número fixo de capítulos (molde do conteúdo). */
 const TOTAL_CAPITULOS = 75;
+const FONT_STEPS = [0.9, 1, 1.15, 1.3] as const;
 
 type ReadingThemeName = keyof typeof reading;
-/** Cor "suave" (rótulos/meta) por tema de leitura — complementa os tokens. */
-const readingSoft: Record<ReadingThemeName, string> = {
-  claro: '#6E625A',
-  papel: '#6B5E4E',
-  escuro: '#A89E90',
+const ORDER: ReadingThemeName[] = ['claro', 'papel', 'escuro'];
+
+/** Cores complementares por tema de leitura (rótulos, barra de controle, etc.). */
+const chrome: Record<
+  ReadingThemeName,
+  { soft: string; bar: string; line: string; seg: string; segActive: string; track: string }
+> = {
+  claro: { soft: '#6E625A', bar: '#FFFFFF', line: '#EAE0D4', seg: '#F2E9D8', segActive: '#FFFFFF', track: '#EAE0D4' },
+  papel: { soft: '#6B5E4E', bar: '#F7EFDD', line: '#E4D7BE', seg: '#EADCBF', segActive: '#FFFDF7', track: '#E0D2B6' },
+  escuro: { soft: '#A89E90', bar: '#1F1B17', line: '#2E2620', seg: '#2A231D', segActive: '#3A2F27', track: '#2E2620' },
 };
 
-const FONT_STEPS = [0.9, 1, 1.15, 1.3] as const;
+function estimarMinutos(c: Chapter): number {
+  const txt = [c.reflexao, c.oracao, c.aplicacao].filter(Boolean).join(' ');
+  const palavras = txt.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(palavras / 200));
+}
 
 export default function CapituloLeitura() {
   const { numero } = useLocalSearchParams<{ numero: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const num = Number(numero);
 
   const [chapter, setChapter] = useState<Chapter | null>(null);
@@ -39,13 +56,22 @@ export default function CapituloLeitura() {
   const [themeName, setThemeName] = useState<ReadingThemeName>('claro');
   const [fontStepIndex, setFontStepIndex] = useState(1);
 
+  // Carrega preferências salvas (tema + tamanho).
+  useEffect(() => {
+    getReadingPrefs().then((p) => {
+      if (p.theme && ORDER.includes(p.theme as ReadingThemeName)) {
+        setThemeName(p.theme as ReadingThemeName);
+      }
+      if (p.fontStep != null && p.fontStep >= 0 && p.fontStep < FONT_STEPS.length) {
+        setFontStepIndex(p.fontStep);
+      }
+    });
+  }, []);
+
   const tema = reading[themeName];
-  const soft = readingSoft[themeName];
+  const c = chrome[themeName];
   const scale = FONT_STEPS[fontStepIndex];
-  const styles = useMemo(
-    () => makeStyles(tema.fundo, tema.texto, soft, scale),
-    [tema.fundo, tema.texto, soft, scale]
-  );
+  const styles = useMemo(() => makeStyles(tema.fundo, tema.texto, c, scale), [tema.fundo, tema.texto, c, scale]);
 
   const load = useCallback(async () => {
     setError(null);
@@ -64,84 +90,69 @@ export default function CapituloLeitura() {
   }, [load]);
 
   const goTo = (n: number) => router.replace(`/capitulo/${n}`);
-  const cycleTheme = () => {
-    const order: ReadingThemeName[] = ['claro', 'papel', 'escuro'];
-    setThemeName(order[(order.indexOf(themeName) + 1) % order.length]);
+  const setTheme = (name: ReadingThemeName) => {
+    setThemeName(name);
+    saveReadingPrefs({ theme: name });
   };
-  const biggerFont = () =>
-    setFontStepIndex((i) => Math.min(i + 1, FONT_STEPS.length - 1));
-  const smallerFont = () => setFontStepIndex((i) => Math.max(i - 1, 0));
+  const setFont = (i: number) => {
+    const idx = Math.min(Math.max(i, 0), FONT_STEPS.length - 1);
+    setFontStepIndex(idx);
+    saveReadingPrefs({ fontStep: idx });
+  };
+  const emBreve = () => Alert.alert('Em breve', 'Esta ação chega nos próximos blocos.');
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.safe, styles.center]}>
+      <View style={[styles.safe, styles.center]}>
         <ActivityIndicator color={palette.douradoAmanhecer} size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (error || !chapter) {
     return (
-      <SafeAreaView style={[styles.safe, styles.center]} edges={['top']}>
-        <Ionicons name="cloud-offline-outline" size={40} color={soft} />
+      <View style={[styles.safe, styles.center, { paddingTop: insets.top }]}>
+        <Ionicons name="cloud-offline-outline" size={40} color={c.soft} />
         <Text style={styles.error}>{error ?? 'Capítulo não encontrado.'}</Text>
         <Pressable style={styles.retry} onPress={load}>
           <Text style={styles.retryText}>Tentar de novo</Text>
         </Pressable>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const reflexaoParas = chapter.reflexao.split(/\n\s*\n/).filter((p) => p.trim());
+  const minutos = estimarMinutos(chapter);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* Barra superior: voltar + controles de leitura */}
-      <View style={styles.topbar}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={10}
-          accessibilityLabel="Voltar"
-        >
-          <Ionicons name="chevron-back" size={26} color={tema.texto} />
+    <View style={styles.safe}>
+      <StatusBar style={themeName === 'escuro' ? 'light' : 'dark'} />
+
+      {/* Cabeçalho */}
+      <View style={[styles.topbar, { paddingTop: insets.top + spacing.sm }]}>
+        <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Voltar">
+          <Ionicons name="chevron-back" size={24} color={tema.texto} />
         </Pressable>
-        <View style={styles.controls}>
-          <Pressable onPress={smallerFont} hitSlop={8} accessibilityLabel="Diminuir fonte">
-            <Text style={styles.controlAa}>A</Text>
+        <Text style={styles.topTitle}>
+          CAPÍTULO {chapter.numero} · {minutos} MIN
+        </Text>
+        <View style={styles.topActions}>
+          <Pressable onPress={emBreve} hitSlop={8} accessibilityLabel="Favoritar">
+            <Ionicons name="heart-outline" size={21} color={palette.douradoAmanhecer} />
           </Pressable>
-          <Pressable onPress={biggerFont} hitSlop={8} accessibilityLabel="Aumentar fonte">
-            <Text style={[styles.controlAa, styles.controlAaBig]}>A</Text>
-          </Pressable>
-          <Pressable onPress={cycleTheme} hitSlop={8} accessibilityLabel="Trocar tema de leitura">
-            <Ionicons name="contrast-outline" size={22} color={tema.texto} />
+          <Pressable onPress={emBreve} hitSlop={8} accessibilityLabel="Anotar">
+            <Ionicons name="create-outline" size={21} color={tema.texto} />
           </Pressable>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.kicker}>CAPÍTULO {chapter.numero}</Text>
         <Text style={styles.titulo}>{chapter.titulo}</Text>
 
-        {/* Versículo-chave */}
         <View style={styles.versiculoBox}>
           <Text style={styles.versiculoTexto}>{chapter.versiculo_texto}</Text>
-          {!!chapter.versiculo_ref && (
-            <Text style={styles.versiculoRef}>{chapter.versiculo_ref}</Text>
-          )}
+          {!!chapter.versiculo_ref && <Text style={styles.versiculoRef}>{chapter.versiculo_ref}</Text>}
         </View>
-
-        {chapter.tem_audio && (
-          <Pressable
-            style={styles.ouvir}
-            onPress={() =>
-              Alert.alert('Em breve', 'O player de áudio chega no próximo bloco.')
-            }
-            accessibilityRole="button"
-          >
-            <Ionicons name="headset-outline" size={18} color="#fff" />
-            <Text style={styles.ouvirText}>Ouvir narração</Text>
-          </Pressable>
-        )}
 
         <Section label="Reflexão" styles={styles}>
           {reflexaoParas.map((p, i) => (
@@ -159,7 +170,6 @@ export default function CapituloLeitura() {
           <Text style={styles.paragrafo}>{chapter.aplicacao}</Text>
         </Section>
 
-        {/* Frase para guardar */}
         <View style={styles.fraseBox}>
           <Text style={styles.fraseLabel}>PARA GUARDAR NO CORAÇÃO</Text>
           <Text style={styles.frase}>{chapter.frase_guardar}</Text>
@@ -174,28 +184,78 @@ export default function CapituloLeitura() {
             ))}
           </Section>
         )}
+      </ScrollView>
 
-        {/* Navegação anterior/próximo */}
+      {/* Barra de controles fixa */}
+      <View style={[styles.controlBar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+        {/* Tamanho de fonte */}
+        <View style={styles.fontRow}>
+          <Pressable onPress={() => setFont(fontStepIndex - 1)} hitSlop={8} accessibilityLabel="Diminuir fonte">
+            <Text style={styles.fontSmall}>A</Text>
+          </Pressable>
+          <View style={styles.track}>
+            <View style={[styles.trackFill, { width: `${(fontStepIndex / (FONT_STEPS.length - 1)) * 100}%` }]} />
+          </View>
+          <Pressable onPress={() => setFont(fontStepIndex + 1)} hitSlop={8} accessibilityLabel="Aumentar fonte">
+            <Text style={styles.fontBig}>A</Text>
+          </Pressable>
+        </View>
+
+        {/* Tema + Ouvir */}
+        <View style={styles.themeRow}>
+          <View style={styles.segmented}>
+            {ORDER.map((name) => {
+              const active = themeName === name;
+              return (
+                <Pressable
+                  key={name}
+                  onPress={() => setTheme(name)}
+                  style={[styles.segment, active && styles.segmentActive]}
+                  accessibilityRole="button"
+                  accessibilityState={active ? { selected: true } : {}}
+                >
+                  <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
+                    {name === 'claro' ? 'Claro' : name === 'papel' ? 'Papel' : 'Escuro'}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {chapter.tem_audio && (
+            <Pressable style={styles.ouvir} onPress={emBreve} accessibilityRole="button">
+              <Ionicons name="play" size={16} color={palette.cafeEscuro} />
+              <Text style={styles.ouvirText}>Ouvir</Text>
+            </Pressable>
+          )}
+        </View>
+
+        {/* Navegação */}
         <View style={styles.nav}>
           <Pressable
-            style={[styles.navBtn, num <= 1 && styles.navBtnDisabled]}
+            style={styles.navBtn}
             disabled={num <= 1}
             onPress={() => goTo(num - 1)}
           >
-            <Ionicons name="arrow-back" size={18} color={tema.texto} />
-            <Text style={styles.navText}>Anterior</Text>
+            <Ionicons name="chevron-back" size={15} color={num <= 1 ? c.soft : palette.douradoAmanhecer} />
+            <Text style={[styles.navText, num <= 1 && styles.navTextDisabled]}>Anterior</Text>
           </Pressable>
           <Pressable
-            style={[styles.navBtn, num >= TOTAL_CAPITULOS && styles.navBtnDisabled]}
+            style={styles.navBtn}
             disabled={num >= TOTAL_CAPITULOS}
             onPress={() => goTo(num + 1)}
           >
-            <Text style={styles.navText}>Próximo</Text>
-            <Ionicons name="arrow-forward" size={18} color={tema.texto} />
+            <Text style={[styles.navTextGold, num >= TOTAL_CAPITULOS && styles.navTextDisabled]}>
+              Próximo capítulo
+            </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={num >= TOTAL_CAPITULOS ? c.soft : palette.douradoAmanhecer}
+            />
           </Pressable>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }
 
@@ -216,11 +276,16 @@ function Section({
   );
 }
 
-const makeStyles = (bg: string, fg: string, soft: string, scale: number) =>
+const makeStyles = (
+  bg: string,
+  fg: string,
+  c: { soft: string; bar: string; line: string; seg: string; segActive: string; track: string },
+  scale: number
+) =>
   StyleSheet.create({
     safe: { flex: 1, backgroundColor: bg },
     center: { alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.xl },
-    error: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: soft, textAlign: 'center' },
+    error: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: c.soft, textAlign: 'center' },
     retry: {
       marginTop: spacing.sm,
       backgroundColor: palette.douradoAmanhecer,
@@ -233,57 +298,34 @@ const makeStyles = (bg: string, fg: string, soft: string, scale: number) =>
     topbar: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      gap: spacing.md,
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.sm,
+      paddingBottom: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: c.line,
     },
-    controls: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
-    controlAa: { fontFamily: fonts.serifBold, fontSize: 15, color: fg },
-    controlAaBig: { fontSize: 21 },
-
-    content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl * 2 },
-    kicker: {
+    topTitle: {
+      flex: 1,
+      textAlign: 'center',
       fontFamily: fonts.sansBold,
-      fontSize: 12,
-      letterSpacing: 1.5,
-      color: palette.douradoAmanhecer,
-      marginTop: spacing.sm,
-      marginBottom: spacing.sm,
+      fontSize: 11,
+      letterSpacing: 1,
+      color: c.soft,
     },
-    titulo: {
-      fontFamily: fonts.serifBold,
-      fontSize: 30 * scale,
-      lineHeight: 36 * scale,
-      color: fg,
-      marginBottom: spacing.lg,
-    },
+    topActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+
+    content: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.xl * 2 },
+    titulo: { fontFamily: fonts.serif, fontSize: 26 * scale, lineHeight: 31 * scale, color: fg },
 
     versiculoBox: {
       borderLeftWidth: 3,
       borderLeftColor: palette.douradoSuave,
       paddingLeft: spacing.md,
+      marginTop: spacing.md,
       marginBottom: spacing.xl,
     },
-    versiculoTexto: {
-      fontFamily: fonts.serif,
-      fontStyle: 'italic',
-      fontSize: 19 * scale,
-      lineHeight: 30 * scale,
-      color: fg,
-    },
-    versiculoRef: { fontFamily: fonts.sansBold, fontSize: 13, color: soft, marginTop: spacing.sm },
-
-    ouvir: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: spacing.sm,
-      backgroundColor: palette.douradoAmanhecer,
-      paddingVertical: 14,
-      borderRadius: radius.md,
-      marginBottom: spacing.xl,
-    },
-    ouvirText: { fontFamily: fonts.sansBold, color: '#fff', fontSize: 15 },
+    versiculoTexto: { fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16 * scale, lineHeight: 25 * scale, color: '#B07F3C' },
+    versiculoRef: { fontFamily: fonts.sansBold, fontSize: 13, color: c.soft, marginTop: spacing.sm },
 
     section: { marginBottom: spacing.xl },
     sectionLabel: {
@@ -294,43 +336,56 @@ const makeStyles = (bg: string, fg: string, soft: string, scale: number) =>
       color: palette.salvia,
       marginBottom: spacing.sm,
     },
-    paragrafo: {
-      fontFamily: fonts.serif,
-      fontSize: 18 * scale,
-      lineHeight: 31 * scale,
-      color: fg,
-      marginBottom: spacing.md,
-    },
+    paragrafo: { fontFamily: fonts.serif, fontSize: 17 * scale, lineHeight: 30 * scale, color: fg, marginBottom: spacing.md },
 
-    fraseBox: {
-      backgroundColor: palette.cafe,
-      borderRadius: radius.lg,
-      padding: spacing.lg,
-      marginBottom: spacing.xl,
-    },
-    fraseLabel: {
-      fontFamily: fonts.sansBold,
-      fontSize: 11,
-      letterSpacing: 1.5,
-      color: palette.douradoSuave,
-      marginBottom: spacing.sm,
-    },
-    frase: {
-      fontFamily: fonts.serif,
-      fontStyle: 'italic',
-      fontSize: 20 * scale,
-      lineHeight: 30 * scale,
-      color: '#FAF7F2',
-    },
+    fraseBox: { backgroundColor: palette.cafe, borderRadius: radius.lg, padding: spacing.lg, marginBottom: spacing.xl },
+    fraseLabel: { fontFamily: fonts.sansBold, fontSize: 11, letterSpacing: 1.5, color: palette.douradoSuave, marginBottom: spacing.sm },
+    frase: { fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 18 * scale, lineHeight: 27 * scale, color: '#FAF7F2' },
 
     referencia: { fontFamily: fonts.sans, fontSize: 15, lineHeight: 24, color: fg },
+
+    controlBar: {
+      backgroundColor: c.bar,
+      borderTopWidth: 1,
+      borderTopColor: c.line,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.md,
+    },
+    fontRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md },
+    fontSmall: { fontFamily: fonts.serif, fontSize: 14, color: c.soft },
+    fontBig: { fontFamily: fonts.serif, fontSize: 21, color: fg },
+    track: { flex: 1, height: 6, borderRadius: 3, backgroundColor: c.track, overflow: 'hidden' },
+    trackFill: { height: 6, borderRadius: 3, backgroundColor: palette.douradoAmanhecer },
+
+    themeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 2 },
+    segmented: { flex: 1, flexDirection: 'row', backgroundColor: c.seg, borderRadius: 12, padding: 4 },
+    segment: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 9 },
+    segmentActive: { backgroundColor: c.segActive },
+    segmentText: { fontFamily: fonts.sansMedium, fontSize: 13, color: c.soft },
+    segmentTextActive: { fontFamily: fonts.serif, color: fg },
+
+    ouvir: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      backgroundColor: palette.douradoAmanhecer,
+      height: 48,
+      paddingHorizontal: 18,
+      borderRadius: 13,
+    },
+    ouvirText: { fontFamily: fonts.sansBold, fontSize: 14, color: palette.cafeEscuro },
 
     nav: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginTop: spacing.sm,
+      alignItems: 'center',
+      marginTop: spacing.md,
+      paddingTop: spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: c.line,
     },
-    navBtn: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
-    navBtnDisabled: { opacity: 0.35 },
-    navText: { fontFamily: fonts.sansBold, fontSize: 15, color: fg },
+    navBtn: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+    navText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.douradoAmanhecer },
+    navTextGold: { fontFamily: fonts.sansBold, fontSize: 14, color: palette.douradoAmanhecer },
+    navTextDisabled: { color: c.soft },
   });
