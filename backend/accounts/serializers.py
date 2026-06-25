@@ -31,8 +31,10 @@ class UserSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.Serializer):
     nome = serializers.CharField(max_length=150)
     sobrenome = serializers.CharField(max_length=150, allow_blank=True, required=False)
-    email = serializers.EmailField()
-    confirmar_email = serializers.EmailField()
+    # Limitado a 150 porque o e-mail também é usado como `username` do Django
+    # (max 150). Evita um 500 no banco com e-mails muito longos — devolve 400.
+    email = serializers.EmailField(max_length=150)
+    confirmar_email = serializers.EmailField(max_length=150)
     telefone = serializers.CharField(max_length=20, allow_blank=True, required=False)
     data_nascimento = serializers.DateField(required=False, allow_null=True)
     senha = serializers.CharField(write_only=True, min_length=8)
