@@ -45,5 +45,24 @@ jobs:
       - name: Ensure EAS project is linked
         run: eas init --non-interactive --force
 
-      - name: Build Android APK
-        run: eas build --platform android --profile "${{ github.event.inputs.profile }}" --non-interactive --no-wait
+      # Builda na nuvem da Expo, AGUARDA terminar e baixa o .apk.
+      - name: Build Android APK (aguarda e baixa)
+        run: |
+          set -euo pipefail
+          eas build --platform android \
+            --profile "${{ github.event.inputs.profile }}" \
+            --non-interactive --wait --json > build.json
+          URL=$(jq -r '.[0].artifacts.applicationArchiveUrl // .[0].artifacts.buildUrl // empty' build.json)
+          echo "APK URL: $URL"
+          if [ -z "$URL" ]; then echo "::error::Build sem URL de artefato"; cat build.json; exit 1; fi
+          curl -fL -o cafe-com-proposito.apk "$URL"
+          ls -lh cafe-com-proposito.apk
+
+      # Anexa o APK como artifact do GitHub (baixável direto na página da run).
+      - name: Publicar APK como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cafe-com-proposito-apk
+          path: frontend/cafe-com-proposito.apk
+          if-no-files-found: error
+
