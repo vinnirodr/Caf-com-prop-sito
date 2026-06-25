@@ -102,13 +102,15 @@ export default function Inicio() {
                     style={styles.heroBtn}
                     onPress={() => router.push(`/capitulo/${chapter.numero}`)}
                   />
-                  <Button
-                    label="Ouvir"
-                    variant="primary"
-                    style={styles.heroBtn}
-                    icon={<Ionicons name="play" size={16} color={t.palette.cafeEscuro} />}
-                    onPress={() => router.push(`/capitulo/${chapter.numero}`)}
-                  />
+                  {chapter.tem_audio && (
+                    <Button
+                      label="Ouvir"
+                      variant="primary"
+                      style={styles.heroBtn}
+                      icon={<Ionicons name="play" size={16} color={t.palette.cafeEscuro} />}
+                      onPress={() => router.push(`/capitulo/${chapter.numero}`)}
+                    />
+                  )}
                 </View>
               </View>
 
