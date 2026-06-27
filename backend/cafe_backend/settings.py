@@ -105,10 +105,46 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
-# Áudios e imagens dos capítulos. Em produção, troque por um storage de nuvem
-# (Cloudflare R2 / Backblaze B2) via django-storages.
+# Áudios e imagens dos capítulos. Em dev usamos o disco local; em produção, o
+# Cloudflare R2 (S3-compatível) via django-storages — ativado automaticamente
+# quando as variáveis R2_* estiverem definidas (não quebra o uso local).
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+_R2_KEYS = (
+    "R2_BUCKET",
+    "R2_ENDPOINT_URL",
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "R2_PUBLIC_DOMAIN",
+)
+_R2 = {k: env(k) for k in _R2_KEYS}
+if any(_R2.values()):
+    # Configuração parcial é sempre engano — falha rápido em vez de subir o R2
+    # com credencial/endpoint vazios (ou cair no disco local sem avisar).
+    _faltando = [k for k in _R2_KEYS if not _R2[k]]
+    if _faltando:
+        from django.core.exceptions import ImproperlyConfigured
+
+        raise ImproperlyConfigured(
+            "Configuração do Cloudflare R2 incompleta — defina TODAS as variáveis "
+            "ou nenhuma (usa o disco local). Faltando: " + ", ".join(_faltando)
+        )
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": _R2["R2_BUCKET"],
+            "endpoint_url": _R2["R2_ENDPOINT_URL"],       # https://<accountid>.r2.cloudflarestorage.com
+            "access_key": _R2["R2_ACCESS_KEY_ID"],
+            "secret_key": _R2["R2_SECRET_ACCESS_KEY"],
+            "region_name": "auto",
+            "custom_domain": _R2["R2_PUBLIC_DOMAIN"],     # URL pública do bucket
+            "querystring_auth": False,                    # bucket público: URLs limpas
+            "default_acl": None,                          # R2 não usa ACLs
+            "file_overwrite": False,
+        },
+    }
+    MEDIA_URL = f"https://{_R2['R2_PUBLIC_DOMAIN']}/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

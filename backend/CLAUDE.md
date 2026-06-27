@@ -66,9 +66,10 @@ O app mobile (React Native/Expo) vive em repositório separado e consome esta AP
    recuperação de senha (e-mail/SMTP) e login Google/Apple (allauth/OAuth).
 2. ~~**Endpoints de usuário:** CRUD de anotações, favoritos e progresso~~ ✅
    (`/api/favoritos/`, `/api/anotacoes/`, `/api/progresso/`, `/api/resumo/`).
-3. **Armazenamento em nuvem (Cloudflare R2)** para áudios/imagens — necessário ANTES
-   de subir narrações em produção (disco do Render é efêmero). Ativar via env vars,
-   sem quebrar o uso local.
+3. ~~**Armazenamento em nuvem (Cloudflare R2)**~~ ✅ código pronto (`django-storages`/S3).
+   Ativa sozinho quando as variáveis `R2_*` existem (`R2_BUCKET`, `R2_ENDPOINT_URL`,
+   `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_DOMAIN`); senão, disco local.
+   Falta só criar o bucket/credenciais e setar as env vars no Render.
 4. **Fase 2 (monetização):** validação de assinatura (RevenueCat) e regra premium do áudio.
 
 ## Lembretes
