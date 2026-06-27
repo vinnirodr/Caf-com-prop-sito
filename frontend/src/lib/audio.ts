@@ -11,6 +11,7 @@
  *    Hoje: capítulo 1. Conforme chegarem as reais, é só subir pelo painel.
  */
 import type { AudioSource } from 'expo-audio';
+import { API_BASE } from '@/api/config';
 
 /** Narrações embarcadas no bundle (provisório até o storage em nuvem). */
 const NARRACOES_LOCAIS: Record<number, number> = {
@@ -19,9 +20,15 @@ const NARRACOES_LOCAIS: Record<number, number> = {
 
 type AudioInfo = { numero: number; audio?: string | null; audio_acesso: 'free' | 'premium' };
 
+/** Resolve URLs relativas (ex.: "/media/...") contra a origem da API. */
+function urlAbsoluta(u: string): string {
+  if (/^https?:\/\//i.test(u)) return u;
+  return `${API_BASE}${u.startsWith('/') ? '' : '/'}${u}`;
+}
+
 /** Fonte de áudio do capítulo: narração real (API) ou a embarcada; senão null. */
 export function audioFontePara(c: AudioInfo): AudioSource | null {
-  if (c.audio) return { uri: c.audio };
+  if (c.audio) return { uri: urlAbsoluta(c.audio) };
   const local = NARRACOES_LOCAIS[c.numero];
   return local != null ? local : null;
 }
