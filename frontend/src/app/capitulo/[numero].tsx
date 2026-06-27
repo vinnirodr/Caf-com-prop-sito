@@ -21,6 +21,8 @@ import { getChapter, Chapter } from '@/api/content';
 import { listarAnotacoes, type Anotacao } from '@/api/engagement';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
+import { useAudioControls } from '@/audio/AudioContext';
+import { audioFontePara, temAudioDisponivel, bloqueadoPremium } from '@/lib/audio';
 import NoteSheet from '@/components/NoteSheet';
 import { fonts, spacing, radius, palette, reading } from '@/theme/ccpTheme';
 import { getReadingPrefs, saveReadingPrefs } from '@/lib/storage';
@@ -55,6 +57,7 @@ export default function CapituloLeitura() {
 
   const { user } = useAuth();
   const { isFavorito, statusCapitulo, alternarFavorito, marcarLido, registrarLeitura } = useEngagement();
+  const { tocar } = useAudioControls();
 
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -126,6 +129,18 @@ export default function CapituloLeitura() {
   const alternarLido = () =>
     user ? marcarLido(num, statusCapitulo(num) !== 'lido') : exigirLogin();
 
+  const ouvir = () => {
+    if (!chapter) return;
+    if (bloqueadoPremium(chapter, false)) {
+      router.push('/premium');
+      return;
+    }
+    const fonte = audioFontePara(chapter);
+    if (!fonte) return;
+    tocar({ numero: chapter.numero, titulo: chapter.titulo }, fonte);
+    router.push('/player');
+  };
+
   const goTo = (n: number) => router.replace(`/capitulo/${n}`);
   const setTheme = (name: ReadingThemeName) => {
     setThemeName(name);
@@ -136,7 +151,6 @@ export default function CapituloLeitura() {
     setFontStepIndex(idx);
     saveReadingPrefs({ fontStep: idx });
   };
-  const emBreve = () => Alert.alert('Em breve', 'Esta ação chega nos próximos blocos.');
 
   if (loading) {
     return (
@@ -281,9 +295,13 @@ export default function CapituloLeitura() {
               );
             })}
           </View>
-          {chapter.tem_audio && (
-            <Pressable style={styles.ouvir} onPress={emBreve} accessibilityRole="button">
-              <Ionicons name="play" size={16} color={palette.cafeEscuro} />
+          {(temAudioDisponivel(chapter) || chapter.audio_acesso === 'premium') && (
+            <Pressable style={styles.ouvir} onPress={ouvir} accessibilityRole="button">
+              <Ionicons
+                name={bloqueadoPremium(chapter, false) ? 'lock-closed' : 'play'}
+                size={16}
+                color={palette.cafeEscuro}
+              />
               <Text style={styles.ouvirText}>Ouvir</Text>
             </Pressable>
           )}

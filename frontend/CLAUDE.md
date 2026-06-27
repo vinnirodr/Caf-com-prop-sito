@@ -31,6 +31,11 @@ de um backend Django (repositório separado).
 - `src/api/engagement.ts` — favoritos/anotações/progresso/resumo
 - `src/app/anotacoes.tsx` · `src/app/favoritos.tsx` — listas pessoais
 - `src/components/NoteSheet.tsx` — bottom sheet de anotação (criar/editar)
+- `src/audio/AudioContext.tsx` — player global (`useAudioControls`/`useAudioStatus`,
+  expo-audio); `src/app/player.tsx` (06) + `src/components/MiniPlayer.tsx`
+- `src/app/premium.tsx` (10) — paywall (UI; compra real = RevenueCat depois)
+- `src/lib/audio.ts` — fonte/gating do áudio; narrações embarcadas em `assets/audio/`
+  (hoje cap. 1) até o storage em nuvem (R2)
 - `src/app/capitulo/[numero].tsx` — Tela de Leitura (8 partes + barra de controles)
 - `src/components/` — `BrandSeal` (selo SVG), `Button` (DS), `TabBar` (flutuante)
 - `src/lib/` — `greeting` (saudação por horário), `storage` (AsyncStorage)

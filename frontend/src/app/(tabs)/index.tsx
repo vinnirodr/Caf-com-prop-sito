@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { getChapter, Chapter } from '@/api/content';
 import { getCurrentWeather, Weather } from '@/api/weather';
 import { saudacaoPorHorario } from '@/lib/greeting';
+import { audioFontePara, temAudioDisponivel, bloqueadoPremium } from '@/lib/audio';
+import { useAudioControls } from '@/audio/AudioContext';
 import Button from '@/components/Button';
 import { fonts, spacing, radius, typography } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
@@ -25,7 +27,19 @@ export default function Inicio() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { tocar } = useAudioControls();
   const styles = useMemo(() => makeStyles(t), [t]);
+
+  const ouvir = (cap: Chapter) => {
+    if (bloqueadoPremium(cap, false)) {
+      router.push('/premium');
+      return;
+    }
+    const fonte = audioFontePara(cap);
+    if (!fonte) return;
+    tocar({ numero: cap.numero, titulo: cap.titulo }, fonte);
+    router.push('/player');
+  };
 
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,13 +116,19 @@ export default function Inicio() {
                     style={styles.heroBtn}
                     onPress={() => router.push(`/capitulo/${chapter.numero}`)}
                   />
-                  {chapter.tem_audio && (
+                  {(temAudioDisponivel(chapter) || chapter.audio_acesso === 'premium') && (
                     <Button
                       label="Ouvir"
                       variant="primary"
                       style={styles.heroBtn}
-                      icon={<Ionicons name="play" size={16} color={t.palette.cafeEscuro} />}
-                      onPress={() => router.push(`/capitulo/${chapter.numero}`)}
+                      icon={
+                        <Ionicons
+                          name={bloqueadoPremium(chapter, false) ? 'lock-closed' : 'play'}
+                          size={16}
+                          color={t.palette.cafeEscuro}
+                        />
+                      }
+                      onPress={() => ouvir(chapter)}
                     />
                   )}
                 </View>

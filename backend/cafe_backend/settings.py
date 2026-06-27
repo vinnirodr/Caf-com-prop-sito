@@ -107,7 +107,7 @@ STORAGES = {
 
 # Áudios e imagens dos capítulos. Em produção, troque por um storage de nuvem
 # (Cloudflare R2 / Backblaze B2) via django-storages.
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
