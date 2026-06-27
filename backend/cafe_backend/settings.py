@@ -105,10 +105,31 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
-# Áudios e imagens dos capítulos. Em produção, troque por um storage de nuvem
-# (Cloudflare R2 / Backblaze B2) via django-storages.
+# Áudios e imagens dos capítulos. Em dev usamos o disco local; em produção, o
+# Cloudflare R2 (S3-compatível) via django-storages — ativado automaticamente
+# quando as variáveis R2_* estiverem definidas (não quebra o uso local).
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+R2_BUCKET = env("R2_BUCKET")
+if R2_BUCKET:
+    R2_PUBLIC_DOMAIN = env("R2_PUBLIC_DOMAIN", "")  # ex.: pub-xxxx.r2.dev ou mídia.seudominio.com
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": R2_BUCKET,
+            "endpoint_url": env("R2_ENDPOINT_URL"),       # https://<accountid>.r2.cloudflarestorage.com
+            "access_key": env("R2_ACCESS_KEY_ID"),
+            "secret_key": env("R2_SECRET_ACCESS_KEY"),
+            "region_name": "auto",
+            "custom_domain": R2_PUBLIC_DOMAIN or None,    # URL pública do bucket
+            "querystring_auth": False,                    # bucket público: URLs limpas
+            "default_acl": None,                          # R2 não usa ACLs
+            "file_overwrite": False,
+        },
+    }
+    if R2_PUBLIC_DOMAIN:
+        MEDIA_URL = f"https://{R2_PUBLIC_DOMAIN}/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
