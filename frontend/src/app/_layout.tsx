@@ -18,6 +18,7 @@ import {
 import { useTheme } from '@/theme/useTheme';
 import { AuthProvider } from '@/auth/AuthContext';
 import { EngagementProvider } from '@/engagement/EngagementContext';
+import { AudioProvider } from '@/audio/AudioContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,22 +46,26 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <EngagementProvider>
-        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-        <Stack
-          initialRouteName="splash"
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: t.ui.fundo },
-          }}
-        >
-          <Stack.Screen name="splash" options={{ animation: 'fade' }} />
-          <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="capitulo/[numero]" />
-          <Stack.Screen name="anotacoes" />
-          <Stack.Screen name="favoritos" />
-        </Stack>
+        <AudioProvider>
+          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+          <Stack
+            initialRouteName="splash"
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: t.ui.fundo },
+            }}
+          >
+            <Stack.Screen name="splash" options={{ animation: 'fade' }} />
+            <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="capitulo/[numero]" />
+            <Stack.Screen name="anotacoes" />
+            <Stack.Screen name="favoritos" />
+            <Stack.Screen name="player" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          </Stack>
+        </AudioProvider>
       </EngagementProvider>
     </AuthProvider>
   );

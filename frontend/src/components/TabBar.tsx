@@ -9,6 +9,7 @@ import type { BottomTabBarProps } from 'expo-router/build/react-navigation/botto
 import { useMemo } from 'react';
 import { fonts, radius, spacing } from '@/theme/ccpTheme';
 import { useTheme, type Theme } from '@/theme/useTheme';
+import MiniPlayer from '@/components/MiniPlayer';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -25,6 +26,7 @@ export default function TabBar({ state, descriptors, navigation }: BottomTabBarP
 
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <MiniPlayer />
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
