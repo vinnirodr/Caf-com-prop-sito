@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.cafecomproposito.app",
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#3A2D22",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -41,6 +42,14 @@
             "imageWidth": 76,
             "backgroundColor": "#5B4636"
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/splash-icon.png",
+          "color": "#5B4636",
+          "sounds": []
         }
       ]
     ],
