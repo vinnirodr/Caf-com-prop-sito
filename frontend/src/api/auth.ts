@@ -18,6 +18,7 @@ export type Usuario = {
   email: string;
   telefone: string;
   data_nascimento: string | null;
+  notificacoes_ativas: boolean;
 };
 
 export type RegistroPayload = {

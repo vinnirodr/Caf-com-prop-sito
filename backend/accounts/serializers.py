@@ -22,10 +22,13 @@ class UserSerializer(serializers.ModelSerializer):
     data_nascimento = serializers.DateField(
         source="perfil.data_nascimento", read_only=True, allow_null=True
     )
+    notificacoes_ativas = serializers.BooleanField(
+        source="perfil.notificacoes_ativas", read_only=True
+    )
 
     class Meta:
         model = User
-        fields = ["id", "nome", "sobrenome", "email", "telefone", "data_nascimento"]
+        fields = ["id", "nome", "sobrenome", "email", "telefone", "data_nascimento", "notificacoes_ativas"]
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -78,6 +81,11 @@ class RegisterSerializer(serializers.Serializer):
         perfil.data_nascimento = validated_data.get("data_nascimento")
         perfil.save()
         return user
+
+
+class PushTokenSerializer(serializers.Serializer):
+    push_token = serializers.CharField(max_length=200)
+    notificacoes_ativas = serializers.BooleanField(required=False, default=True)
 
 
 class LoginSerializer(serializers.Serializer):

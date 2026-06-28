@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from .serializers import (
     LoginSerializer,
+    PushTokenSerializer,
     RegisterSerializer,
     UserSerializer,
     tokens_para,
@@ -47,3 +48,18 @@ class MeView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class RegistrarTokenView(APIView):
+    """Salva o Expo Push Token do dispositivo no perfil do usuário."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = PushTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        perfil = request.user.perfil
+        perfil.push_token = serializer.validated_data["push_token"]
+        perfil.notificacoes_ativas = serializer.validated_data.get("notificacoes_ativas", True)
+        perfil.save(update_fields=["push_token", "notificacoes_ativas"])
+        return Response({"ok": True})
