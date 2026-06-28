@@ -19,6 +19,7 @@ import {
   type RegistroPayload,
 } from '@/api/auth';
 import { getTokens } from '@/lib/storage';
+import { obterPushToken, sincronizarToken } from '@/lib/notifications';
 
 type AuthValue = {
   user: Usuario | null;
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Boot: se houver tokens salvos, tenta recuperar o usuário.
+  // Boot: se houver tokens salvos, tenta recuperar o usuário e re-sincroniza o token.
   useEffect(() => {
     let active = true;
     (async () => {
@@ -42,7 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (tokens) {
         try {
           const u = await buscarEu();
-          if (active) setUser(u);
+          if (active) {
+            setUser(u);
+            // Re-sincroniza o token (pode ter mudado se o app foi reinstalado).
+            obterPushToken()
+              .then((t) => { if (t) sincronizarToken(t, u.notificacoes_ativas ?? true); })
+              .catch(() => {});
+          }
         } catch {
           if (active) setUser(null);
         }
@@ -57,11 +64,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const entrar = useCallback(async (email: string, senha: string) => {
     const { user } = await apiLogin(email, senha);
     setUser(user);
+    obterPushToken()
+      .then((t) => { if (t) sincronizarToken(t, true); })
+      .catch(() => {});
   }, []);
 
   const cadastrar = useCallback(async (payload: RegistroPayload) => {
     const { user } = await apiRegistrar(payload);
     setUser(user);
+    obterPushToken()
+      .then((t) => { if (t) sincronizarToken(t, true); })
+      .catch(() => {});
   }, []);
 
   const sair = useCallback(async () => {

@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
+import { obterPushToken, sincronizarToken } from '@/lib/notifications';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
@@ -34,7 +35,18 @@ export default function MeuEspaco() {
   const { user, sair } = useAuth();
   const { resumo } = useEngagement();
   const styles = useMemo(() => makeStyles(t), [t]);
-  const [lembrete, setLembrete] = useState(true);
+  const [lembrete, setLembrete] = useState(user?.notificacoes_ativas ?? true);
+
+  const alternarLembrete = async () => {
+    const novo = !lembrete;
+    setLembrete(novo);
+    try {
+      const token = await obterPushToken();
+      if (token) await sincronizarToken(token, novo);
+    } catch {
+      // ignora falha silenciosa
+    }
+  };
 
   const pct = resumo && resumo.total > 0 ? Math.round((resumo.lidos / resumo.total) * 100) : 0;
   const abrirItem = (item: { rota?: Rota }) => {
@@ -132,7 +144,7 @@ export default function MeuEspaco() {
             <Ionicons name="notifications-outline" size={20} color={t.palette.cafe} />
             <Text style={styles.menuLabel}>Lembrete diário</Text>
             <Pressable
-              onPress={() => setLembrete((v) => !v)}
+              onPress={alternarLembrete}
               accessibilityRole="switch"
               accessibilityState={{ checked: lembrete }}
               accessibilityLabel="Lembrete diário"
