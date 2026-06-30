@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -41,6 +41,14 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  const screenOptions = useMemo(
+    () => ({
+      headerShown: false,
+      contentStyle: { backgroundColor: t.ui.fundo },
+    }),
+    [t.ui.fundo]
+  );
+
   if (!loaded) return null;
 
   return (
@@ -48,13 +56,7 @@ export default function RootLayout() {
       <EngagementProvider>
         <AudioProvider>
           <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-          <Stack
-            initialRouteName="splash"
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: t.ui.fundo },
-            }}
-          >
+          <Stack initialRouteName="splash" screenOptions={screenOptions}>
             <Stack.Screen name="splash" options={{ animation: 'fade' }} />
             <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
             <Stack.Screen name="(auth)" />

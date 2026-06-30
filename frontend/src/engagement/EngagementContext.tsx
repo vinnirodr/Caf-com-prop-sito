@@ -11,6 +11,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   type ReactNode,
 } from 'react';
 import { useAuth } from '@/auth/AuthContext';
@@ -160,22 +161,33 @@ export function EngagementProvider({ children }: { children: ReactNode }) {
     [progresso]
   );
 
+  const value = useMemo(
+    () => ({
+      favoritos,
+      resumo,
+      carregando,
+      isFavorito,
+      statusCapitulo,
+      alternarFavorito,
+      marcarLido,
+      registrarLeitura,
+      atualizarResumo,
+    }),
+    [
+      favoritos,
+      resumo,
+      carregando,
+      isFavorito,
+      statusCapitulo,
+      alternarFavorito,
+      marcarLido,
+      registrarLeitura,
+      atualizarResumo,
+    ]
+  );
+
   return (
-    <EngagementContext.Provider
-      value={{
-        favoritos,
-        resumo,
-        carregando,
-        isFavorito,
-        statusCapitulo,
-        alternarFavorito,
-        marcarLido,
-        registrarLeitura,
-        atualizarResumo,
-      }}
-    >
-      {children}
-    </EngagementContext.Provider>
+    <EngagementContext.Provider value={value}>{children}</EngagementContext.Provider>
   );
 }
 

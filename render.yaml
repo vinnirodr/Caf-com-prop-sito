@@ -10,6 +10,8 @@ services:
     rootDir: backend
     buildCommand: "./build.sh"
     startCommand: "gunicorn cafe_backend.wsgi:application"
+    # O Render monitora este caminho; se responder 200, o serviço é saudável.
+    healthCheckPath: /healthz/
     envVars:
       - key: SECRET_KEY
         generateValue: true            # o Render gera uma chave segura
