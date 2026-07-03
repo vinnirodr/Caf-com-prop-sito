@@ -4,6 +4,7 @@ não-técnica (a autora). Rótulos e ajudas em português.
 """
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from .models import Chapter, SpecialPage
 
@@ -38,25 +39,36 @@ class ChapterAdmin(admin.ModelAdmin):
     @admin.display(description="áudio", ordering="audio")
     def audio_status(self, obj):
         if obj.tem_audio:
-            return format_html('<span style="color:#2e7d32;">✓ enviado</span>')
-        return format_html('<span style="color:#b9a999;">— pendente</span>')
+            return mark_safe('<span style="color:#2e7d32;">✓ enviado</span>')
+        return mark_safe('<span style="color:#b9a999;">— pendente</span>')
 
     @admin.display(description="imagem")
     def imagem_thumb(self, obj):
         if obj.imagem:
+            # obj.imagem.url pode lançar se o storage de mídia não estiver
+            # acessível (ex.: R2 não configurado em produção). Sem este guard,
+            # uma imagem inacessível derruba a LISTA inteira com 500.
+            try:
+                url = obj.imagem.url
+            except Exception:
+                return mark_safe('<span style="color:#b9a999;" title="mídia indisponível">—</span>')
             return format_html(
                 '<img src="{}" style="height:32px;border-radius:4px;object-fit:cover;">',
-                obj.imagem.url,
+                url,
             )
-        return format_html('<span style="color:#b9a999;">—</span>')
+        return mark_safe('<span style="color:#b9a999;">—</span>')
 
     @admin.display(description="ouvir narração")
     def audio_player(self, obj):
         if obj.audio:
+            try:
+                url = obj.audio.url
+            except Exception:
+                return "Áudio enviado, mas a mídia está indisponível no momento."
             return format_html(
                 '<audio controls style="width:100%;max-width:440px;">'
                 '<source src="{}" type="audio/mpeg"></audio>',
-                obj.audio.url,
+                url,
             )
         return "Nenhuma narração enviada ainda."
 

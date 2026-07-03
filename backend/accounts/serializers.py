@@ -31,6 +31,94 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "nome", "sobrenome", "email", "telefone", "data_nascimento", "notificacoes_ativas"]
 
 
+class AtualizarPerfilSerializer(serializers.Serializer):
+    """Edição dos dados básicos do usuário logado (não mexe no e-mail/senha)."""
+
+    nome = serializers.CharField(source="first_name", max_length=150, required=False, allow_blank=True)
+    sobrenome = serializers.CharField(
+        source="last_name", max_length=150, required=False, allow_blank=True
+    )
+    telefone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    data_nascimento = serializers.DateField(required=False, allow_null=True)
+
+    def update(self, instance, validated_data):
+        campos_user = []
+        if "first_name" in validated_data:
+            instance.first_name = validated_data["first_name"].strip()
+            campos_user.append("first_name")
+        if "last_name" in validated_data:
+            instance.last_name = validated_data["last_name"].strip()
+            campos_user.append("last_name")
+        if campos_user:
+            instance.save(update_fields=campos_user)
+
+        perfil = instance.perfil
+        campos_perfil = []
+        if "telefone" in validated_data:
+            perfil.telefone = validated_data["telefone"]
+            campos_perfil.append("telefone")
+        if "data_nascimento" in validated_data:
+            perfil.data_nascimento = validated_data["data_nascimento"]
+            campos_perfil.append("data_nascimento")
+        if campos_perfil:
+            perfil.save(update_fields=campos_perfil)
+        return instance
+
+
+class TrocarSenhaSerializer(serializers.Serializer):
+    senha_atual = serializers.CharField(write_only=True)
+    nova_senha = serializers.CharField(write_only=True, min_length=8)
+
+    def validate_senha_atual(self, value):
+        if not self.context["request"].user.check_password(value):
+            raise serializers.ValidationError("Senha atual incorreta.")
+        return value
+
+    def validate_nova_senha(self, value):
+        validate_password(value, user=self.context["request"].user)
+        return value
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        user.set_password(self.validated_data["nova_senha"])
+        user.save(update_fields=["password"])
+        return user
+
+
+class TrocarEmailSerializer(serializers.Serializer):
+    novo_email = serializers.EmailField(max_length=150)
+    senha_atual = serializers.CharField(write_only=True)
+
+    def validate_senha_atual(self, value):
+        if not self.context["request"].user.check_password(value):
+            raise serializers.ValidationError("Senha atual incorreta.")
+        return value
+
+    def validate_novo_email(self, value):
+        value = value.strip().lower()
+        user = self.context["request"].user
+        if User.objects.filter(email__iexact=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("Já existe uma conta com este e-mail.")
+        return value
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        email = self.validated_data["novo_email"]
+        user.email = email
+        user.username = email
+        user.save(update_fields=["email", "username"])
+        return user
+
+
+class ExcluirContaSerializer(serializers.Serializer):
+    senha = serializers.CharField(write_only=True)
+
+    def validate_senha(self, value):
+        if not self.context["request"].user.check_password(value):
+            raise serializers.ValidationError("Senha incorreta.")
+        return value
+
+
 class RegisterSerializer(serializers.Serializer):
     nome = serializers.CharField(max_length=150)
     sobrenome = serializers.CharField(max_length=150, allow_blank=True, required=False)
