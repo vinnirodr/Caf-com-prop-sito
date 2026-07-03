@@ -16,6 +16,7 @@ import {
   registrar as apiRegistrar,
   buscarEu,
   sair as apiSair,
+  excluirConta,
   type Usuario,
   type RegistroPayload,
 } from '@/api/auth';
@@ -28,6 +29,8 @@ type AuthValue = {
   entrar: (email: string, senha: string) => Promise<void>;
   cadastrar: (payload: RegistroPayload) => Promise<void>;
   sair: () => Promise<void>;
+  atualizarUsuario: (user: Usuario) => void;
+  excluir: (senha: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthValue | undefined>(undefined);
@@ -83,9 +86,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const atualizarUsuario = useCallback((u: Usuario) => setUser(u), []);
+
+  const excluir = useCallback(async (senha: string) => {
+    await excluirConta(senha);
+    await apiSair();
+    setUser(null);
+  }, []);
+
   const value = useMemo(
-    () => ({ user, loading, entrar, cadastrar, sair }),
-    [user, loading, entrar, cadastrar, sair]
+    () => ({ user, loading, entrar, cadastrar, sair, atualizarUsuario, excluir }),
+    [user, loading, entrar, cadastrar, sair, atualizarUsuario, excluir]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
