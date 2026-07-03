@@ -6,3 +6,6 @@ db.sqlite3
 /staticfiles/
 .DS_Store
 venv/
+
+# Ambiente virtual local (dev/testes)
+.venv/
