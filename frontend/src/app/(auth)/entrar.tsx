@@ -13,7 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import BrandSeal from '@/components/BrandSeal';
@@ -28,11 +28,6 @@ export default function Entrar() {
   const t = useTheme();
   const router = useRouter();
   const { entrar } = useAuth();
-
-  // [DIAG] sonda temporária — confirma se há loop de re-render ao focar o campo
-  // e se os safe-area insets estão oscilando. REMOVER depois do diagnóstico.
-  const insetsDiag = useSafeAreaInsets();
-  console.log('[DIAG entrar] render', Date.now(), 'insetBottom=', insetsDiag.bottom);
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');

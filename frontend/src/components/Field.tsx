@@ -1,6 +1,11 @@
 /**
  * Campo de formulário do design system: rótulo + input com borda, ícone
  * opcional à esquerda e olho para senha. Mostra erro abaixo quando houver.
+ *
+ * O destaque de foco é feito SÓ pela cor da borda (dourado). Não usar sombra
+ * (`shadow*`) nem `elevation` alternada no foco: no Android com a nova
+ * arquitetura (Fabric) + edge-to-edge, comitar uma sombra ao focar dispara um
+ * relayout que entra em loop com o teclado (abre/fecha sem parar). Ver histórico.
  */
 import { useState } from 'react';
 import {
@@ -36,7 +41,6 @@ export default function Field({ label, icon, secure, error, style, ...rest }: Pr
         style={[
           s.box,
           { backgroundColor: t.ui.superficie, borderColor: error ? palette.erro : focused ? palette.douradoAmanhecer : t.ui.linha },
-          focused && !error && s.boxFocus,
         ]}
       >
         {icon && <Ionicons name={icon} size={18} color={palette.salvia} />}
@@ -69,12 +73,6 @@ const s = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     height: 52,
-  },
-  boxFocus: {
-    shadowColor: palette.douradoAmanhecer,
-    shadowOpacity: 0.16,
-    shadowRadius: 0,
-    shadowOffset: { width: 0, height: 0 },
   },
   input: { flex: 1, fontFamily: fonts.sans, fontSize: 15, padding: 0 },
   error: { fontFamily: fonts.sans, fontSize: 12, color: palette.erro, marginTop: 5 },
