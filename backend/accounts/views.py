@@ -8,6 +8,7 @@ from .serializers import (
     LoginSerializer,
     PushTokenSerializer,
     RegisterSerializer,
+    TrocarEmailSerializer,
     TrocarSenhaSerializer,
     UserSerializer,
     tokens_para,
@@ -72,6 +73,16 @@ class TrocarSenhaView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"ok": True})
+
+
+class TrocarEmailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = TrocarEmailSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(UserSerializer(user).data)
 
 
 class RegistrarTokenView(APIView):

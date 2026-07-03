@@ -69,3 +69,31 @@ class TrocarSenhaTests(APITestCase):
             "senha_atual": "Cafe12345", "nova_senha": "123",
         }, format="json")
         self.assertEqual(resp.status_code, 400)
+
+
+class TrocarEmailTests(APITestCase):
+    def setUp(self):
+        self.user = criar_usuario()
+        self.client.force_authenticate(user=self.user)
+
+    def test_troca_email_e_sincroniza_username(self):
+        resp = self.client.post("/api/auth/trocar-email/", {
+            "novo_email": "Nova.Marta@Example.com", "senha_atual": "Cafe12345",
+        }, format="json")
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, "nova.marta@example.com")
+        self.assertEqual(self.user.username, "nova.marta@example.com")
+
+    def test_rejeita_senha_errada(self):
+        resp = self.client.post("/api/auth/trocar-email/", {
+            "novo_email": "outro@example.com", "senha_atual": "errada",
+        }, format="json")
+        self.assertEqual(resp.status_code, 400)
+
+    def test_rejeita_email_ja_em_uso(self):
+        criar_usuario(email="ocupado@example.com")
+        resp = self.client.post("/api/auth/trocar-email/", {
+            "novo_email": "ocupado@example.com", "senha_atual": "Cafe12345",
+        }, format="json")
+        self.assertEqual(resp.status_code, 400)

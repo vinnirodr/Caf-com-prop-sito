@@ -85,6 +85,31 @@ class TrocarSenhaSerializer(serializers.Serializer):
         return user
 
 
+class TrocarEmailSerializer(serializers.Serializer):
+    novo_email = serializers.EmailField(max_length=150)
+    senha_atual = serializers.CharField(write_only=True)
+
+    def validate_senha_atual(self, value):
+        if not self.context["request"].user.check_password(value):
+            raise serializers.ValidationError("Senha atual incorreta.")
+        return value
+
+    def validate_novo_email(self, value):
+        value = value.strip().lower()
+        user = self.context["request"].user
+        if User.objects.filter(email__iexact=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("Já existe uma conta com este e-mail.")
+        return value
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        email = self.validated_data["novo_email"]
+        user.email = email
+        user.username = email
+        user.save(update_fields=["email", "username"])
+        return user
+
+
 class RegisterSerializer(serializers.Serializer):
     nome = serializers.CharField(max_length=150)
     sobrenome = serializers.CharField(max_length=150, allow_blank=True, required=False)
