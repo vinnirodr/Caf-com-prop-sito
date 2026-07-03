@@ -19,7 +19,7 @@ import { useTheme } from '@/theme/useTheme';
 export default function Conta() {
   const t = useTheme();
   const router = useRouter();
-  const { user, atualizarUsuario } = useAuth();
+  const { user, atualizarUsuario, excluir } = useAuth();
 
   const [nome, setNome] = useState(user?.nome ?? '');
   const [sobrenome, setSobrenome] = useState(user?.sobrenome ?? '');
@@ -27,6 +27,9 @@ export default function Conta() {
   const [nascimento, setNascimento] = useState(isoParaBR(user?.data_nascimento ?? null));
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [mostrarExcluir, setMostrarExcluir] = useState(false);
+  const [senhaExcluir, setSenhaExcluir] = useState('');
+  const [excluindo, setExcluindo] = useState(false);
 
   const salvar = async () => {
     setErro(null);
@@ -47,6 +50,30 @@ export default function Conta() {
       setErro(e instanceof ApiError ? e.message : 'Não foi possível salvar. Tente de novo.');
     } finally {
       setSalvando(false);
+    }
+  };
+
+  const confirmarExcluir = () => {
+    Alert.alert(
+      'Excluir conta',
+      'Isso apaga sua conta e todos os seus dados (favoritos, anotações e progresso). Esta ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Continuar', style: 'destructive', onPress: () => setMostrarExcluir(true) },
+      ],
+    );
+  };
+
+  const excluirConfirmado = async () => {
+    setErro(null);
+    setExcluindo(true);
+    try {
+      await excluir(senhaExcluir);
+      router.replace('/(auth)/entrar');
+    } catch (e) {
+      setErro(e instanceof ApiError ? e.message : 'Não foi possível excluir a conta.');
+    } finally {
+      setExcluindo(false);
     }
   };
 
@@ -88,6 +115,24 @@ export default function Conta() {
             <Text style={styles.acaoLabel}>Trocar senha</Text>
             <Ionicons name="chevron-forward" size={18} color={palette.salvia} />
           </Pressable>
+
+          <Pressable style={styles.acaoItem} onPress={confirmarExcluir} accessibilityRole="button">
+            <Ionicons name="trash-outline" size={18} color={palette.erro} />
+            <Text style={[styles.acaoLabel, { color: palette.erro }]}>Excluir conta</Text>
+            <Ionicons name="chevron-forward" size={18} color={palette.erro} />
+          </Pressable>
+
+          {mostrarExcluir && (
+            <View style={styles.excluirBox}>
+              <Field label="Confirme sua senha para excluir" secure value={senhaExcluir} onChangeText={setSenhaExcluir} style={styles.field} />
+              <Button
+                label={excluindo ? 'Excluindo…' : 'Excluir minha conta'}
+                onPress={excluirConfirmado}
+                disabled={excluindo || senhaExcluir.length === 0}
+                style={styles.cta}
+              />
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -109,4 +154,5 @@ const styles = StyleSheet.create({
   acoes: { marginTop: 28 },
   acaoItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#EAE0D4' },
   acaoLabel: { flex: 1, fontFamily: fonts.sansBold, fontSize: 15, color: palette.cafeEscuro },
+  excluirBox: { marginTop: 8 },
 });
