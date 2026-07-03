@@ -133,3 +133,53 @@ export async function buscarEu(): Promise<Usuario> {
 export async function sair(): Promise<void> {
   await clearTokens();
 }
+
+export type PerfilPatch = Partial<
+  Pick<Usuario, 'nome' | 'sobrenome' | 'telefone' | 'data_nascimento'>
+>;
+
+/** Lê o JSON e lança ApiError com a mensagem do backend quando !ok. */
+async function lerOuErro<T>(res: Response): Promise<T> {
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(res.status, (data as any) ?? {}, primeiraMensagem(data));
+  return data as T;
+}
+
+export async function atualizarPerfil(patch: PerfilPatch): Promise<Usuario> {
+  const res = await authFetch('/auth/eu/', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  return lerOuErro<Usuario>(res);
+}
+
+export async function trocarSenha(senha_atual: string, nova_senha: string): Promise<void> {
+  const res = await authFetch('/auth/trocar-senha/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ senha_atual, nova_senha }),
+  });
+  await lerOuErro<unknown>(res);
+}
+
+export async function trocarEmail(novo_email: string, senha_atual: string): Promise<Usuario> {
+  const res = await authFetch('/auth/trocar-email/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ novo_email, senha_atual }),
+  });
+  return lerOuErro<Usuario>(res);
+}
+
+export async function excluirConta(senha: string): Promise<void> {
+  const res = await authFetch('/auth/excluir-conta/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ senha }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new ApiError(res.status, (data as any) ?? {}, primeiraMensagem(data));
+  }
+}
