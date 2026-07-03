@@ -44,6 +44,12 @@ class EditarPerfilTests(APITestCase):
         resp = self.client.patch("/api/auth/eu/", {"nome": "X"}, format="json")
         self.assertEqual(resp.status_code, 401)
 
+    def test_patch_aceita_nome_vazio(self):
+        resp = self.client.patch("/api/auth/eu/", {"nome": ""}, format="json")
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, "")
+
 
 class TrocarSenhaTests(APITestCase):
     def setUp(self):

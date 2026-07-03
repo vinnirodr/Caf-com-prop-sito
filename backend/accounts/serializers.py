@@ -34,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
 class AtualizarPerfilSerializer(serializers.Serializer):
     """Edição dos dados básicos do usuário logado (não mexe no e-mail/senha)."""
 
-    nome = serializers.CharField(source="first_name", max_length=150, required=False)
+    nome = serializers.CharField(source="first_name", max_length=150, required=False, allow_blank=True)
     sobrenome = serializers.CharField(
         source="last_name", max_length=150, required=False, allow_blank=True
     )
