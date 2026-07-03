@@ -65,6 +65,26 @@ class AtualizarPerfilSerializer(serializers.Serializer):
         return instance
 
 
+class TrocarSenhaSerializer(serializers.Serializer):
+    senha_atual = serializers.CharField(write_only=True)
+    nova_senha = serializers.CharField(write_only=True, min_length=8)
+
+    def validate_senha_atual(self, value):
+        if not self.context["request"].user.check_password(value):
+            raise serializers.ValidationError("Senha atual incorreta.")
+        return value
+
+    def validate_nova_senha(self, value):
+        validate_password(value, user=self.context["request"].user)
+        return value
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        user.set_password(self.validated_data["nova_senha"])
+        user.save(update_fields=["password"])
+        return user
+
+
 class RegisterSerializer(serializers.Serializer):
     nome = serializers.CharField(max_length=150)
     sobrenome = serializers.CharField(max_length=150, allow_blank=True, required=False)

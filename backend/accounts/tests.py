@@ -41,3 +41,31 @@ class EditarPerfilTests(APITestCase):
         self.client.force_authenticate(user=None)
         resp = self.client.patch("/api/auth/eu/", {"nome": "X"}, format="json")
         self.assertEqual(resp.status_code, 401)
+
+
+class TrocarSenhaTests(APITestCase):
+    def setUp(self):
+        self.user = criar_usuario()
+        self.client.force_authenticate(user=self.user)
+
+    def test_troca_com_senha_correta(self):
+        resp = self.client.post("/api/auth/trocar-senha/", {
+            "senha_atual": "Cafe12345", "nova_senha": "NovaSenha987",
+        }, format="json")
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("NovaSenha987"))
+
+    def test_rejeita_senha_atual_errada(self):
+        resp = self.client.post("/api/auth/trocar-senha/", {
+            "senha_atual": "errada", "nova_senha": "NovaSenha987",
+        }, format="json")
+        self.assertEqual(resp.status_code, 400)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Cafe12345"))
+
+    def test_rejeita_nova_senha_fraca(self):
+        resp = self.client.post("/api/auth/trocar-senha/", {
+            "senha_atual": "Cafe12345", "nova_senha": "123",
+        }, format="json")
+        self.assertEqual(resp.status_code, 400)
