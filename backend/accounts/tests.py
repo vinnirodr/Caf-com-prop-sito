@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 
+from accounts.models import Profile
+
 User = get_user_model()
 
 
@@ -97,3 +99,21 @@ class TrocarEmailTests(APITestCase):
             "novo_email": "ocupado@example.com", "senha_atual": "Cafe12345",
         }, format="json")
         self.assertEqual(resp.status_code, 400)
+
+
+class ExcluirContaTests(APITestCase):
+    def setUp(self):
+        self.user = criar_usuario()
+        self.client.force_authenticate(user=self.user)
+
+    def test_exclui_com_senha_correta_e_cascata(self):
+        self.assertTrue(Profile.objects.filter(usuario_id=self.user.pk).exists())
+        resp = self.client.post("/api/auth/excluir-conta/", {"senha": "Cafe12345"}, format="json")
+        self.assertEqual(resp.status_code, 204, resp.content)
+        self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
+        self.assertFalse(Profile.objects.filter(usuario_id=self.user.pk).exists())
+
+    def test_rejeita_senha_errada(self):
+        resp = self.client.post("/api/auth/excluir-conta/", {"senha": "errada"}, format="json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())

@@ -110,6 +110,15 @@ class TrocarEmailSerializer(serializers.Serializer):
         return user
 
 
+class ExcluirContaSerializer(serializers.Serializer):
+    senha = serializers.CharField(write_only=True)
+
+    def validate_senha(self, value):
+        if not self.context["request"].user.check_password(value):
+            raise serializers.ValidationError("Senha incorreta.")
+        return value
+
+
 class RegisterSerializer(serializers.Serializer):
     nome = serializers.CharField(max_length=150)
     sobrenome = serializers.CharField(max_length=150, allow_blank=True, required=False)

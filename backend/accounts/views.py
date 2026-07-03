@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from .serializers import (
     AtualizarPerfilSerializer,
+    ExcluirContaSerializer,
     LoginSerializer,
     PushTokenSerializer,
     RegisterSerializer,
@@ -83,6 +84,16 @@ class TrocarEmailView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response(UserSerializer(user).data)
+
+
+class ExcluirContaView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = ExcluirContaSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        request.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RegistrarTokenView(APIView):
