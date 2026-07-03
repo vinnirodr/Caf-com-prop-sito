@@ -17,10 +17,10 @@ import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
-type Rota = '/anotacoes' | '/favoritos';
+type Rota = '/anotacoes' | '/favoritos' | '/conta';
 
 const MENU: { icon: IconName; label: string; rota?: Rota }[] = [
-  { icon: 'person-outline', label: 'Dados pessoais' },
+  { icon: 'person-outline', label: 'Dados pessoais', rota: '/conta' },
   { icon: 'document-text-outline', label: 'Minhas anotações', rota: '/anotacoes' },
   { icon: 'heart-outline', label: 'Favoritos', rota: '/favoritos' },
   { icon: 'settings-outline', label: 'Ajustes' },
