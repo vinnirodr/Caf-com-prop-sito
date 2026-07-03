@@ -31,6 +31,40 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "nome", "sobrenome", "email", "telefone", "data_nascimento", "notificacoes_ativas"]
 
 
+class AtualizarPerfilSerializer(serializers.Serializer):
+    """Edição dos dados básicos do usuário logado (não mexe no e-mail/senha)."""
+
+    nome = serializers.CharField(source="first_name", max_length=150, required=False)
+    sobrenome = serializers.CharField(
+        source="last_name", max_length=150, required=False, allow_blank=True
+    )
+    telefone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    data_nascimento = serializers.DateField(required=False, allow_null=True)
+
+    def update(self, instance, validated_data):
+        campos_user = []
+        if "first_name" in validated_data:
+            instance.first_name = validated_data["first_name"].strip()
+            campos_user.append("first_name")
+        if "last_name" in validated_data:
+            instance.last_name = validated_data["last_name"].strip()
+            campos_user.append("last_name")
+        if campos_user:
+            instance.save(update_fields=campos_user)
+
+        perfil = instance.perfil
+        campos_perfil = []
+        if "telefone" in validated_data:
+            perfil.telefone = validated_data["telefone"]
+            campos_perfil.append("telefone")
+        if "data_nascimento" in validated_data:
+            perfil.data_nascimento = validated_data["data_nascimento"]
+            campos_perfil.append("data_nascimento")
+        if campos_perfil:
+            perfil.save(update_fields=campos_perfil)
+        return instance
+
+
 class RegisterSerializer(serializers.Serializer):
     nome = serializers.CharField(max_length=150)
     sobrenome = serializers.CharField(max_length=150, allow_blank=True, required=False)
