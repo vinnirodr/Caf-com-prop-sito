@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "588515340346",
+    "project_id": "cafe-com-proposito",
+    "storage_bucket": "cafe-com-proposito.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:588515340346:android:914b16980159fb36620503",
+        "android_client_info": {
+          "package_name": "com.cafecomproposito.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADFIJOYhjbXaSXum2TDc7HwPmY3x1amsk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
