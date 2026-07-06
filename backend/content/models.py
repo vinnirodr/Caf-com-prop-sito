@@ -165,3 +165,59 @@ class Produto(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class Banner(models.Model):
+    """
+    Banner da tela inicial. Se nenhum banner ativo existir, o app mostra um banner
+    padrão ("Conheça a Loja"). A autora pode personalizar o texto e/ou subir uma
+    imagem, além de escolher para onde o toque leva.
+    """
+
+    class Destino(models.TextChoices):
+        LOJA = "loja", "Abrir a Loja"
+        LINK = "link_externo", "Abrir um link externo"
+        CAPITULO = "capitulo", "Abrir um capítulo"
+        NENHUM = "nenhum", "Não clicável"
+
+    titulo = models.CharField(
+        "título", max_length=120, blank=True,
+        help_text="Texto do banner quando não houver imagem (ex.: 'Conheça a Loja').",
+    )
+    subtitulo = models.CharField(
+        "subtítulo", max_length=200, blank=True,
+        help_text="Linha de apoio abaixo do título.",
+    )
+    imagem = models.ImageField(
+        "imagem", upload_to="banners/", blank=True, null=True,
+        help_text="Opcional. Se enviar uma arte, ela aparece no lugar do texto.",
+    )
+
+    destino = models.CharField(
+        "destino do toque", max_length=15, choices=Destino.choices, default=Destino.LOJA,
+    )
+    link_externo = models.URLField(
+        "link externo", blank=True,
+        help_text="Usado quando o destino é 'link externo'.",
+    )
+    capitulo_numero = models.PositiveIntegerField(
+        "número do capítulo", null=True, blank=True,
+        help_text="Usado quando o destino é 'abrir um capítulo'.",
+    )
+
+    ativo = models.BooleanField(
+        "ativo", default=True,
+        help_text="O app mostra o primeiro banner ativo (pela ordem). Desmarque para esconder.",
+    )
+    ordem = models.PositiveIntegerField("ordem", default=0)
+
+    criado_em = models.DateTimeField("criado em", auto_now_add=True)
+    atualizado_em = models.DateTimeField("atualizado em", auto_now=True)
+
+    class Meta:
+        verbose_name = "banner"
+        verbose_name_plural = "banners"
+        ordering = ["ordem", "id"]
+
+    def __str__(self):
+        return self.titulo or f"Banner {self.pk}"

@@ -20,8 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getProdutos, type Produto, type ProdutoCategoria } from '@/api/content';
-import { API_BASE } from '@/api/config';
+import { getProdutos, mediaUrl, type Produto, type ProdutoCategoria } from '@/api/content';
 import Button from '@/components/Button';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { useTheme, type Theme } from '@/theme/useTheme';
@@ -45,11 +44,6 @@ function precoFormatado(preco: string | null): string | null {
   const n = Number(preco);
   if (Number.isNaN(n)) return null;
   return `R$ ${n.toFixed(2).replace('.', ',')}`;
-}
-
-function imagemUri(u: string | null): string | null {
-  if (!u) return null;
-  return u.startsWith('http') ? u : `${API_BASE}${u}`;
 }
 
 export default function Loja() {
@@ -106,7 +100,7 @@ export default function Loja() {
       ) : (
         <ScrollView contentContainerStyle={styles.lista} showsVerticalScrollIndicator={false}>
           {produtos?.map((p) => {
-            const uri = imagemUri(p.imagem);
+            const uri = mediaUrl(p.imagem);
             const preco = precoFormatado(p.preco);
             return (
               <View key={p.id} style={[styles.card, p.destaque && styles.cardDestaque]}>

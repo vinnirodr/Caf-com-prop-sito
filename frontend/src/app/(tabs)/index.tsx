@@ -4,13 +4,13 @@
  * guardar. Sem dados pessoais inventados (entram quando houver conta).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Image, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getChapter, Chapter } from '@/api/content';
+import { getChapter, getBanners, mediaUrl, Chapter, Banner } from '@/api/content';
 import { getCurrentWeather, Weather } from '@/api/weather';
 import { saudacaoParaNome } from '@/lib/greeting';
 import { useAuth } from '@/auth/AuthContext';
@@ -46,6 +46,7 @@ export default function Inicio() {
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [weather, setWeather] = useState<Weather | null>(null);
+  const [banner, setBanner] = useState<Banner | null>(null);
 
   const saudacao = saudacaoParaNome(user?.nome);
 
@@ -56,10 +57,32 @@ export default function Inicio() {
       .catch(() => {})
       .finally(() => active && setLoading(false));
     getCurrentWeather().then((w) => active && setWeather(w));
+    getBanners()
+      .then((lista) => active && setBanner(lista[0] ?? null))
+      .catch(() => {});
     return () => {
       active = false;
     };
   }, []);
+
+  // Sem banner cadastrado, o app usa um padrão que abre a Loja.
+  const abrirBanner = () => {
+    if (!banner) return router.push('/loja');
+    switch (banner.destino) {
+      case 'link_externo':
+        if (banner.link_externo) Linking.openURL(banner.link_externo).catch(() => {});
+        return;
+      case 'capitulo':
+        if (banner.capitulo_numero) router.push(`/capitulo/${banner.capitulo_numero}`);
+        return;
+      case 'nenhum':
+        return;
+      default:
+        return router.push('/loja');
+    }
+  };
+  const bannerImg = mediaUrl(banner?.imagem ?? null);
+  const bannerNaoClicavel = banner?.destino === 'nenhum';
 
   return (
     <View style={styles.fill}>
@@ -160,22 +183,39 @@ export default function Inicio() {
             </View>
           )}
 
-          {/* Banner da Loja */}
-          <Pressable
-            style={styles.banner}
-            onPress={() => router.push('/loja')}
-            accessibilityRole="button"
-            accessibilityLabel="Abrir a loja do Café com Propósito"
-          >
-            <View style={styles.bannerIcon}>
-              <Ionicons name="bag-handle-outline" size={22} color={t.palette.cafe} />
-            </View>
-            <View style={styles.bannerText}>
-              <Text style={styles.bannerTitle}>Conheça a Loja</Text>
-              <Text style={styles.bannerSub}>Livro físico, xícaras, camisetas e mais</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={t.palette.douradoAmanhecer} />
-          </Pressable>
+          {/* Banner da Início — personalizável no admin; sem cadastro, um padrão da Loja */}
+          {bannerImg ? (
+            <Pressable
+              style={styles.bannerImgWrap}
+              onPress={abrirBanner}
+              disabled={bannerNaoClicavel}
+              accessibilityRole="button"
+              accessibilityLabel={banner?.titulo || 'Banner'}
+            >
+              <Image source={{ uri: bannerImg }} style={styles.bannerImg} resizeMode="cover" />
+            </Pressable>
+          ) : (
+            <Pressable
+              style={styles.banner}
+              onPress={abrirBanner}
+              disabled={bannerNaoClicavel}
+              accessibilityRole="button"
+              accessibilityLabel={banner?.titulo || 'Abrir a loja do Café com Propósito'}
+            >
+              <View style={styles.bannerIcon}>
+                <Ionicons name="bag-handle-outline" size={22} color={t.palette.cafe} />
+              </View>
+              <View style={styles.bannerText}>
+                <Text style={styles.bannerTitle}>{banner?.titulo || 'Conheça a Loja'}</Text>
+                <Text style={styles.bannerSub}>
+                  {banner?.subtitulo || 'Livro físico, xícaras, camisetas e mais'}
+                </Text>
+              </View>
+              {!bannerNaoClicavel && (
+                <Ionicons name="chevron-forward" size={20} color={t.palette.douradoAmanhecer} />
+              )}
+            </Pressable>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -305,4 +345,7 @@ const makeStyles = (t: Theme) =>
     bannerText: { flex: 1, minWidth: 0 },
     bannerTitle: { fontFamily: fonts.serif, fontSize: 17, color: t.palette.cafeEscuro },
     bannerSub: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave, marginTop: 2 },
+
+    bannerImgWrap: { borderRadius: 18, overflow: 'hidden', ...t.elevation.level1 },
+    bannerImg: { width: '100%', aspectRatio: 2.4 },
   });
