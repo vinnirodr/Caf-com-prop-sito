@@ -1,9 +1,10 @@
 from rest_framework import generics
 
-from .models import Chapter, SpecialPage
+from .models import Chapter, LembreteTexto, SpecialPage
 from .serializers import (
     ChapterListSerializer,
     ChapterDetailSerializer,
+    LembreteTextoSerializer,
     SpecialPageSerializer,
 )
 
@@ -28,3 +29,13 @@ class SpecialPageList(generics.ListAPIView):
 
     def get_queryset(self):
         return SpecialPage.objects.filter(publicado=True).order_by("ordem")
+
+
+class LembreteList(generics.ListAPIView):
+    """Frases de lembrete ativas — o app baixa e agenda localmente. Público, sem paginação."""
+
+    serializer_class = LembreteTextoSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return LembreteTexto.objects.filter(ativo=True).order_by("ordem", "id")

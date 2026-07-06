@@ -12,4 +12,5 @@ urlpatterns = [
     path("trocar-email/", views.TrocarEmailView.as_view(), name="auth-trocar-email"),
     path("excluir-conta/", views.ExcluirContaView.as_view(), name="auth-excluir-conta"),
     path("registrar-token/", views.RegistrarTokenView.as_view(), name="auth-registrar-token"),
+    path("interno/disparar-agendadas/", views.DispararAgendadasView.as_view(), name="interno-disparar-agendadas"),
 ]

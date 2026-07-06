@@ -19,6 +19,8 @@ import { useTheme } from '@/theme/useTheme';
 import { AuthProvider } from '@/auth/AuthContext';
 import { EngagementProvider } from '@/engagement/EngagementContext';
 import { AudioProvider } from '@/audio/AudioContext';
+import { configurarCanaisAndroid } from '@/lib/notifications';
+import { sincronizarLembretes } from '@/lib/reminders';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,6 +42,11 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  // Canais de notificação do Android + reabastece os lembretes locais na abertura.
+  useEffect(() => {
+    configurarCanaisAndroid().then(() => sincronizarLembretes());
+  }, []);
 
   const screenOptions = useMemo(
     () => ({
@@ -64,6 +71,7 @@ export default function RootLayout() {
             <Stack.Screen name="capitulo/[numero]" />
             <Stack.Screen name="anotacoes" />
             <Stack.Screen name="favoritos" />
+            <Stack.Screen name="ajustes" />
             <Stack.Screen name="conta" />
             <Stack.Screen name="conta/senha" />
             <Stack.Screen name="conta/email" />

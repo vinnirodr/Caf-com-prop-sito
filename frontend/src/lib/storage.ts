@@ -13,6 +13,9 @@ const KEYS = {
   readingFontStep: 'ccp.reading.fontStep',
   accessToken: 'ccp.auth.access',
   refreshToken: 'ccp.auth.refresh',
+  reminderEnabled: 'ccp.reminder.enabled',
+  reminderHour: 'ccp.reminder.hour',
+  reminderMinute: 'ccp.reminder.minute',
 } as const;
 
 export type Tokens = { access: string; refresh: string };
@@ -97,6 +100,40 @@ export async function saveReadingPrefs(prefs: ReadingPrefs): Promise<void> {
     if (prefs.fontStep != null)
       ops.push(AsyncStorage.setItem(KEYS.readingFontStep, String(prefs.fontStep)));
     await Promise.all(ops);
+  } catch {
+    // ignora
+  }
+}
+
+// Preferência do lembrete diário de leitura (agendado localmente no aparelho).
+export type ReminderPrefs = { enabled: boolean; hour: number; minute: number };
+
+export const REMINDER_PADRAO: ReminderPrefs = { enabled: false, hour: 8, minute: 0 };
+
+export async function getReminderPrefs(): Promise<ReminderPrefs> {
+  try {
+    const [enabled, hour, minute] = await Promise.all([
+      AsyncStorage.getItem(KEYS.reminderEnabled),
+      AsyncStorage.getItem(KEYS.reminderHour),
+      AsyncStorage.getItem(KEYS.reminderMinute),
+    ]);
+    return {
+      enabled: enabled === '1',
+      hour: hour != null ? Number(hour) : REMINDER_PADRAO.hour,
+      minute: minute != null ? Number(minute) : REMINDER_PADRAO.minute,
+    };
+  } catch {
+    return { ...REMINDER_PADRAO };
+  }
+}
+
+export async function saveReminderPrefs(prefs: ReminderPrefs): Promise<void> {
+  try {
+    await AsyncStorage.multiSet([
+      [KEYS.reminderEnabled, prefs.enabled ? '1' : '0'],
+      [KEYS.reminderHour, String(prefs.hour)],
+      [KEYS.reminderMinute, String(prefs.minute)],
+    ]);
   } catch {
     // ignora
   }

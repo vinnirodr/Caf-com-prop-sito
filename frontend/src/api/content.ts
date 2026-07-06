@@ -61,3 +61,8 @@ export const getChapter = (numero: number) =>
 
 export const getSpecialPages = () =>
   apiGet<Paginated<SpecialPage>>('/paginas-especiais/');
+
+export type LembreteTexto = { id: number; texto: string };
+
+/** Frases de lembrete cadastradas pela autora (endpoint público, sem paginação). */
+export const getLembretes = () => apiGet<LembreteTexto[]>('/lembretes/');

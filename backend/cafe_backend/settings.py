@@ -16,6 +16,11 @@ SECRET_KEY = env("SECRET_KEY", "dev-inseguro-troque-em-producao")
 DEBUG = env("DEBUG", "True") == "True"
 ALLOWED_HOSTS = [h for h in env("ALLOWED_HOSTS", "*").split(",") if h]
 
+# Segredo compartilhado com o cron (GitHub Actions) que dispara as notificações
+# agendadas via /api/auth/interno/disparar-agendadas/. Sem valor, o endpoint fica
+# fechado (403). Defina o MESMO valor no Render e no GitHub Secrets.
+CRON_SECRET = env("CRON_SECRET", "")
+
 # O Render injeta automaticamente o domínio público nesta variável.
 RENDER_HOST = env("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_HOST:

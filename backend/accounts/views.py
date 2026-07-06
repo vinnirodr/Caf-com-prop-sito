@@ -1,8 +1,10 @@
 """Views de autenticação: cadastro, login e dados do usuário logado."""
+from django.conf import settings
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from . import push
 from .serializers import (
     AtualizarPerfilSerializer,
     ExcluirContaSerializer,
@@ -109,3 +111,21 @@ class RegistrarTokenView(APIView):
         perfil.notificacoes_ativas = serializer.validated_data.get("notificacoes_ativas", True)
         perfil.save(update_fields=["push_token", "notificacoes_ativas"])
         return Response({"ok": True})
+
+
+class DispararAgendadasView(APIView):
+    """
+    Dispara as notificações agendadas que já venceram. Endpoint interno, chamado
+    por um cron (GitHub Actions), protegido pelo header `X-Cron-Secret`. Não é
+    para uso do app — sem o segredo correto, retorna 403.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        segredo = settings.CRON_SECRET
+        enviado = request.headers.get("X-Cron-Secret", "")
+        if not segredo or enviado != segredo:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        enviadas = push.disparar_agendadas()
+        return Response({"enviadas": enviadas})
