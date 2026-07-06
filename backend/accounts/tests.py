@@ -1,6 +1,8 @@
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from accounts.models import Profile
@@ -169,3 +171,15 @@ class GoogleLoginTests(APITestCase):
         mock_verify.return_value = self._payload(email_verified=False)
         resp = self.client.post(self.URL, {"id_token": "fake"}, format="json")
         self.assertEqual(resp.status_code, 400)
+
+
+class PasswordResetModelTests(APITestCase):
+    def test_cria_codigo_reset(self):
+        from accounts.models import PasswordResetCode
+        u = criar_usuario()
+        c = PasswordResetCode.objects.create(
+            usuario=u, code_hash="x", expira_em=timezone.now() + timedelta(minutes=20)
+        )
+        self.assertFalse(c.usado)
+        self.assertEqual(c.tentativas, 0)
+        self.assertEqual(u.codigos_reset.count(), 1)

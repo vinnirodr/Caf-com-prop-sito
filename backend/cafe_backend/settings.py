@@ -23,6 +23,22 @@ CRON_SECRET = env("CRON_SECRET", "")
 
 GOOGLE_WEB_CLIENT_ID = env("GOOGLE_WEB_CLIENT_ID", "")
 
+# E-mail (recuperação de senha via Resend). Com RESEND_API_KEY definido, envia por
+# SMTP do Resend; sem ela, cai no backend de console (dev). O remetente
+# (DEFAULT_FROM_EMAIL) exige um domínio verificado no Resend em produção — por ora
+# usa o domínio de teste. Trocar depois é só mudar a env, sem tocar no código.
+RESEND_API_KEY = env("RESEND_API_KEY", "")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
+if RESEND_API_KEY:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp.resend.com"
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = "resend"
+    EMAIL_HOST_PASSWORD = RESEND_API_KEY
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 # O Render injeta automaticamente o domínio público nesta variável.
 RENDER_HOST = env("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_HOST:

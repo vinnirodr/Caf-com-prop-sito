@@ -70,3 +70,24 @@ class Notificacao(models.Model):
 
     def __str__(self):
         return f"[{self.get_status_display()}] {self.titulo}"
+
+
+class PasswordResetCode(models.Model):
+    """Código OTP de recuperação de senha. Guardado como hash, nunca em claro."""
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="codigos_reset"
+    )
+    code_hash = models.CharField(max_length=128)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    expira_em = models.DateTimeField()
+    usado = models.BooleanField(default=False)
+    tentativas = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "código de recuperação"
+        verbose_name_plural = "códigos de recuperação"
+        ordering = ["-criado_em"]
+
+    def __str__(self):
+        return f"Código de {self.usuario} ({'usado' if self.usado else 'ativo'})"
