@@ -31,6 +31,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "nome", "sobrenome", "email", "telefone", "data_nascimento", "notificacoes_ativas"]
 
 
+class GoogleLoginSerializer(serializers.Serializer):
+    id_token = serializers.CharField()
+
+
 class AtualizarPerfilSerializer(serializers.Serializer):
     """Edição dos dados básicos do usuário logado (não mexe no e-mail/senha)."""
 

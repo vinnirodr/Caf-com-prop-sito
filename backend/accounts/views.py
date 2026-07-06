@@ -4,10 +4,12 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from . import google as google_login
 from . import push
 from .serializers import (
     AtualizarPerfilSerializer,
     ExcluirContaSerializer,
+    GoogleLoginSerializer,
     LoginSerializer,
     PushTokenSerializer,
     RegisterSerializer,
@@ -43,6 +45,24 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
+        return Response({**tokens_para(user), "user": UserSerializer(user).data})
+
+
+class GoogleLoginView(APIView):
+    """Login social: recebe o ID token do Google, verifica e devolve JWT."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = GoogleLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            info = google_login.verificar_id_token(
+                serializer.validated_data["id_token"], settings.GOOGLE_WEB_CLIENT_ID
+            )
+        except google_login.GoogleTokenInvalido as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        user = google_login.obter_ou_criar_usuario(info)
         return Response({**tokens_para(user), "user": UserSerializer(user).data})
 
 

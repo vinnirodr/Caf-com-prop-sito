@@ -6,6 +6,7 @@ from . import views
 urlpatterns = [
     path("registro/", views.RegisterView.as_view(), name="auth-registro"),
     path("login/", views.LoginView.as_view(), name="auth-login"),
+    path("google/", views.GoogleLoginView.as_view(), name="auth-google"),
     path("refresh/", TokenRefreshView.as_view(), name="auth-refresh"),
     path("eu/", views.MeView.as_view(), name="auth-eu"),
     path("trocar-senha/", views.TrocarSenhaView.as_view(), name="auth-trocar-senha"),

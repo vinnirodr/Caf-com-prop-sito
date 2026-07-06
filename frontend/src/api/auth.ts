@@ -82,6 +82,12 @@ export async function registrar(payload: RegistroPayload): Promise<AuthResposta>
   return data;
 }
 
+export async function loginGoogle(idToken: string): Promise<Usuario> {
+  const data = await postJson<AuthResposta>('/auth/google/', { id_token: idToken });
+  await saveTokens({ access: data.access, refresh: data.refresh });
+  return data.user;
+}
+
 /** Tenta renovar o access token usando o refresh. Retorna o novo access ou null. */
 async function tentarRefresh(tokens: Tokens): Promise<string | null> {
   try {
