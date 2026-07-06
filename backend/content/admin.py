@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from .models import Chapter, SpecialPage
+from .models import Chapter, LembreteTexto, SpecialPage
 
 admin.site.site_header = "Café com Propósito — Administração"
 admin.site.site_title = "Café com Propósito"
@@ -80,3 +80,12 @@ class SpecialPageAdmin(admin.ModelAdmin):
     list_editable = ("ordem", "publicado")
     search_fields = ("titulo", "conteudo")
     ordering = ("ordem",)
+
+
+@admin.register(LembreteTexto)
+class LembreteTextoAdmin(admin.ModelAdmin):
+    list_display = ("texto", "ativo", "ordem")
+    list_display_links = ("texto",)
+    list_editable = ("ativo", "ordem")
+    search_fields = ("texto",)
+    ordering = ("ordem", "id")

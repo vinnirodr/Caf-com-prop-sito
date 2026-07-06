@@ -42,11 +42,19 @@ class Notificacao(models.Model):
 
     class Status(models.TextChoices):
         RASCUNHO = "rascunho", "Rascunho"
+        AGENDADA = "agendada", "Agendada"
         ENVIADA = "enviada", "Enviada"
         ERRO = "erro", "Erro parcial"
 
     titulo = models.CharField("título", max_length=100)
     mensagem = models.TextField("mensagem")
+    agendada_para = models.DateTimeField(
+        "agendar para",
+        null=True,
+        blank=True,
+        help_text="Deixe em branco para enviar na hora. Preencha e use a ação "
+        "\"Agendar envio\" para disparar automaticamente nesta data/hora.",
+    )
     criada_em = models.DateTimeField("criada em", auto_now_add=True)
     enviada_em = models.DateTimeField("enviada em", null=True, blank=True)
     status = models.CharField(

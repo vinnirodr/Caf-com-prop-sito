@@ -84,3 +84,30 @@ class SpecialPage(models.Model):
 
     def __str__(self):
         return self.titulo
+
+
+class LembreteTexto(models.Model):
+    """
+    Frase de lembrete diário de leitura. A autora cadastra várias; o app baixa a
+    lista e vai variando a mensagem a cada dia (o horário é escolhido pelo usuário
+    e o agendamento acontece localmente no aparelho).
+    """
+
+    texto = models.CharField(
+        "texto do lembrete",
+        max_length=200,
+        help_text="Mensagem curta e acolhedora (ex.: 'Reserve um tempo com Deus hoje ☕').",
+    )
+    ativo = models.BooleanField(
+        "ativo", default=True, help_text="Desmarque para tirar esta frase do rodízio."
+    )
+    ordem = models.PositiveIntegerField("ordem", default=0)
+    criado_em = models.DateTimeField("criado em", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "texto de lembrete"
+        verbose_name_plural = "textos de lembrete"
+        ordering = ["ordem", "id"]
+
+    def __str__(self):
+        return self.texto

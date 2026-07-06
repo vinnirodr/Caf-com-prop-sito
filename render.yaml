@@ -23,6 +23,10 @@ services:
           property: connectionString
       - key: PYTHON_VERSION
         value: "3.12.4"
+      # Segredo compartilhado com o cron do GitHub Actions que dispara as
+      # notificações agendadas. Use o MESMO valor aqui e em GitHub → Secrets.
+      - key: CRON_SECRET
+        sync: false
       # Login do painel administrativo (a conta da autora).
       # O Render vai te pedir o e-mail e a senha durante a criação.
       - key: DJANGO_SUPERUSER_USERNAME

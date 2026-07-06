@@ -3,7 +3,7 @@
  * Logado: mostra nome/e-mail e "Sair". Deslogado: convite para entrar.
  * Dados de jornada/favoritos entram com o bloco de engajamento.
  */
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,19 +11,19 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
-import { obterPushToken, sincronizarToken } from '@/lib/notifications';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
-type Rota = '/anotacoes' | '/favoritos' | '/conta';
+type Rota = '/anotacoes' | '/favoritos' | '/conta' | '/ajustes';
 
-const MENU: { icon: IconName; label: string; rota?: Rota }[] = [
-  { icon: 'person-outline', label: 'Dados pessoais', rota: '/conta' },
-  { icon: 'document-text-outline', label: 'Minhas anotações', rota: '/anotacoes' },
-  { icon: 'heart-outline', label: 'Favoritos', rota: '/favoritos' },
-  { icon: 'settings-outline', label: 'Ajustes' },
+// Rotas pessoais exigem login; Ajustes funciona sem conta (lembrete é local).
+const MENU: { icon: IconName; label: string; rota: Rota; requerLogin: boolean }[] = [
+  { icon: 'person-outline', label: 'Dados pessoais', rota: '/conta', requerLogin: true },
+  { icon: 'document-text-outline', label: 'Minhas anotações', rota: '/anotacoes', requerLogin: true },
+  { icon: 'heart-outline', label: 'Favoritos', rota: '/favoritos', requerLogin: true },
+  { icon: 'settings-outline', label: 'Ajustes', rota: '/ajustes', requerLogin: false },
 ];
 
 const emBreve = () =>
@@ -35,23 +35,10 @@ export default function MeuEspaco() {
   const { user, sair } = useAuth();
   const { resumo } = useEngagement();
   const styles = useMemo(() => makeStyles(t), [t]);
-  const [lembrete, setLembrete] = useState(user?.notificacoes_ativas ?? true);
-
-  const alternarLembrete = async () => {
-    const novo = !lembrete;
-    setLembrete(novo);
-    try {
-      const token = await obterPushToken();
-      if (token) await sincronizarToken(token, novo);
-    } catch {
-      // ignora falha silenciosa
-    }
-  };
 
   const pct = resumo && resumo.total > 0 ? Math.round((resumo.lidos / resumo.total) * 100) : 0;
-  const abrirItem = (item: { rota?: Rota }) => {
-    if (!item.rota) return emBreve();
-    if (!user) return router.push('/(auth)/entrar');
+  const abrirItem = (item: { rota: Rota; requerLogin: boolean }) => {
+    if (item.requerLogin && !user) return router.push('/(auth)/entrar');
     router.push(item.rota);
   };
 
@@ -125,10 +112,10 @@ export default function MeuEspaco() {
 
         {/* Menu */}
         <View style={styles.menu}>
-          {MENU.map((m) => (
+          {MENU.map((m, i) => (
             <Pressable
               key={m.label}
-              style={[styles.menuItem, styles.menuDivider]}
+              style={[styles.menuItem, i < MENU.length - 1 && styles.menuDivider]}
               onPress={() => abrirItem(m)}
               accessibilityRole="button"
               accessibilityLabel={m.label}
@@ -138,21 +125,6 @@ export default function MeuEspaco() {
               <Ionicons name="chevron-forward" size={18} color="#C9BAA8" />
             </Pressable>
           ))}
-
-          {/* Lembrete diário — toggle visual */}
-          <View style={styles.menuItem}>
-            <Ionicons name="notifications-outline" size={20} color={t.palette.cafe} />
-            <Text style={styles.menuLabel}>Lembrete diário</Text>
-            <Pressable
-              onPress={alternarLembrete}
-              accessibilityRole="switch"
-              accessibilityState={{ checked: lembrete }}
-              accessibilityLabel="Lembrete diário"
-              style={[styles.switch, lembrete ? styles.switchOn : styles.switchOff]}
-            >
-              <View style={[styles.knob, lembrete ? styles.knobOn : styles.knobOff]} />
-            </Pressable>
-          </View>
         </View>
 
         {user && (
@@ -225,13 +197,6 @@ const makeStyles = (t: Theme) =>
     },
     menuDivider: { borderBottomWidth: 1, borderBottomColor: '#F0E8DC' },
     menuLabel: { flex: 1, fontFamily: fonts.sans, fontSize: 15, color: t.ui.texto },
-
-    switch: { width: 46, height: 27, borderRadius: 999, padding: 3, justifyContent: 'center' },
-    switchOn: { backgroundColor: t.palette.douradoAmanhecer },
-    switchOff: { backgroundColor: t.ui.linha },
-    knob: { width: 21, height: 21, borderRadius: 999, backgroundColor: '#fff' },
-    knobOn: { alignSelf: 'flex-end' },
-    knobOff: { alignSelf: 'flex-start' },
 
     sair: {
       flexDirection: 'row',

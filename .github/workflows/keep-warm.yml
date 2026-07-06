@@ -22,3 +22,20 @@ jobs:
           curl -fsS --max-time 60 https://cafe-com-proposito-api.onrender.com/healthz/ \
             && echo "API acordada." \
             || echo "Ping falhou (serviço pode estar iniciando) — sem erro."
+
+      # Além de manter o serviço quente, aproveitamos o mesmo cron para disparar
+      # as notificações agendadas que já venceram. O endpoint é protegido pelo
+      # segredo CRON_SECRET (mesmo valor no Render e em GitHub → Secrets).
+      - name: Disparar notificações agendadas
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET não configurado — pulando disparo de agendadas."
+            exit 0
+          fi
+          curl -fsS --max-time 90 -X POST \
+            -H "X-Cron-Secret: $CRON_SECRET" \
+            https://cafe-com-proposito-api.onrender.com/api/auth/interno/disparar-agendadas/ \
+            && echo "" && echo "Agendadas verificadas." \
+            || echo "Falha ao disparar agendadas (serviço pode estar iniciando) — sem erro."
