@@ -1,6 +1,5 @@
 /**
- * 03 · Entrar. Login por e-mail + senha. "Google" e "Esqueci a senha" são
- * placeholders nesta fase (dependem de infra externa).
+ * 03 · Entrar. Login por e-mail + senha, com Google e recuperação de senha.
  */
 import { useState } from 'react';
 import {
@@ -8,7 +7,6 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -63,8 +61,6 @@ export default function Entrar() {
     }
   };
 
-  const emBreve = () => Alert.alert('Em breve', 'Esta opção chega nos próximos blocos.');
-
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: t.ui.fundo }]} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
@@ -95,7 +91,16 @@ export default function Entrar() {
             style={styles.field}
           />
 
-          <Pressable onPress={emBreve} style={styles.esqueci} hitSlop={6}>
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: '/(auth)/recuperar-senha',
+                params: email.trim() ? { email: email.trim() } : {},
+              })
+            }
+            style={styles.esqueci}
+            hitSlop={6}
+          >
             <Text style={styles.esqueciText}>Esqueci a senha</Text>
           </Pressable>
 
