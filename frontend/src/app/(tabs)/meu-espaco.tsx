@@ -48,7 +48,14 @@ export default function MeuEspaco() {
   const confirmarSair = () =>
     Alert.alert('Sair da conta', 'Quer mesmo sair?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Sair', style: 'destructive', onPress: () => sair() },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: async () => {
+          await sair();
+          router.replace('/(auth)/entrar');
+        },
+      },
     ]);
 
   return (

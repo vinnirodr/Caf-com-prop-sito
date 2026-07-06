@@ -16,7 +16,7 @@ from .models import PasswordResetCode
 User = get_user_model()
 
 EXPIRACAO = timedelta(minutes=20)
-COOLDOWN = timedelta(seconds=60)
+COOLDOWN = timedelta(seconds=40)  # casado com a contagem de reenvio no app
 MAX_TENTATIVAS = 5
 
 
