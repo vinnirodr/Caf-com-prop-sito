@@ -21,6 +21,8 @@ ALLOWED_HOSTS = [h for h in env("ALLOWED_HOSTS", "*").split(",") if h]
 # fechado (403). Defina o MESMO valor no Render e no GitHub Secrets.
 CRON_SECRET = env("CRON_SECRET", "")
 
+GOOGLE_WEB_CLIENT_ID = env("GOOGLE_WEB_CLIENT_ID", "")
+
 # O Render injeta automaticamente o domínio público nesta variável.
 RENDER_HOST = env("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_HOST:

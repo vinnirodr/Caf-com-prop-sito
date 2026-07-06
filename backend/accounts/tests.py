@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 
@@ -123,3 +125,47 @@ class ExcluirContaTests(APITestCase):
         resp = self.client.post("/api/auth/excluir-conta/", {"senha": "errada"}, format="json")
         self.assertEqual(resp.status_code, 400)
         self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+
+class GoogleLoginTests(APITestCase):
+    URL = "/api/auth/google/"
+
+    def _payload(self, **over):
+        base = {
+            "email": "ana.google@gmail.com",
+            "email_verified": True,
+            "given_name": "Ana",
+            "family_name": "Souza",
+        }
+        base.update(over)
+        return base
+
+    @patch("accounts.google.google_id_token.verify_oauth2_token")
+    def test_cria_novo_usuario(self, mock_verify):
+        mock_verify.return_value = self._payload()
+        resp = self.client.post(self.URL, {"id_token": "fake"}, format="json")
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.assertIn("access", resp.json())
+        self.assertEqual(resp.json()["user"]["email"], "ana.google@gmail.com")
+        self.assertTrue(User.objects.filter(email__iexact="ana.google@gmail.com").exists())
+
+    @patch("accounts.google.google_id_token.verify_oauth2_token")
+    def test_linka_usuario_existente_sem_duplicar(self, mock_verify):
+        existente = criar_usuario(email="ana.google@gmail.com")
+        mock_verify.return_value = self._payload()
+        resp = self.client.post(self.URL, {"id_token": "fake"}, format="json")
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.assertEqual(resp.json()["user"]["id"], existente.id)
+        self.assertEqual(User.objects.filter(email__iexact="ana.google@gmail.com").count(), 1)
+
+    @patch("accounts.google.google_id_token.verify_oauth2_token")
+    def test_rejeita_token_invalido(self, mock_verify):
+        mock_verify.side_effect = ValueError("token inválido")
+        resp = self.client.post(self.URL, {"id_token": "fake"}, format="json")
+        self.assertEqual(resp.status_code, 400)
+
+    @patch("accounts.google.google_id_token.verify_oauth2_token")
+    def test_rejeita_email_nao_verificado(self, mock_verify):
+        mock_verify.return_value = self._payload(email_verified=False)
+        resp = self.client.post(self.URL, {"id_token": "fake"}, format="json")
+        self.assertEqual(resp.status_code, 400)
