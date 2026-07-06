@@ -128,6 +128,15 @@ export default function Entrar() {
             style={styles.criar}
           />
 
+          <Pressable
+            onPress={() => router.replace('/(tabs)')}
+            style={styles.entrarDepois}
+            hitSlop={8}
+            accessibilityRole="button"
+          >
+            <Text style={styles.entrarDepoisText}>Entrar depois</Text>
+          </Pressable>
+
           <View style={styles.flexSpacer} />
           <Text style={styles.termos}>
             Ao entrar, você concorda com os Termos e a Política de Privacidade.
@@ -175,5 +184,7 @@ const styles = StyleSheet.create({
   googleG: { fontFamily: fonts.serifBold, fontSize: 14, color: palette.cafe },
   googleText: { fontFamily: fonts.sansBold, fontSize: 15, color: palette.cafeEscuro },
   criar: { marginTop: 12 },
+  entrarDepois: { alignSelf: 'center', marginTop: 16, paddingVertical: 4 },
+  entrarDepoisText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.salvia },
   termos: { fontFamily: fonts.sans, fontSize: 12, color: palette.salvia, textAlign: 'center', lineHeight: 18 },
 });
