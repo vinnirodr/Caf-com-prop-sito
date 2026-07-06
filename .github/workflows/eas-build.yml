@@ -1,7 +1,10 @@
 name: EAS Build (Android APK)
 
 # Dispara o build do APK na nuvem da Expo (EAS), sem precisar do PC.
-# Acionável manualmente em Actions → "EAS Build (Android APK)" → Run workflow.
+# Duas formas de acionar:
+#   1. Manual: Actions → "EAS Build (Android APK)" → Run workflow.
+#   2. Por tag: empurrar uma tag "apk-*" (ex.: git push origin apk-2026-07-06)
+#      builda com o profile "preview". Útil para acionar sem o botão Run workflow.
 #
 # Pré-requisito (uma vez): criar um Access Token em
 # https://expo.dev/accounts/[conta]/settings/access-tokens e adicioná-lo como
@@ -15,10 +18,13 @@ on:
         description: "Perfil do eas.json (preview = APK instalável)"
         required: true
         default: "preview"
+  push:
+    tags:
+      - "apk-*"
 
 jobs:
   build:
-    name: Build Android (${{ github.event.inputs.profile }})
+    name: Build Android (${{ github.event.inputs.profile || 'preview' }})
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -50,7 +56,7 @@ jobs:
         run: |
           set -euo pipefail
           eas build --platform android \
-            --profile "${{ github.event.inputs.profile }}" \
+            --profile "${{ github.event.inputs.profile || 'preview' }}" \
             --non-interactive --wait --json > build.json
           URL=$(jq -r '.[0].artifacts.applicationArchiveUrl // .[0].artifacts.buildUrl // empty' build.json)
           echo "APK URL: $URL"
