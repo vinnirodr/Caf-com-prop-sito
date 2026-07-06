@@ -10,14 +10,13 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button';
 import { criarAnotacao, editarAnotacao, type Anotacao } from '@/api/engagement';
+import { useKeyboardHeight } from '@/lib/useKeyboardHeight';
 import { fonts, palette, radius, spacing } from '@/theme/ccpTheme';
 import { useTheme } from '@/theme/useTheme';
 
@@ -40,6 +39,7 @@ export default function NoteSheet({
 }: Props) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
   const [texto, setTexto] = useState('');
   const [salvando, setSalvando] = useState(false);
 
@@ -66,38 +66,47 @@ export default function NoteSheet({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.sheet, { backgroundColor: t.ui.superficie, paddingBottom: insets.bottom + spacing.md }]}>
-          <View style={styles.handle} />
-          <View style={styles.header}>
-            <Text style={styles.title}>
-              {anotacaoExistente ? 'Editar anotação' : 'Nova anotação'}
-            </Text>
-            <Pressable onPress={onClose} hitSlop={8} accessibilityLabel="Fechar">
-              <Ionicons name="close" size={22} color={t.ui.textoSuave} />
-            </Pressable>
-          </View>
-          {!!tituloCapitulo && <Text style={styles.cap}>Cap. {capitulo} · {tituloCapitulo}</Text>}
-
-          <TextInput
-            style={[styles.input, { color: t.ui.texto, backgroundColor: t.ui.painel }]}
-            placeholder="Escreva o que tocou seu coração…"
-            placeholderTextColor={t.ui.textoSuave}
-            value={texto}
-            onChangeText={setTexto}
-            multiline
-            autoFocus
-            textAlignVertical="top"
-          />
-
-          <Button
-            label={salvando ? 'Salvando…' : 'Salvar'}
-            onPress={salvar}
-            disabled={salvando || !texto.trim()}
-            icon={salvando ? <ActivityIndicator color={palette.cafeEscuro} size="small" /> : undefined}
-          />
+      {/* O pan do Android não sobe a janela do Modal, então levantamos o sheet
+          pela altura do teclado. Sem teclado, respeitamos o inset inferior. */}
+      <View
+        style={[
+          styles.sheet,
+          {
+            backgroundColor: t.ui.superficie,
+            paddingBottom: keyboardHeight > 0 ? spacing.md : insets.bottom + spacing.md,
+            marginBottom: keyboardHeight,
+          },
+        ]}
+      >
+        <View style={styles.handle} />
+        <View style={styles.header}>
+          <Text style={styles.title}>
+            {anotacaoExistente ? 'Editar anotação' : 'Nova anotação'}
+          </Text>
+          <Pressable onPress={onClose} hitSlop={8} accessibilityLabel="Fechar">
+            <Ionicons name="close" size={22} color={t.ui.textoSuave} />
+          </Pressable>
         </View>
-      </KeyboardAvoidingView>
+        {!!tituloCapitulo && <Text style={styles.cap}>Cap. {capitulo} · {tituloCapitulo}</Text>}
+
+        <TextInput
+          style={[styles.input, { color: t.ui.texto, backgroundColor: t.ui.painel }]}
+          placeholder="Escreva o que tocou seu coração…"
+          placeholderTextColor={t.ui.textoSuave}
+          value={texto}
+          onChangeText={setTexto}
+          multiline
+          autoFocus
+          textAlignVertical="top"
+        />
+
+        <Button
+          label={salvando ? 'Salvando…' : 'Salvar'}
+          onPress={salvar}
+          disabled={salvando || !texto.trim()}
+          icon={salvando ? <ActivityIndicator color={palette.cafeEscuro} size="small" /> : undefined}
+        />
+      </View>
     </Modal>
   );
 }
