@@ -17,17 +17,20 @@ import {
   buscarEu,
   sair as apiSair,
   excluirConta,
+  loginGoogle,
   type Usuario,
   type RegistroPayload,
 } from '@/api/auth';
 import { getTokens } from '@/lib/storage';
 import { obterPushToken, sincronizarToken } from '@/lib/notifications';
+import { obterIdTokenGoogle } from '@/lib/google';
 
 type AuthValue = {
   user: Usuario | null;
   loading: boolean;
   entrar: (email: string, senha: string) => Promise<void>;
   cadastrar: (payload: RegistroPayload) => Promise<void>;
+  entrarComGoogle: () => Promise<boolean>;
   sair: () => Promise<void>;
   atualizarUsuario: (user: Usuario) => void;
   excluir: (senha: string) => Promise<void>;
@@ -81,6 +84,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
   }, []);
 
+  const entrarComGoogle = useCallback(async (): Promise<boolean> => {
+    const idToken = await obterIdTokenGoogle();
+    if (!idToken) return false; // usuário cancelou
+    const user = await loginGoogle(idToken);
+    setUser(user);
+    obterPushToken()
+      .then((t) => { if (t) sincronizarToken(t, true); })
+      .catch(() => {});
+    return true;
+  }, []);
+
   const sair = useCallback(async () => {
     await apiSair();
     setUser(null);
@@ -95,8 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, entrar, cadastrar, sair, atualizarUsuario, excluir }),
-    [user, loading, entrar, cadastrar, sair, atualizarUsuario, excluir]
+    () => ({ user, loading, entrar, cadastrar, entrarComGoogle, sair, atualizarUsuario, excluir }),
+    [user, loading, entrar, cadastrar, entrarComGoogle, sair, atualizarUsuario, excluir]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
