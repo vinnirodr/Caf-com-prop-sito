@@ -55,12 +55,32 @@ function primeiraMensagem(data: any): string {
   return 'Algo não deu certo. Tente de novo.';
 }
 
+const espera = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify(body),
-  });
+  const disparar = () =>
+    fetch(`${API_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+  // O backend (Render free) hiberna; a 1ª requisição pode falhar (rede) ou voltar
+  // 502/503/504 enquanto acorda. Tentamos até 3x com uma pausinha, antes de desistir.
+  let res: Response | null = null;
+  for (let tentativa = 0; tentativa < 3; tentativa++) {
+    try {
+      res = await disparar();
+    } catch {
+      res = null; // erro de rede — provável cold start
+    }
+    const acordando = !res || res.status === 502 || res.status === 503 || res.status === 504;
+    if (!acordando) break;
+    if (tentativa < 2) await espera(3000);
+  }
+  if (!res) {
+    throw new ApiError(0, {}, 'Sem conexão com o servidor. Tente de novo em instantes.');
+  }
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     throw new ApiError(res.status, (data as any) ?? {}, primeiraMensagem(data));

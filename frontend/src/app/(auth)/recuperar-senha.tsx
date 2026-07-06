@@ -1,5 +1,5 @@
 /** Recuperação de senha por código OTP. Duas fases: pedir código → redefinir. */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -23,6 +23,27 @@ export default function RecuperarSenha() {
   const [confirmar, setConfirmar] = useState('');
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
+  const [segundos, setSegundos] = useState(0); // contagem para reenviar
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const iniciarContagem = () => {
+    setSegundos(40);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setSegundos((s) => {
+        if (s <= 1) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          intervalRef.current = null;
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  }, []);
 
   const pedir = async () => {
     setErro(null);
@@ -30,6 +51,7 @@ export default function RecuperarSenha() {
     try {
       await esqueciSenha(email.trim());
       setFase('redefinir');
+      iniciarContagem();
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : 'Não foi possível enviar o código.');
     } finally {
@@ -108,8 +130,15 @@ export default function RecuperarSenha() {
               disabled={carregando || codigo.trim().length === 0 || nova.length < 8}
               style={styles.cta}
             />
-            <Pressable onPress={pedir} style={styles.reenviar} hitSlop={6} disabled={carregando}>
-              <Text style={styles.reenviarText}>Reenviar código</Text>
+            <Pressable
+              onPress={pedir}
+              style={styles.reenviar}
+              hitSlop={6}
+              disabled={carregando || segundos > 0}
+            >
+              <Text style={[styles.reenviarText, (carregando || segundos > 0) && styles.reenviarInativo]}>
+                {segundos > 0 ? `Reenviar em ${segundos}s` : 'Reenviar código'}
+              </Text>
             </Pressable>
           </>
         )}
@@ -129,4 +158,5 @@ const styles = StyleSheet.create({
   cta: { marginTop: 24 },
   reenviar: { alignSelf: 'center', marginTop: 18 },
   reenviarText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.douradoAmanhecer },
+  reenviarInativo: { color: palette.salvia },
 });
