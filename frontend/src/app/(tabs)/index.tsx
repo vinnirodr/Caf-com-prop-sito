@@ -12,7 +12,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getChapter, Chapter } from '@/api/content';
 import { getCurrentWeather, Weather } from '@/api/weather';
-import { saudacaoPorHorario } from '@/lib/greeting';
+import { saudacaoParaNome } from '@/lib/greeting';
+import { useAuth } from '@/auth/AuthContext';
 import { audioFontePara, temAudioDisponivel, bloqueadoPremium } from '@/lib/audio';
 import { useAudioControls } from '@/audio/AudioContext';
 import Button from '@/components/Button';
@@ -28,6 +29,7 @@ export default function Inicio() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { tocar } = useAudioControls();
+  const { user } = useAuth();
   const styles = useMemo(() => makeStyles(t), [t]);
 
   const ouvir = (cap: Chapter) => {
@@ -45,7 +47,7 @@ export default function Inicio() {
   const [loading, setLoading] = useState(true);
   const [weather, setWeather] = useState<Weather | null>(null);
 
-  const saudacao = saudacaoPorHorario().replace(',', '');
+  const saudacao = saudacaoParaNome(user?.nome);
 
   useEffect(() => {
     let active = true;
@@ -78,8 +80,15 @@ export default function Inicio() {
             </View>
             {weather && (
               <View style={styles.weather}>
-                <Ionicons name={weather.icon} size={17} color="#FBEAC8" />
-                <Text style={styles.weatherText}>{weather.tempC}°</Text>
+                <View style={styles.weatherTop}>
+                  <Ionicons name={weather.icon} size={17} color="#FBEAC8" />
+                  <Text style={styles.weatherText}>{weather.tempC}°</Text>
+                </View>
+                {!!weather.local && (
+                  <Text style={styles.weatherLocal} numberOfLines={1}>
+                    {weather.local}
+                  </Text>
+                )}
               </View>
             )}
           </View>
@@ -169,17 +178,19 @@ const makeStyles = (t: Theme) =>
     hello: { fontFamily: fonts.sans, fontSize: 13, color: '#F0E0C6' },
     greeting: { fontFamily: fonts.serif, fontSize: 30, color: '#FAF7F2', marginTop: 2 },
     weather: {
-      flexDirection: 'row',
       alignItems: 'center',
-      gap: 7,
+      gap: 2,
       backgroundColor: 'rgba(255,255,255,0.16)',
       borderWidth: 1,
       borderColor: 'rgba(255,255,255,0.22)',
-      borderRadius: radius.pill,
-      paddingHorizontal: 13,
+      borderRadius: 18,
+      paddingHorizontal: 14,
       paddingVertical: 8,
+      maxWidth: 160,
     },
+    weatherTop: { flexDirection: 'row', alignItems: 'center', gap: 7 },
     weatherText: { fontFamily: fonts.sansBold, fontSize: 13, color: '#FAF7F2' },
+    weatherLocal: { fontFamily: fonts.sans, fontSize: 11, color: '#F0E0C6' },
     headerQuote: {
       fontFamily: fonts.serif,
       fontStyle: 'italic',
