@@ -4,7 +4,7 @@
  * guardar. Sem dados pessoais inventados (entram quando houver conta).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -159,6 +159,23 @@ export default function Inicio() {
               </Text>
             </View>
           )}
+
+          {/* Banner da Loja */}
+          <Pressable
+            style={styles.banner}
+            onPress={() => router.push('/loja')}
+            accessibilityRole="button"
+            accessibilityLabel="Abrir a loja do Café com Propósito"
+          >
+            <View style={styles.bannerIcon}>
+              <Ionicons name="bag-handle-outline" size={22} color={t.palette.cafe} />
+            </View>
+            <View style={styles.bannerText}>
+              <Text style={styles.bannerTitle}>Conheça a Loja</Text>
+              <Text style={styles.bannerSub}>Livro físico, xícaras, camisetas e mais</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={t.palette.douradoAmanhecer} />
+          </Pressable>
         </View>
       </ScrollView>
     </View>
@@ -265,4 +282,27 @@ const makeStyles = (t: Theme) =>
       lineHeight: 23,
       color: t.palette.cafeEscuro,
     },
+
+    banner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      backgroundColor: t.ui.superficie,
+      borderWidth: 1,
+      borderColor: t.ui.linha,
+      borderRadius: 18,
+      padding: 16,
+      ...t.elevation.level1,
+    },
+    bannerIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: t.ui.painel,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    bannerText: { flex: 1, minWidth: 0 },
+    bannerTitle: { fontFamily: fonts.serif, fontSize: 17, color: t.palette.cafeEscuro },
+    bannerSub: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave, marginTop: 2 },
   });

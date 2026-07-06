@@ -1,10 +1,11 @@
 from rest_framework import generics
 
-from .models import Chapter, LembreteTexto, SpecialPage
+from .models import Chapter, LembreteTexto, Produto, SpecialPage
 from .serializers import (
     ChapterListSerializer,
     ChapterDetailSerializer,
     LembreteTextoSerializer,
+    ProdutoSerializer,
     SpecialPageSerializer,
 )
 
@@ -39,3 +40,13 @@ class LembreteList(generics.ListAPIView):
 
     def get_queryset(self):
         return LembreteTexto.objects.filter(ativo=True).order_by("ordem", "id")
+
+
+class ProdutoList(generics.ListAPIView):
+    """Produtos publicados da loja. Público, sem paginação (a lista é curta)."""
+
+    serializer_class = ProdutoSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return Produto.objects.filter(publicado=True)

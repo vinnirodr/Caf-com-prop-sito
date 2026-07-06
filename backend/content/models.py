@@ -111,3 +111,57 @@ class LembreteTexto(models.Model):
 
     def __str__(self):
         return self.texto
+
+
+class Produto(models.Model):
+    """
+    Item da loja do Café com Propósito (livro físico, xícaras, camisetas, etc.).
+    A autora cadastra pelo admin; o app mostra como vitrine. A venda em si (link
+    de compra) fica para depois — por ora o app exibe "Em breve".
+    """
+
+    class Categoria(models.TextChoices):
+        LIVRO = "livro", "Livro"
+        XICARA = "xicara", "Xícara"
+        CAMISETA = "camiseta", "Camiseta"
+        OUTRO = "outro", "Outro"
+
+    nome = models.CharField("nome", max_length=120)
+    descricao = models.TextField("descrição", blank=True)
+    preco = models.DecimalField(
+        "preço",
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Opcional. Deixe em branco para não mostrar o preço.",
+    )
+    categoria = models.CharField(
+        "categoria", max_length=10, choices=Categoria.choices, default=Categoria.OUTRO
+    )
+    imagem = models.ImageField("imagem", upload_to="produtos/", blank=True, null=True)
+    link_compra = models.URLField(
+        "link de compra",
+        blank=True,
+        help_text="Opcional (para o futuro). Enquanto vazio, o app mostra 'Em breve'.",
+    )
+    destaque = models.BooleanField(
+        "destaque",
+        default=False,
+        help_text="Marque para dar evidência (ex.: o livro físico no topo da loja).",
+    )
+    ordem = models.PositiveIntegerField("ordem", default=0)
+    publicado = models.BooleanField(
+        "publicado", default=True, help_text="Desmarque para esconder da loja."
+    )
+
+    criado_em = models.DateTimeField("criado em", auto_now_add=True)
+    atualizado_em = models.DateTimeField("atualizado em", auto_now=True)
+
+    class Meta:
+        verbose_name = "produto"
+        verbose_name_plural = "produtos"
+        ordering = ["-destaque", "ordem", "id"]
+
+    def __str__(self):
+        return self.nome

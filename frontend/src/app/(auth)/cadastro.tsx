@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button';
 import Field from '@/components/Field';
@@ -29,6 +29,7 @@ import { useTheme } from '@/theme/useTheme';
 export default function Cadastro() {
   const t = useTheme();
   const router = useRouter();
+  const { proximo } = useLocalSearchParams<{ proximo?: string }>();
   const { cadastrar } = useAuth();
 
   const [f, setF] = useState({
@@ -82,7 +83,7 @@ export default function Cadastro() {
         confirmar_senha: f.confirmarSenha,
         aceite_termos: termos,
       });
-      router.replace('/(tabs)/meu-espaco');
+      router.replace(proximo ? (proximo as never) : '/(tabs)/meu-espaco');
     } catch (err) {
       if (err instanceof ApiError && Object.keys(err.fields).length) {
         // Mapeia erros do backend (snake_case) para os campos do form.

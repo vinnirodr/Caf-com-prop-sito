@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from .models import Chapter, LembreteTexto, SpecialPage
+from .models import Chapter, LembreteTexto, Produto, SpecialPage
 
 admin.site.site_header = "Café com Propósito — Administração"
 admin.site.site_title = "Café com Propósito"
@@ -89,3 +89,38 @@ class LembreteTextoAdmin(admin.ModelAdmin):
     list_editable = ("ativo", "ordem")
     search_fields = ("texto",)
     ordering = ("ordem", "id")
+
+
+@admin.register(Produto)
+class ProdutoAdmin(admin.ModelAdmin):
+    list_display = ("nome", "imagem_thumb", "categoria", "preco", "destaque", "publicado", "ordem")
+    list_display_links = ("nome",)
+    list_editable = ("destaque", "publicado", "ordem")
+    list_filter = ("categoria", "publicado", "destaque")
+    search_fields = ("nome", "descricao")
+    ordering = ("-destaque", "ordem", "id")
+
+    fieldsets = (
+        ("Produto", {"fields": ("nome", "descricao", "categoria", "preco")}),
+        ("Imagem", {"fields": ("imagem",)}),
+        ("Venda", {
+            "fields": ("link_compra",),
+            "description": "Opcional. Enquanto vazio, o app mostra 'Em breve'.",
+        }),
+        ("Exibição", {"fields": ("destaque", "publicado", "ordem")}),
+    )
+
+    @admin.display(description="imagem")
+    def imagem_thumb(self, obj):
+        if obj.imagem:
+            # obj.imagem.url pode lançar se a mídia não estiver acessível (ex.: R2
+            # não configurado). Sem o guard, uma imagem quebrada derruba a lista.
+            try:
+                url = obj.imagem.url
+            except Exception:
+                return mark_safe('<span style="color:#b9a999;" title="mídia indisponível">—</span>')
+            return format_html(
+                '<img src="{}" style="height:32px;border-radius:4px;object-fit:cover;">',
+                url,
+            )
+        return mark_safe('<span style="color:#b9a999;">—</span>')

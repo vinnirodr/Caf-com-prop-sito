@@ -55,7 +55,7 @@ export default function CapituloLeitura() {
   const insets = useSafeAreaInsets();
   const num = Number(numero);
 
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isFavorito, statusCapitulo, alternarFavorito, marcarLido, registrarLeitura } = useEngagement();
   const { tocar } = useAudioControls();
 
@@ -101,6 +101,14 @@ export default function CapituloLeitura() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Rede de segurança (deep-link): sem conta, do capítulo 3 em diante convida a
+  // criar conta. Espera o boot da sessão (authLoading) para não barrar quem está logado.
+  useEffect(() => {
+    if (!authLoading && !user && num >= 3) {
+      router.replace({ pathname: '/continuar-lendo', params: { proximo: `/capitulo/${num}` } });
+    }
+  }, [authLoading, user, num, router]);
 
   // Logado: marca "em andamento" ao abrir e busca a anotação deste capítulo.
   useEffect(() => {
@@ -320,7 +328,18 @@ export default function CapituloLeitura() {
           <Pressable
             style={styles.navBtn}
             disabled={num >= TOTAL_CAPITULOS}
-            onPress={() => goTo(num + 1)}
+            onPress={() => {
+              const prox = num + 1;
+              // Sem conta, ao ir para o cap. 3+ convida a criar conta (leitura grátis).
+              if (!user && prox >= 3) {
+                router.push({
+                  pathname: '/continuar-lendo',
+                  params: { proximo: `/capitulo/${prox}` },
+                });
+                return;
+              }
+              goTo(prox);
+            }}
           >
             <Text style={[styles.navTextGold, num >= TOTAL_CAPITULOS && styles.navTextDisabled]}>
               Próximo capítulo
