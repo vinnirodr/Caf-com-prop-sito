@@ -66,3 +66,20 @@ export type LembreteTexto = { id: number; texto: string };
 
 /** Frases de lembrete cadastradas pela autora (endpoint público, sem paginação). */
 export const getLembretes = () => apiGet<LembreteTexto[]>('/lembretes/');
+
+export type ProdutoCategoria = 'livro' | 'xicara' | 'camiseta' | 'outro';
+
+export type Produto = {
+  id: number;
+  nome: string;
+  descricao: string;
+  /** Preço vem como string do DRF (DecimalField) ou null quando não informado. */
+  preco: string | null;
+  categoria: ProdutoCategoria;
+  imagem: string | null;
+  link_compra: string;
+  destaque: boolean;
+};
+
+/** Produtos da loja (endpoint público, sem paginação; já ordenados por destaque). */
+export const getProdutos = () => apiGet<Produto[]>('/produtos/');

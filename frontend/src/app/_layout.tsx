@@ -72,11 +72,13 @@ export default function RootLayout() {
             <Stack.Screen name="anotacoes" />
             <Stack.Screen name="favoritos" />
             <Stack.Screen name="ajustes" />
+            <Stack.Screen name="loja" />
             <Stack.Screen name="conta" />
             <Stack.Screen name="conta/senha" />
             <Stack.Screen name="conta/email" />
             <Stack.Screen name="player" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
             <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="continuar-lendo" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           </Stack>
         </AudioProvider>
       </EngagementProvider>

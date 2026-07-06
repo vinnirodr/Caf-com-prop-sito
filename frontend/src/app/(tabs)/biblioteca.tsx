@@ -199,7 +199,17 @@ export default function Biblioteca() {
           <View style={styles.cardWrap}>
             <Pressable
               style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-              onPress={() => router.push(`/capitulo/${item.numero}`)}
+              onPress={() => {
+                // Sem conta, leitura livre só nos caps 1 e 2; do 3 em diante, convida a criar conta.
+                if (!user && item.numero >= 3) {
+                  router.push({
+                    pathname: '/continuar-lendo',
+                    params: { proximo: `/capitulo/${item.numero}` },
+                  });
+                } else {
+                  router.push(`/capitulo/${item.numero}`);
+                }
+              }}
               accessibilityRole="button"
               accessibilityLabel={`Abrir capítulo ${item.numero}: ${item.titulo}`}
             >

@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import BrandSeal from '@/components/BrandSeal';
 import Button from '@/components/Button';
 import Field from '@/components/Field';
@@ -27,6 +27,7 @@ import { useTheme } from '@/theme/useTheme';
 export default function Entrar() {
   const t = useTheme();
   const router = useRouter();
+  const { proximo } = useLocalSearchParams<{ proximo?: string }>();
   const { entrar } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -41,7 +42,7 @@ export default function Entrar() {
     setCarregando(true);
     try {
       await entrar(email.trim(), senha);
-      router.replace('/(tabs)/meu-espaco');
+      router.replace(proximo ? (proximo as never) : '/(tabs)/meu-espaco');
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : 'Não foi possível entrar. Tente de novo.');
     } finally {
@@ -105,7 +106,7 @@ export default function Entrar() {
           <Button
             label="Criar conta nova"
             variant="outline"
-            onPress={() => router.push('/(auth)/cadastro')}
+            onPress={() => router.push({ pathname: '/(auth)/cadastro', params: proximo ? { proximo } : {} })}
             style={styles.criar}
           />
 
