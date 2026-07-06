@@ -28,7 +28,7 @@ export default function Entrar() {
   const t = useTheme();
   const router = useRouter();
   const { proximo } = useLocalSearchParams<{ proximo?: string }>();
-  const { entrar } = useAuth();
+  const { entrar, entrarComGoogle } = useAuth();
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -45,6 +45,19 @@ export default function Entrar() {
       router.replace(proximo ? (proximo as never) : '/(tabs)/meu-espaco');
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : 'Não foi possível entrar. Tente de novo.');
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const entrarGoogle = async () => {
+    setErro(null);
+    setCarregando(true);
+    try {
+      const ok = await entrarComGoogle();
+      if (ok) router.replace(proximo ? (proximo as never) : '/(tabs)/meu-espaco');
+    } catch (e) {
+      setErro(e instanceof ApiError ? e.message : 'Não foi possível entrar com o Google.');
     } finally {
       setCarregando(false);
     }
@@ -96,7 +109,7 @@ export default function Entrar() {
             <View style={styles.linha} />
           </View>
 
-          <Pressable style={styles.google} onPress={emBreve} accessibilityRole="button">
+          <Pressable style={styles.google} onPress={entrarGoogle} accessibilityRole="button">
             <View style={styles.googleBadge}>
               <Text style={styles.googleG}>G</Text>
             </View>
