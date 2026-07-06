@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.cafecomproposito.app",
+      "googleServicesFile": "./google-services.json",
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#3A2D22",
