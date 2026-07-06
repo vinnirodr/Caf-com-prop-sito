@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Chapter, LembreteTexto, Produto, SpecialPage
+from .models import Banner, Chapter, LembreteTexto, Produto, SpecialPage
 
 
 class ChapterListSerializer(serializers.ModelSerializer):
@@ -47,4 +47,13 @@ class ProdutoSerializer(serializers.ModelSerializer):
         fields = (
             "id", "nome", "descricao", "preco", "categoria",
             "imagem", "link_compra", "destaque",
+        )
+
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = (
+            "id", "titulo", "subtitulo", "imagem",
+            "destino", "link_externo", "capitulo_numero",
         )

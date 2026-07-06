@@ -1,4 +1,4 @@
-import { API_URL } from './config';
+import { API_URL, API_BASE } from './config';
 
 async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
@@ -6,6 +6,12 @@ async function apiGet<T>(path: string): Promise<T> {
   });
   if (!res.ok) throw new Error(`Erro ${res.status} ao acessar ${path}`);
   return (await res.json()) as T;
+}
+
+/** Converte um caminho de mídia (relativo em dev, absoluto no R2) em URL absoluta. */
+export function mediaUrl(path: string | null): string | null {
+  if (!path) return null;
+  return path.startsWith('http') ? path : `${API_BASE}${path}`;
 }
 
 export type Paginated<T> = {
@@ -83,3 +89,18 @@ export type Produto = {
 
 /** Produtos da loja (endpoint público, sem paginação; já ordenados por destaque). */
 export const getProdutos = () => apiGet<Produto[]>('/produtos/');
+
+export type BannerDestino = 'loja' | 'link_externo' | 'capitulo' | 'nenhum';
+
+export type Banner = {
+  id: number;
+  titulo: string;
+  subtitulo: string;
+  imagem: string | null;
+  destino: BannerDestino;
+  link_externo: string;
+  capitulo_numero: number | null;
+};
+
+/** Banners ativos da tela inicial (o app usa o primeiro). */
+export const getBanners = () => apiGet<Banner[]>('/banners/');

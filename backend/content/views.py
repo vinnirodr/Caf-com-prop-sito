@@ -1,7 +1,8 @@
 from rest_framework import generics
 
-from .models import Chapter, LembreteTexto, Produto, SpecialPage
+from .models import Banner, Chapter, LembreteTexto, Produto, SpecialPage
 from .serializers import (
+    BannerSerializer,
     ChapterListSerializer,
     ChapterDetailSerializer,
     LembreteTextoSerializer,
@@ -50,3 +51,13 @@ class ProdutoList(generics.ListAPIView):
 
     def get_queryset(self):
         return Produto.objects.filter(publicado=True)
+
+
+class BannerList(generics.ListAPIView):
+    """Banners ativos da tela inicial. Público, sem paginação (o app usa o primeiro)."""
+
+    serializer_class = BannerSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return Banner.objects.filter(ativo=True)
