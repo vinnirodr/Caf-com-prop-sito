@@ -82,6 +82,18 @@ export async function registrar(payload: RegistroPayload): Promise<AuthResposta>
   return data;
 }
 
+export async function esqueciSenha(email: string): Promise<void> {
+  await postJson<{ detail: string }>('/auth/esqueci-senha/', { email });
+}
+
+export async function redefinirSenha(
+  email: string,
+  codigo: string,
+  nova_senha: string
+): Promise<void> {
+  await postJson<{ detail: string }>('/auth/redefinir-senha/', { email, codigo, nova_senha });
+}
+
 export async function loginGoogle(idToken: string): Promise<Usuario> {
   const data = await postJson<AuthResposta>('/auth/google/', { id_token: idToken });
   await saveTokens({ access: data.access, refresh: data.refresh });

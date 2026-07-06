@@ -1,6 +1,10 @@
+import re
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core import mail
+from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from accounts.models import Profile
@@ -168,4 +172,76 @@ class GoogleLoginTests(APITestCase):
     def test_rejeita_email_nao_verificado(self, mock_verify):
         mock_verify.return_value = self._payload(email_verified=False)
         resp = self.client.post(self.URL, {"id_token": "fake"}, format="json")
+        self.assertEqual(resp.status_code, 400)
+
+
+class PasswordResetModelTests(APITestCase):
+    def test_cria_codigo_reset(self):
+        from accounts.models import PasswordResetCode
+        u = criar_usuario()
+        c = PasswordResetCode.objects.create(
+            usuario=u, code_hash="x", expira_em=timezone.now() + timedelta(minutes=20)
+        )
+        self.assertFalse(c.usado)
+        self.assertEqual(c.tentativas, 0)
+        self.assertEqual(u.codigos_reset.count(), 1)
+
+
+class RecuperacaoSenhaTests(APITestCase):
+    def setUp(self):
+        self.user = criar_usuario(email="marta@example.com")  # senha "Cafe12345"
+
+    def _pedir(self, email):
+        return self.client.post("/api/auth/esqueci-senha/", {"email": email}, format="json")
+
+    def _codigo_do_email(self):
+        return re.search(r"\b(\d{6})\b", mail.outbox[-1].body).group(1)
+
+    def _redefinir(self, codigo, nova="NovaSenha987", email="marta@example.com"):
+        return self.client.post(
+            "/api/auth/redefinir-senha/",
+            {"email": email, "codigo": codigo, "nova_senha": nova},
+            format="json",
+        )
+
+    def test_pedir_codigo_existente_envia(self):
+        from accounts.models import PasswordResetCode
+        resp = self._pedir("marta@example.com")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(PasswordResetCode.objects.filter(usuario=self.user).count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_pedir_codigo_inexistente_nao_envia(self):
+        from accounts.models import PasswordResetCode
+        resp = self._pedir("ninguem@example.com")
+        self.assertEqual(resp.status_code, 200)  # anti-enumeração
+        self.assertEqual(PasswordResetCode.objects.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_redefinir_com_codigo_correto(self):
+        self._pedir("marta@example.com")
+        resp = self._redefinir(self._codigo_do_email())
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("NovaSenha987"))
+
+    def test_redefinir_codigo_errado_nao_troca(self):
+        self._pedir("marta@example.com")
+        resp = self._redefinir("111111")  # improvável ser o código real
+        self.assertEqual(resp.status_code, 400)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Cafe12345"))
+
+    def test_redefinir_codigo_expirado(self):
+        from accounts.models import PasswordResetCode
+        self._pedir("marta@example.com")
+        codigo = self._codigo_do_email()
+        PasswordResetCode.objects.filter(usuario=self.user).update(
+            expira_em=timezone.now() - timedelta(minutes=1)
+        )
+        self.assertEqual(self._redefinir(codigo).status_code, 400)
+
+    def test_redefinir_senha_fraca(self):
+        self._pedir("marta@example.com")
+        resp = self._redefinir(self._codigo_do_email(), nova="123")
         self.assertEqual(resp.status_code, 400)
