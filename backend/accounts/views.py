@@ -6,12 +6,15 @@ from rest_framework.views import APIView
 
 from . import google as google_login
 from . import push
+from . import reset_senha
 from .serializers import (
     AtualizarPerfilSerializer,
+    EsqueciSenhaSerializer,
     ExcluirContaSerializer,
     GoogleLoginSerializer,
     LoginSerializer,
     PushTokenSerializer,
+    RedefinirSenhaSerializer,
     RegisterSerializer,
     TrocarEmailSerializer,
     TrocarSenhaSerializer,
@@ -64,6 +67,33 @@ class GoogleLoginView(APIView):
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         user = google_login.obter_ou_criar_usuario(info)
         return Response({**tokens_para(user), "user": UserSerializer(user).data})
+
+
+class EsqueciSenhaView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = EsqueciSenhaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        reset_senha.solicitar(serializer.validated_data["email"])
+        return Response({"detail": "Se o e-mail existir, enviamos um código."})
+
+
+class RedefinirSenhaView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = RedefinirSenhaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            reset_senha.redefinir(
+                serializer.validated_data["email"],
+                serializer.validated_data["codigo"],
+                serializer.validated_data["nova_senha"],
+            )
+        except reset_senha.CodigoInvalido as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Senha redefinida com sucesso."})
 
 
 class MeView(generics.RetrieveUpdateAPIView):

@@ -35,6 +35,20 @@ class GoogleLoginSerializer(serializers.Serializer):
     id_token = serializers.CharField()
 
 
+class EsqueciSenhaSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class RedefinirSenhaSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    codigo = serializers.CharField()
+    nova_senha = serializers.CharField(min_length=8)
+
+    def validate_nova_senha(self, value):
+        validate_password(value)
+        return value
+
+
 class AtualizarPerfilSerializer(serializers.Serializer):
     """Edição dos dados básicos do usuário logado (não mexe no e-mail/senha)."""
 
