@@ -23,7 +23,7 @@ import {
 } from '@/api/auth';
 import { getTokens } from '@/lib/storage';
 import { obterPushToken, sincronizarToken } from '@/lib/notifications';
-import { obterIdTokenGoogle } from '@/lib/google';
+import { obterIdTokenGoogle, sairDoGoogle } from '@/lib/google';
 
 type AuthValue = {
   user: Usuario | null;
@@ -97,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sair = useCallback(async () => {
     await apiSair();
+    await sairDoGoogle(); // encerra a sessão nativa do Google (senão gruda a conta)
     setUser(null);
   }, []);
 
