@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.test import override_settings
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
@@ -245,3 +246,41 @@ class RecuperacaoSenhaTests(APITestCase):
         self._pedir("marta@example.com")
         resp = self._redefinir(self._codigo_do_email(), nova="123")
         self.assertEqual(resp.status_code, 400)
+
+
+@override_settings(RESEND_API_KEY="re_test_key", DEFAULT_FROM_EMAIL="no-reply@luminaflow.io")
+class EnvioEmailResendTests(APITestCase):
+    """Em produção (com RESEND_API_KEY) o envio vai pela API HTTP do Resend,
+    NUNCA por SMTP — o Render bloqueia as portas de SMTP de saída."""
+
+    def setUp(self):
+        self.user = criar_usuario(email="marta@example.com")
+
+    def _pedir(self):
+        return self.client.post(
+            "/api/auth/esqueci-senha/", {"email": "marta@example.com"}, format="json"
+        )
+
+    @patch("accounts.reset_senha.requests.post")
+    def test_envia_pela_api_http_do_resend(self, mock_post):
+        mock_post.return_value.status_code = 200
+        resp = self._pedir()
+        self.assertEqual(resp.status_code, 200)
+        mock_post.assert_called_once()
+        args, kwargs = mock_post.call_args
+        self.assertEqual(args[0], "https://api.resend.com/emails")
+        self.assertIn("Bearer re_test_key", kwargs["headers"]["Authorization"])
+        self.assertEqual(kwargs["json"]["to"], ["marta@example.com"])
+        self.assertEqual(kwargs["json"]["from"], "no-reply@luminaflow.io")
+        self.assertIn("timeout", kwargs)  # nunca pode pendurar o worker
+
+    @patch("accounts.reset_senha.requests.post")
+    def test_falha_no_resend_nao_derruba_a_requisicao(self, mock_post):
+        import requests as _requests
+
+        mock_post.side_effect = _requests.RequestException("boom")
+        from accounts.models import PasswordResetCode
+
+        resp = self._pedir()
+        self.assertEqual(resp.status_code, 200)  # anti-enumeração + não pode dar 500
+        self.assertEqual(PasswordResetCode.objects.filter(usuario=self.user).count(), 1)
