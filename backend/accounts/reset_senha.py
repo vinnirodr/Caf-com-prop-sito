@@ -2,9 +2,11 @@
 
 Isolado para facilitar teste. O código nunca é salvo em claro (só o hash).
 """
+import logging
 import secrets
 from datetime import timedelta
 
+import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password, make_password
@@ -13,11 +15,15 @@ from django.utils import timezone
 
 from .models import PasswordResetCode
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 EXPIRACAO = timedelta(minutes=20)
 COOLDOWN = timedelta(seconds=40)  # casado com a contagem de reenvio no app
 MAX_TENTATIVAS = 5
+
+RESEND_API_URL = "https://api.resend.com/emails"
+ASSUNTO = "Seu código de recuperação — Café com Propósito"
 
 
 class CodigoInvalido(Exception):
@@ -28,18 +34,48 @@ def _gerar_codigo():
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
-def _enviar_email(user, codigo):
-    send_mail(
-        subject="Seu código de recuperação — Café com Propósito",
-        message=(
-            f"Olá!\n\nSeu código para redefinir a senha é: {codigo}\n\n"
-            "Ele vale por 20 minutos. Se você não pediu isso, pode ignorar este e-mail.\n\n"
-            "Com carinho,\nCafé com Propósito ☕"
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=True,
+def _corpo(codigo):
+    return (
+        f"Olá!\n\nSeu código para redefinir a senha é: {codigo}\n\n"
+        "Ele vale por 20 minutos. Se você não pediu isso, pode ignorar este e-mail.\n\n"
+        "Com carinho,\nCafé com Propósito ☕"
     )
+
+
+def _enviar_email(user, codigo):
+    """Envia o código. Em produção (RESEND_API_KEY) usa a API HTTP do Resend —
+    NÃO SMTP, porque o Render bloqueia as portas de SMTP de saída e a conexão
+    pendura até o worker morrer (WORKER TIMEOUT → 500). Sem a chave (dev/testes),
+    usa o backend de e-mail do Django.
+
+    Nunca propaga erro: o endpoint responde 200 de qualquer forma (anti-enumeração),
+    mas a falha é registrada no log — diferente do antigo `fail_silently` cego.
+    """
+    if not settings.RESEND_API_KEY:
+        send_mail(
+            subject=ASSUNTO,
+            message=_corpo(codigo),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+        return
+    try:
+        resp = requests.post(
+            RESEND_API_URL,
+            headers={"Authorization": f"Bearer {settings.RESEND_API_KEY}"},
+            json={
+                "from": settings.DEFAULT_FROM_EMAIL,
+                "to": [user.email],
+                "subject": ASSUNTO,
+                "text": _corpo(codigo),
+            },
+            timeout=10,  # nunca pendurar o worker
+        )
+        if resp.status_code >= 400:
+            logger.error("Resend recusou o envio (%s): %s", resp.status_code, resp.text)
+    except requests.RequestException as e:
+        logger.error("Falha ao chamar a API do Resend: %r", e)
 
 
 def solicitar(email):
