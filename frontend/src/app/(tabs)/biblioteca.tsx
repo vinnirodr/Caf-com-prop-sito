@@ -31,6 +31,9 @@ const CHIPS: { key: Filtro; label: string }[] = [
   { key: 'favoritos', label: 'Favoritos' },
 ];
 
+// Sem conta, a leitura é livre até este capítulo; do próximo em diante, pede login.
+const LEITURA_LIVRE_ATE = 2;
+
 export default function Biblioteca() {
   const t = useTheme();
   const styles = useMemo(() => makeStyles(t), [t]);
@@ -200,8 +203,8 @@ export default function Biblioteca() {
             <Pressable
               style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               onPress={() => {
-                // Sem conta, leitura livre só nos caps 1 e 2; do 3 em diante, convida a criar conta.
-                if (!user && item.numero >= 3) {
+                // Sem conta, leitura livre até LEITURA_LIVRE_ATE; além disso, convida a criar conta.
+                if (!user && item.numero > LEITURA_LIVRE_ATE) {
                   router.push({
                     pathname: '/continuar-lendo',
                     params: { proximo: `/capitulo/${item.numero}` },
@@ -226,7 +229,11 @@ export default function Biblioteca() {
                 {user && isFavorito(item.numero) && (
                   <Ionicons name="heart" size={15} color={t.palette.douradoAmanhecer} />
                 )}
-                {user && statusCapitulo(item.numero) === 'lido' ? (
+                {/* Deslogado: cadeado de "precisa entrar para ler" (do 3º cap. em diante).
+                    Logado: some — a trava de áudio premium fica só no botão "Ouvir" do capítulo. */}
+                {!user && item.numero > LEITURA_LIVRE_ATE ? (
+                  <Ionicons name="lock-closed" size={16} color={t.ui.linha} accessibilityLabel="Requer conta" />
+                ) : user && statusCapitulo(item.numero) === 'lido' ? (
                   <View style={styles.badgeLido}>
                     <Ionicons name="checkmark" size={11} color={t.palette.sucesso} />
                     <Text style={styles.badgeLidoText}>Lido</Text>
@@ -236,8 +243,6 @@ export default function Biblioteca() {
                     <Ionicons name="play" size={11} color="#B07F3C" />
                     <Text style={styles.badgeAudioText}>Áudio</Text>
                   </View>
-                ) : item.audio_acesso === 'premium' ? (
-                  <Ionicons name="lock-closed" size={16} color={t.ui.linha} />
                 ) : null}
               </View>
             </Pressable>
