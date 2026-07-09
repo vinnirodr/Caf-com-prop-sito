@@ -14,6 +14,7 @@ import { getChapter, getBanners, mediaUrl, Chapter, Banner } from '@/api/content
 import { getCurrentWeather, Weather } from '@/api/weather';
 import { saudacaoParaNome } from '@/lib/greeting';
 import { useAuth } from '@/auth/AuthContext';
+import { useEngagement } from '@/engagement/EngagementContext';
 import { audioFontePara, temAudioDisponivel, bloqueadoPremium } from '@/lib/audio';
 import { useAudioControls } from '@/audio/AudioContext';
 import Button from '@/components/Button';
@@ -21,8 +22,7 @@ import { fonts, spacing, radius, typography } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
 
-/** Capítulo apresentado como "leitura de hoje" (agendamento real fica p/ depois). */
-const CAP_HOJE = 1;
+const TOTAL_CAPITULOS = 75;
 
 export default function Inicio() {
   const t = useTheme();
@@ -30,6 +30,7 @@ export default function Inicio() {
   const router = useRouter();
   const { tocar } = useAudioControls();
   const { user } = useAuth();
+  const { statusCapitulo } = useEngagement();
   const styles = useMemo(() => makeStyles(t), [t]);
 
   const ouvir = (cap: Chapter) => {
@@ -50,12 +51,18 @@ export default function Inicio() {
 
   const saudacao = saudacaoParaNome(user?.nome);
 
+  // "Leitura de hoje" = próximo capítulo não lido (retomar de onde parou).
+  // Sem login/progresso, cai no capítulo 1.
+  const capHoje = useMemo(() => {
+    for (let n = 1; n <= TOTAL_CAPITULOS; n++) {
+      if (statusCapitulo(n) !== 'lido') return n;
+    }
+    return TOTAL_CAPITULOS;
+  }, [statusCapitulo]);
+
+  // Clima e banner: uma vez.
   useEffect(() => {
     let active = true;
-    getChapter(CAP_HOJE)
-      .then((c) => active && setChapter(c))
-      .catch(() => {})
-      .finally(() => active && setLoading(false));
     getCurrentWeather().then((w) => active && setWeather(w));
     getBanners()
       .then((lista) => active && setBanner(lista[0] ?? null))
@@ -64,6 +71,19 @@ export default function Inicio() {
       active = false;
     };
   }, []);
+
+  // Capítulo da "leitura de hoje" — reage ao progresso.
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    getChapter(capHoje)
+      .then((c) => active && setChapter(c))
+      .catch(() => {})
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [capHoje]);
 
   // Sem banner cadastrado, o app usa um padrão que abre a Loja.
   const abrirBanner = () => {
@@ -130,8 +150,8 @@ export default function Inicio() {
             <>
               <View style={styles.heroCard}>
                 <View style={styles.heroHead}>
-                  <Text style={styles.eyebrow}>Leitura de hoje</Text>
-                  <Text style={styles.heroMeta}>Cap. {chapter.numero} de 75</Text>
+                  <Text style={styles.eyebrow}>{capHoje > 1 ? 'Continue lendo' : 'Leitura de hoje'}</Text>
+                  <Text style={styles.heroMeta}>Cap. {chapter.numero} de {TOTAL_CAPITULOS}</Text>
                 </View>
                 <Text style={styles.heroTitle}>{chapter.titulo}</Text>
                 {!!chapter.versiculo_ref && (
