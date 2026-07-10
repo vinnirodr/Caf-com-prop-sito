@@ -31,6 +31,13 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-10 · ☁️ CLOUD · infra (render.yaml)
+- **Gunicorn:** `--workers 2 --threads 4 --timeout 60 --max-requests 500` (mais
+  concorrência sem custo).
+- **Planos comentados:** web `free`→`starter` (não hiberna) e banco `free`→pago
+  (o Postgres free é apagado em 90 dias). **Ler antes de lançar na Play Store.**
+- Arquivo: `render.yaml`. Sem impacto em código de app.
+
 ### 2026-07-10 · ☁️ CLOUD · PR #26
 - **Início:** "Leitura de hoje" agora mostra o **próximo capítulo não lido**
   (retomar de onde parou); rótulo vira "Continue lendo" com progresso.

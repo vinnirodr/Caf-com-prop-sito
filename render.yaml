@@ -3,13 +3,20 @@
 services:
   - type: web
     name: cafe-com-proposito-api
-    runtime: python
+    # PLANO: 'free' hiberna após ~15 min sem tráfego (cold start ao acordar).
+    # Para produção, troque por 'starter' (~US$7/mês): NÃO hiberna, fica sempre no ar.
     plan: free
+    # plan: starter
+    runtime: python
     # Monorepo: o backend Django fica em backend/. O Render roda os comandos
     # e resolve build.sh / dados/ a partir desta pasta.
     rootDir: backend
     buildCommand: "./build.sh"
-    startCommand: "gunicorn cafe_backend.wsgi:application"
+    # Concorrência: threads ajudam porque a carga é I/O-bound (banco remoto).
+    # 2 workers x 4 threads (~8 requisições em voo). --max-requests recicla o
+    # worker periodicamente para evitar crescimento de memória. Em 512 MB isto é
+    # confortável; num plano com mais RAM dá para subir --workers.
+    startCommand: "gunicorn cafe_backend.wsgi:application --workers 2 --threads 4 --timeout 60 --max-requests 500 --max-requests-jitter 50"
     # O Render monitora este caminho; se responder 200, o serviço é saudável.
     healthCheckPath: /healthz/
     envVars:
@@ -38,5 +45,9 @@ services:
 
 databases:
   - name: cafe-db
+    # ⚠️ PLANO: o Postgres 'free' do Render é APAGADO após 90 dias. Para um app
+    # publicado, troque por um plano pago (ex.: 'basic-256mb'/'basic-1gb', ~US$7/mês)
+    # ANTES de lançar, senão você perde o banco (usuários, anotações, progresso).
     plan: free
+    # plan: basic-1gb
     databaseName: cafe
