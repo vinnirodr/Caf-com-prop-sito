@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { abrirLink, URL_PRIVACIDADE, URL_TERMOS } from '@/lib/links';
 import BrandSeal from '@/components/BrandSeal';
 import Button from '@/components/Button';
 import Field from '@/components/Field';
@@ -139,7 +140,12 @@ export default function Entrar() {
 
           <View style={styles.flexSpacer} />
           <Text style={styles.termos}>
-            Ao entrar, você concorda com os Termos e a Política de Privacidade.
+            Ao entrar, você concorda com os{' '}
+            <Text style={styles.termosLink} onPress={() => abrirLink(URL_TERMOS)}>Termos</Text> e a{' '}
+            <Text style={styles.termosLink} onPress={() => abrirLink(URL_PRIVACIDADE)}>
+              Política de Privacidade
+            </Text>
+            .
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -187,4 +193,5 @@ const styles = StyleSheet.create({
   entrarDepois: { alignSelf: 'center', marginTop: 16, paddingVertical: 4 },
   entrarDepoisText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.salvia },
   termos: { fontFamily: fonts.sans, fontSize: 12, color: palette.salvia, textAlign: 'center', lineHeight: 18 },
+  termosLink: { fontFamily: fonts.sansBold, color: palette.douradoAmanhecer },
 });

@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
 from django.urls import path, include
+from django.views.generic import TemplateView
 
 
 def healthz(request):
@@ -12,6 +13,17 @@ def healthz(request):
 
 urlpatterns = [
     path("healthz/", healthz, name="healthz"),
+    # Páginas legais públicas (exigidas pela Play Store; linkadas no app).
+    path(
+        "privacidade/",
+        TemplateView.as_view(template_name="legal/privacidade.html"),
+        name="privacidade",
+    ),
+    path(
+        "termos/",
+        TemplateView.as_view(template_name="legal/termos.html"),
+        name="termos",
+    ),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
     path("api/", include("content.urls")),

@@ -31,6 +31,14 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-10 · ☁️ CLOUD · Política de Privacidade + Termos
+- **Backend:** páginas públicas `/privacidade/` e `/termos/` (templates em
+  `content/templates/legal/`, rotas via `TemplateView` em `cafe_backend/urls.py`).
+  E-mail de contato **mockado** (`contato@cafecomproposito.com.br`, marcado com TODO).
+- **App:** novo `src/lib/links.ts` (abre via `expo-web-browser`); links ligados no
+  Cadastro e no Entrar (`(auth)/cadastro.tsx`, `(auth)/entrar.tsx`).
+- **Para a Play Store:** usar `https://cafe-com-proposito-api.onrender.com/privacidade/`.
+
 ### 2026-07-10 · ☁️ CLOUD · infra (render.yaml)
 - **Gunicorn:** `--workers 2 --threads 4 --timeout 60 --max-requests 500` (mais
   concorrência sem custo).
