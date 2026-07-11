@@ -12,7 +12,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -20,6 +19,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button';
 import Field from '@/components/Field';
+import { abrirLink, URL_PRIVACIDADE, URL_TERMOS } from '@/lib/links';
 import { useAuth } from '@/auth/AuthContext';
 import { ApiError } from '@/api/auth';
 import { maskTelefone, maskData, dataParaISO } from '@/lib/masks';
@@ -111,7 +111,6 @@ export default function Cadastro() {
     }
   };
 
-  const abrirTermos = () => Alert.alert('Em breve', 'Os Termos e a Política chegam nos próximos blocos.');
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: t.ui.fundo }]} edges={['top']}>
@@ -184,8 +183,8 @@ export default function Cadastro() {
               {termos && <Ionicons name="checkmark" size={14} color={palette.cafeEscuro} />}
             </View>
             <Text style={styles.termosText}>
-              Aceito os <Text style={styles.link} onPress={abrirTermos}>Termos de uso</Text> e a{' '}
-              <Text style={styles.link} onPress={abrirTermos}>Política de privacidade</Text>.
+              Aceito os <Text style={styles.link} onPress={() => abrirLink(URL_TERMOS)}>Termos de uso</Text> e a{' '}
+              <Text style={styles.link} onPress={() => abrirLink(URL_PRIVACIDADE)}>Política de privacidade</Text>.
             </Text>
           </Pressable>
 

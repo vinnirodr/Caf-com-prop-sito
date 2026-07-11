@@ -1,0 +1,80 @@
+{% extends "legal/base.html" %}
+
+{% block titulo %}Política de Privacidade — Café com Propósito{% endblock %}
+{% block cabecalho %}Política de Privacidade{% endblock %}
+
+{% block conteudo %}
+<p>
+  Esta Política descreve como o aplicativo <strong>Café com Propósito</strong> ("aplicativo",
+  "nós") coleta, usa e protege os seus dados. Ao usar o aplicativo, você concorda com as
+  práticas aqui descritas. Tratamos os dados em conformidade com a Lei Geral de Proteção
+  de Dados (Lei nº 13.709/2018 — LGPD).
+</p>
+
+<h2>1. Dados que coletamos</h2>
+<ul>
+  <li><strong>Cadastro:</strong> nome, sobrenome, e-mail, telefone e data de nascimento.</li>
+  <li><strong>Autenticação:</strong> e-mail e senha (a senha é armazenada de forma
+    criptografada) ou login com a conta Google, quando você escolhe essa opção.</li>
+  <li><strong>Uso do app:</strong> capítulos lidos, progresso de leitura, favoritos e
+    anotações que você cria.</li>
+  <li><strong>Localização aproximada:</strong> apenas para mostrar a previsão do tempo do
+    dia na tela inicial. Não rastreamos sua localização em segundo plano.</li>
+  <li><strong>Notificações:</strong> um identificador do dispositivo (token de push) para
+    enviar lembretes e avisos, quando você ativa as notificações.</li>
+</ul>
+
+<h2>2. Como usamos os dados</h2>
+<ul>
+  <li>Criar e manter sua conta e permitir o acesso ao conteúdo.</li>
+  <li>Salvar seu progresso, favoritos e anotações entre dispositivos.</li>
+  <li>Mostrar o clima do dia (a partir da localização aproximada).</li>
+  <li>Enviar lembretes de leitura e comunicados, quando autorizado por você.</li>
+  <li>Recuperação de senha por e-mail.</li>
+</ul>
+
+<h2>3. Compartilhamento com terceiros</h2>
+<p>Não vendemos seus dados. Usamos serviços de terceiros apenas para operar o app:</p>
+<ul>
+  <li><strong>Open-Meteo</strong> — previsão do tempo (recebe coordenadas aproximadas, sem identificá-lo).</li>
+  <li><strong>Expo e Google (Firebase Cloud Messaging)</strong> — entrega de notificações push.</li>
+  <li><strong>Google</strong> — quando você usa o login com Google.</li>
+  <li><strong>Resend</strong> — envio do e-mail de recuperação de senha.</li>
+  <li><strong>Cloudflare</strong> — armazenamento de mídia (áudios e imagens), quando aplicável.</li>
+</ul>
+
+<h2>4. Armazenamento e segurança</h2>
+<p>
+  Os dados ficam em servidores seguros e são protegidos por medidas técnicas razoáveis
+  (conexão criptografada, senhas com hash, acesso restrito). Nenhum sistema é 100% seguro,
+  mas trabalhamos para proteger suas informações.
+</p>
+
+<h2>5. Seus direitos</h2>
+<p>Você pode, a qualquer momento:</p>
+<ul>
+  <li>Acessar e corrigir seus dados pelo próprio aplicativo (área "Meu Espaço").</li>
+  <li><strong>Excluir sua conta</strong> e os dados associados, pela opção de exclusão dentro do app.</li>
+  <li>Desativar as notificações e a permissão de localização nas configurações do aparelho.</li>
+  <li>Solicitar informações sobre o tratamento dos seus dados pelo e-mail de contato abaixo.</li>
+</ul>
+
+<h2>6. Crianças</h2>
+<p>
+  O aplicativo é destinado a maiores de 13 anos. Não coletamos intencionalmente dados de
+  crianças. Caso identifique esse caso, entre em contato para a remoção.
+</p>
+
+<h2>7. Alterações</h2>
+<p>
+  Podemos atualizar esta Política. Mudanças relevantes serão indicadas pela data de
+  atualização no topo desta página.
+</p>
+
+<h2>8. Contato</h2>
+<!-- TODO: trocar pelo e-mail real de contato antes de publicar na Play Store -->
+<p class="nota">
+  Dúvidas ou solicitações sobre seus dados? Fale com a gente:
+  <a href="mailto:contato@cafecomproposito.com.br">contato@cafecomproposito.com.br</a>
+</p>
+{% endblock %}

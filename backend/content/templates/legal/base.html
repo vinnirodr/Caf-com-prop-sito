@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <title>{% block titulo %}Café com Propósito{% endblock %}</title>
+  <style>
+    :root { --cafe:#5B4636; --cafe-esc:#3A2D22; --dourado:#C8924A; --bg:#FAF7F2; --texto:#2A2422; --suave:#6E625A; --linha:#EAE0D4; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--texto);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.65; font-size: 16px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 28px 20px 64px; }
+    header { border-bottom: 1px solid var(--linha); padding-bottom: 16px; margin-bottom: 24px; }
+    .marca { font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dourado); font-weight: 700; }
+    h1 { font-size: 26px; color: var(--cafe-esc); margin: 8px 0 4px; line-height: 1.25; }
+    .atualizado { font-size: 13px; color: var(--suave); }
+    h2 { font-size: 18px; color: var(--cafe); margin: 30px 0 8px; }
+    p, li { color: var(--texto); }
+    a { color: var(--dourado); }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    .nota { background: #fff; border: 1px solid var(--linha); border-radius: 12px; padding: 14px 16px; font-size: 14px; color: var(--suave); }
+    footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--linha); font-size: 13px; color: var(--suave); }
+    footer a { color: var(--dourado); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="marca">Café com Propósito</div>
+      <h1>{% block cabecalho %}{% endblock %}</h1>
+      <div class="atualizado">Última atualização: {% block atualizado %}10 de julho de 2026{% endblock %}</div>
+    </header>
+
+    {% block conteudo %}{% endblock %}
+
+    <footer>
+      Café com Propósito ·
+      <a href="/privacidade/">Política de Privacidade</a> ·
+      <a href="/termos/">Termos de Uso</a>
+    </footer>
+  </div>
+</body>
+</html>
