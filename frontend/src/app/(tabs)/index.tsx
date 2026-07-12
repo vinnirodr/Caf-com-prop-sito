@@ -17,6 +17,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
 import { audioFontePara, temAudioDisponivel, bloqueadoPremium } from '@/lib/audio';
 import { useAudioControls } from '@/audio/AudioContext';
+import { usePremium } from '@/subscription/PremiumContext';
 import Button from '@/components/Button';
 import { fonts, spacing, radius, typography } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
@@ -29,10 +30,11 @@ export default function Inicio() {
   const { tocar } = useAudioControls();
   const { user } = useAuth();
   const { statusCapitulo } = useEngagement();
+  const { premium } = usePremium();
   const styles = useMemo(() => makeStyles(t), [t]);
 
   const ouvir = (cap: Chapter) => {
-    if (bloqueadoPremium(cap, false)) {
+    if (bloqueadoPremium(cap, premium)) {
       router.push('/premium');
       return;
     }
@@ -177,7 +179,7 @@ export default function Inicio() {
                       style={styles.heroBtn}
                       icon={
                         <Ionicons
-                          name={bloqueadoPremium(chapter, false) ? 'lock-closed' : 'play'}
+                          name={bloqueadoPremium(chapter, premium) ? 'lock-closed' : 'play'}
                           size={16}
                           color={t.palette.cafeEscuro}
                         />

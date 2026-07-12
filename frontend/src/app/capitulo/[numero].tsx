@@ -23,6 +23,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
 import { useAudioControls } from '@/audio/AudioContext';
 import { audioFontePara, temAudioDisponivel, bloqueadoPremium } from '@/lib/audio';
+import { usePremium } from '@/subscription/PremiumContext';
 import NoteSheet from '@/components/NoteSheet';
 import { fonts, spacing, radius, palette, reading } from '@/theme/ccpTheme';
 import { getReadingPrefs, saveReadingPrefs } from '@/lib/storage';
@@ -57,6 +58,7 @@ export default function CapituloLeitura() {
   const { user, loading: authLoading } = useAuth();
   const { isFavorito, statusCapitulo, alternarFavorito, marcarLido, registrarLeitura } = useEngagement();
   const { tocar } = useAudioControls();
+  const { premium } = usePremium();
 
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -150,7 +152,7 @@ export default function CapituloLeitura() {
 
   const ouvir = () => {
     if (!chapter) return;
-    if (bloqueadoPremium(chapter, false)) {
+    if (bloqueadoPremium(chapter, premium)) {
       router.push('/premium');
       return;
     }
@@ -317,7 +319,7 @@ export default function CapituloLeitura() {
           {(temAudioDisponivel(chapter) || chapter.audio_acesso === 'premium') && (
             <Pressable style={styles.ouvir} onPress={ouvir} accessibilityRole="button">
               <Ionicons
-                name={bloqueadoPremium(chapter, false) ? 'lock-closed' : 'play'}
+                name={bloqueadoPremium(chapter, premium) ? 'lock-closed' : 'play'}
                 size={16}
                 color={palette.cafeEscuro}
               />

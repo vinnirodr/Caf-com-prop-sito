@@ -3,14 +3,17 @@
  * (conta do usuário). No plano grátis o áudio dos caps 1 e 2 é livre; a leitura
  * é sempre livre.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import type { PurchasesPackage } from 'react-native-purchases';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
+import { getPacotesPremium, comprarPacote } from '@/lib/purchases';
+import { usePremium } from '@/subscription/PremiumContext';
 
 const BENEFICIOS = [
   'Áudio ilimitado de todos os capítulos',
@@ -23,9 +26,50 @@ type Plano = 'anual' | 'mensal';
 export default function Premium() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { restaurar } = usePremium();
   const [plano, setPlano] = useState<Plano>('anual');
+  const [pacotes, setPacotes] = useState<PurchasesPackage[]>([]);
+  const [selecionado, setSelecionado] = useState<string | null>(null);
+  const [processando, setProcessando] = useState(false);
 
-  const assinar = () => Alert.alert('Em breve', 'A assinatura chega com a integração de pagamentos.');
+  useEffect(() => {
+    getPacotesPremium().then((p) => {
+      setPacotes(p);
+      if (p.length) setSelecionado(p[0].identifier);
+    });
+  }, []);
+
+  const temOfertas = pacotes.length > 0;
+  const pacoteSelecionado = pacotes.find((p) => p.identifier === selecionado);
+
+  const assinar = async () => {
+    if (!temOfertas) {
+      Alert.alert('Em breve', 'A assinatura chega com a integração de pagamentos.');
+      return;
+    }
+    if (!pacoteSelecionado) return;
+    setProcessando(true);
+    try {
+      const { info, cancelado } = await comprarPacote(pacoteSelecionado);
+      if (cancelado) return;
+      if (info?.entitlements.active['premium']) {
+        Alert.alert('Tudo certo!', 'Seu Premium está ativo. Bom proveito ☕');
+        router.back();
+      }
+    } catch {
+      Alert.alert('Ops', 'Não foi possível concluir a compra. Tente de novo.');
+    } finally {
+      setProcessando(false);
+    }
+  };
+
+  const aoRestaurar = async () => {
+    const ok = await restaurar();
+    Alert.alert(
+      ok ? 'Pronto' : 'Nada encontrado',
+      ok ? 'Seu Premium foi restaurado.' : 'Não achamos uma assinatura ativa nesta conta.'
+    );
+  };
 
   return (
     <LinearGradient colors={['#2E2018', '#3A2D22', '#5B4636']} locations={[0, 0.45, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fill}>
@@ -50,26 +94,47 @@ export default function Premium() {
 
         <View style={{ flex: 1 }} />
 
-        <PlanoCard
-          ativo={plano === 'anual'}
-          onPress={() => setPlano('anual')}
-          titulo="Anual"
-          detalhe="R$ 79,90/ano · economize 33%"
-        />
-        <PlanoCard
-          ativo={plano === 'mensal'}
-          onPress={() => setPlano('mensal')}
-          titulo="Mensal"
-          detalhe="R$ 9,90/mês"
-        />
+        {temOfertas ? (
+          pacotes.map((pkg) => (
+            <PlanoCard
+              key={pkg.identifier}
+              ativo={selecionado === pkg.identifier}
+              onPress={() => setSelecionado(pkg.identifier)}
+              titulo={pkg.product.title}
+              detalhe={pkg.product.priceString}
+            />
+          ))
+        ) : (
+          <>
+            <PlanoCard
+              ativo={plano === 'anual'}
+              onPress={() => setPlano('anual')}
+              titulo="Anual"
+              detalhe="R$ 79,90/ano · economize 33%"
+            />
+            <PlanoCard
+              ativo={plano === 'mensal'}
+              onPress={() => setPlano('mensal')}
+              titulo="Mensal"
+              detalhe="R$ 9,90/mês"
+            />
+          </>
+        )}
 
-        <Pressable style={styles.cta} onPress={assinar} accessibilityRole="button">
+        <Pressable style={styles.cta} onPress={assinar} accessibilityRole="button" disabled={processando}>
           <Text style={styles.ctaText}>
-            Assinar — {plano === 'anual' ? 'R$ 79,90/ano' : 'R$ 9,90/mês'}
+            {processando
+              ? 'Processando…'
+              : temOfertas
+                ? `Assinar — ${pacoteSelecionado?.product.priceString ?? ''}`
+                : `Assinar — ${plano === 'anual' ? 'R$ 79,90/ano' : 'R$ 9,90/mês'}`}
           </Text>
         </Pressable>
         <Pressable onPress={() => router.back()} hitSlop={6}>
           <Text style={styles.gratis}>Continuar no plano gratuito</Text>
+        </Pressable>
+        <Pressable onPress={aoRestaurar} hitSlop={6}>
+          <Text style={styles.gratis}>Restaurar compras</Text>
         </Pressable>
       </ScrollView>
     </LinearGradient>

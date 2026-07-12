@@ -31,6 +31,20 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-12 · 💻 LOCAL · Monetização (Premium + Doação)
+- **RevenueCat/Play Billing** integrado com **fallback gracioso** (no-op sem
+  `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`). Novos: `src/lib/purchases.ts`,
+  `src/subscription/PremiumContext.tsx`, `src/app/apoiar.tsx`.
+- **Gating real:** `usePremium()` substituiu o `false` hardcoded do áudio cap.3+
+  em `(tabs)/index.tsx` e `capitulo/[numero].tsx`.
+- **Hotspots tocados:** `_layout.tsx` (PremiumProvider + Stack.Screen `apoiar`),
+  `(tabs)/meu-espaco.tsx` (item "Apoiar o projeto"), `eas.json` (env da chave).
+- **Loja (produtos físicos) NÃO entra aqui** — bem físico não pode Play Billing;
+  é épico à parte com gateway externo (ver `docs/loja-ecommerce.md`).
+- **Não fica funcional** até: conta Play aprovada + produtos + projeto RevenueCat +
+  chave no eas.json + build novo. Ver `docs/monetizacao.md`.
+- Mergeado com a #32 da irmã (149 capítulos) — gating usa a regra `audio_acesso`, não número fixo; sem choque.
+
 ### 2026-07-12 · ☁️ CLOUD · conteúdo real: 149 capítulos + fim do "75" fixo
 - **Livro passou de 75 → 149 capítulos** (fonte do manuscrito, renumerado 1→149,
   títulos normalizados). Conteúdo em `backend/dados/capitulos.json`.
