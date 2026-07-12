@@ -31,6 +31,10 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-10 · ☁️ CLOUD · e-mail real nos termos
+- E-mail de contato mockado → **cafecomproposito@luminaflow.io** (domínio próprio na
+  Hostinger) nos templates `content/templates/legal/{privacidade,termos}.html`.
+
 ### 2026-07-10 · ☁️ CLOUD · Política de Privacidade + Termos
 - **Backend:** páginas públicas `/privacidade/` e `/termos/` (templates em
   `content/templates/legal/`, rotas via `TemplateView` em `cafe_backend/urls.py`).
