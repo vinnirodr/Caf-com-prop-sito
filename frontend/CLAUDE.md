@@ -3,7 +3,8 @@
 > Contexto persistente para o Claude Code. Leia antes de qualquer tarefa.
 
 ## O que é o projeto
-App mobile devocional cristão baseado no livro *Café com Propósito* (75 capítulos).
+App mobile devocional cristão baseado no livro *Café com Propósito* (em evolução
+contínua — a contagem de capítulos vem da API, nunca cravada no código).
 Atmosfera de paz, leveza e acolhimento — "um café com Deus todos os dias". O usuário
 lê ou ouve uma reflexão diária, faz anotações, favorita e compartilha. Consome a API
 de um backend Django (repositório separado).

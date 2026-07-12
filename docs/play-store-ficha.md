@@ -24,7 +24,7 @@ Comece o seu dia com um café e um encontro com Deus. ☕
 O Café com Propósito é um devocional cristão diário, baseado no livro homônimo, feito para trazer paz, leveza e propósito à sua rotina. A cada dia, uma reflexão para ler ou ouvir — no seu tempo, sem pressa.
 
 O que você encontra:
-• 75 capítulos devocionais — cada um com versículo-chave, reflexão, oração, aplicação prática e uma frase para guardar no coração.
+• Dezenas de capítulos devocionais (e sempre crescendo) — cada um com versículo-chave, reflexão, oração, aplicação prática e uma frase para guardar no coração.
 • Leia ou ouça: acompanhe a narração dos capítulos quando quiser.
 • Anotações e favoritos: guarde o que tocou o seu coração.
 • Progresso salvo: retome sempre de onde parou.
@@ -72,7 +72,7 @@ Formato: PNG/JPEG, retrato 9:16 (ex.: 1080×1920). Sugestão + legenda por tela:
 | Início (Bom dia + clima + leitura de hoje) | "Um café com Deus todos os dias" |
 | Leitura do capítulo (8 partes) | "Reflexões para ler no seu tempo" |
 | Botão Ouvir / Player | "Ouça a narração quando quiser" |
-| Biblioteca (75 capítulos) | "75 capítulos, sempre com você" |
+| Biblioteca (lista de capítulos) | "Todos os capítulos, sempre com você" |
 | Ajustes (lembrete diário) | "Um lembrete gentil no seu horário" |
 
 Dica: capture telas limpas e opcionalmente jogue num mockup de celular com fundo bege
