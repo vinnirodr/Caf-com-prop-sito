@@ -4,7 +4,8 @@
 
 ## O que é o projeto
 Aplicativo devocional cristão baseado no livro *Café com Propósito*, de Marinilde
-Rodrigues Gregório (75 capítulos). O usuário lê ou ouve uma reflexão por dia, faz
+Rodrigues Gregório. O livro está **em evolução contínua** (atualmente 149 capítulos —
+nunca cravar o número no código/UI; a contagem vem sempre da API/banco). O usuário lê ou ouve uma reflexão por dia, faz
 anotações, favorita e compartilha. Este repositório é o **backend**: API REST para
 o app + **painel administrativo** para a autora (pessoa não-técnica) gerenciar
 conteúdo, áudios e imagens.
@@ -20,21 +21,24 @@ O app mobile (React Native/Expo) vive em repositório separado e consome esta AP
 
 ## Estrutura
 - `content/` — app principal: modelos `Chapter` e `SpecialPage`, admin, serializers,
-  views (API), e o comando `import_planilha`.
+  views (API), e os comandos `import_capitulos` (carrega `dados/capitulos.json`),
+  `gerar_capitulos_json` (regenera o JSON a partir dos .docx, dev-only) e `import_planilha`.
 - `engagement/` — dados do usuário: `Note`, `Favorite`, `ReadingProgress`.
 - `cafe_backend/` — settings, urls, wsgi.
-- `dados/` — a planilha-modelo com os 75 capítulos (fonte de carga inicial).
+- `dados/` — `capitulos.json` (fonte de conteúdo dos capítulos, carregada por
+  `import_capitulos`) + a planilha-modelo (`.xlsx`, hoje usada para as páginas especiais).
 
 ## Regras de domínio (IMPORTANTES)
-- O livro tem **75 capítulos**, cada um no **molde de 8 partes**: número, título,
-  versículo-chave (texto + referência), reflexão, oração, aplicação prática,
-  frase para guardar no coração, referências complementares.
+- O livro está **em evolução contínua** (hoje ~149 capítulos); cada capítulo segue o
+  **molde de 8 partes**: número, título, versículo-chave (texto + referência),
+  reflexão, oração, aplicação prática, frase para guardar no coração, referências
+  complementares. **Nunca fixe a quantidade de capítulos** — use a contagem do banco.
 - **Monetização (regra de áudio):** no plano gratuito o áudio é liberado **apenas
   nos Capítulos 1 e 2** (`audio_acesso = "free"`); do 3 em diante é **premium**.
   A **leitura de todos os capítulos é sempre livre.**
 - O campo `audio` de um capítulo pode estar vazio: o app só mostra "Ouvir" quando
   há áudio. As narrações entram aos poucos, pelo painel.
-- Há **páginas especiais** (abertura/encerramento do livro) além dos 75 capítulos.
+- Há **páginas especiais** (abertura/encerramento do livro) além dos capítulos.
 
 ## Convenções
 - Painel admin e `verbose_name` em **português** — a autora usa o admin; mantenha-o
@@ -46,7 +50,8 @@ O app mobile (React Native/Expo) vive em repositório separado e consome esta AP
 
 ## Comandos
 - Rodar: `python manage.py runserver 0.0.0.0:8000`
-- Importar conteúdo: `python manage.py import_planilha dados/Cafe-com-Proposito-CONTEUDO-75-capitulos.xlsx`
+- Importar conteúdo: `python manage.py import_capitulos dados/capitulos.json`
+  (páginas especiais: `python manage.py import_planilha dados/Cafe-com-Proposito-CONTEUDO-75-capitulos.xlsx`)
 - Em produção (Render), `build.sh` roda migrate + import + cria o superusuário automaticamente.
 
 ## API (consumida pelo app)

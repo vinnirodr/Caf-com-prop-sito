@@ -141,7 +141,7 @@ export default function MeuEspaco() {
           </Pressable>
         )}
 
-        <Text style={styles.footer}>Café com Propósito · 75 capítulos para ler ou ouvir</Text>
+        <Text style={styles.footer}>Café com Propósito · capítulos para ler ou ouvir</Text>
       </ScrollView>
     </SafeAreaView>
   );

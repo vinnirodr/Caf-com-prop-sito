@@ -10,7 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getChapter, getBanners, mediaUrl, Chapter, Banner } from '@/api/content';
+import { getChapter, getBanners, getTotalCapitulos, mediaUrl, Chapter, Banner } from '@/api/content';
 import { getCurrentWeather, Weather } from '@/api/weather';
 import { saudacaoParaNome } from '@/lib/greeting';
 import { useAuth } from '@/auth/AuthContext';
@@ -21,8 +21,6 @@ import Button from '@/components/Button';
 import { fonts, spacing, radius, typography } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
-
-const TOTAL_CAPITULOS = 75;
 
 export default function Inicio() {
   const t = useTheme();
@@ -48,24 +46,28 @@ export default function Inicio() {
   const [loading, setLoading] = useState(true);
   const [weather, setWeather] = useState<Weather | null>(null);
   const [banner, setBanner] = useState<Banner | null>(null);
+  const [total, setTotal] = useState<number | null>(null);
 
   const saudacao = saudacaoParaNome(user?.nome);
 
   // "Leitura de hoje" = próximo capítulo não lido (retomar de onde parou).
   // Sem login/progresso, cai no capítulo 1.
   const capHoje = useMemo(() => {
-    for (let n = 1; n <= TOTAL_CAPITULOS; n++) {
+    for (let n = 1; n <= (total ?? 1); n++) {
       if (statusCapitulo(n) !== 'lido') return n;
     }
-    return TOTAL_CAPITULOS;
-  }, [statusCapitulo]);
+    return total ?? 1;
+  }, [statusCapitulo, total]);
 
-  // Clima e banner: uma vez.
+  // Clima, banner e total de capítulos: uma vez.
   useEffect(() => {
     let active = true;
     getCurrentWeather().then((w) => active && setWeather(w));
     getBanners()
       .then((lista) => active && setBanner(lista[0] ?? null))
+      .catch(() => {});
+    getTotalCapitulos()
+      .then((n) => active && setTotal(n))
       .catch(() => {});
     return () => {
       active = false;
@@ -151,7 +153,7 @@ export default function Inicio() {
               <View style={styles.heroCard}>
                 <View style={styles.heroHead}>
                   <Text style={styles.eyebrow}>{capHoje > 1 ? 'Continue lendo' : 'Leitura de hoje'}</Text>
-                  <Text style={styles.heroMeta}>Cap. {chapter.numero} de {TOTAL_CAPITULOS}</Text>
+                  <Text style={styles.heroMeta}>Cap. {chapter.numero}{total ? ` de ${total}` : ''}</Text>
                 </View>
                 <Text style={styles.heroTitle}>{chapter.titulo}</Text>
                 {!!chapter.versiculo_ref && (

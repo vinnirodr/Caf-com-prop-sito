@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { getChapter, Chapter } from '@/api/content';
+import { getChapter, getTotalCapitulos, Chapter } from '@/api/content';
 import { listarAnotacoes, type Anotacao } from '@/api/engagement';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
@@ -27,7 +27,6 @@ import NoteSheet from '@/components/NoteSheet';
 import { fonts, spacing, radius, palette, reading } from '@/theme/ccpTheme';
 import { getReadingPrefs, saveReadingPrefs } from '@/lib/storage';
 
-const TOTAL_CAPITULOS = 75;
 const FONT_STEPS = [0.9, 1, 1.15, 1.3] as const;
 
 type ReadingThemeName = keyof typeof reading;
@@ -62,6 +61,18 @@ export default function CapituloLeitura() {
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Total de capítulos (o livro cresce) — usado só para desabilitar "Próximo" no fim.
+  const [total, setTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getTotalCapitulos()
+      .then((n) => active && setTotal(n))
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const [notaSheet, setNotaSheet] = useState(false);
   const [notaDoCapitulo, setNotaDoCapitulo] = useState<Anotacao | null>(null);
@@ -327,7 +338,7 @@ export default function CapituloLeitura() {
           </Pressable>
           <Pressable
             style={styles.navBtn}
-            disabled={num >= TOTAL_CAPITULOS}
+            disabled={total != null && num >= total}
             onPress={() => {
               const prox = num + 1;
               // Sem conta, ao ir para o cap. 3+ convida a criar conta (leitura grátis).
@@ -341,13 +352,13 @@ export default function CapituloLeitura() {
               goTo(prox);
             }}
           >
-            <Text style={[styles.navTextGold, num >= TOTAL_CAPITULOS && styles.navTextDisabled]}>
+            <Text style={[styles.navTextGold, total != null && num >= total && styles.navTextDisabled]}>
               Próximo capítulo
             </Text>
             <Ionicons
               name="chevron-forward"
               size={16}
-              color={num >= TOTAL_CAPITULOS ? c.soft : palette.douradoAmanhecer}
+              color={total != null && num >= total ? c.soft : palette.douradoAmanhecer}
             />
           </Pressable>
         </View>

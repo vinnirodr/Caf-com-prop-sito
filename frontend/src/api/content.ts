@@ -62,6 +62,12 @@ export async function getAllChapters(): Promise<ChapterListItem[]> {
   return all;
 }
 
+/** Total de capítulos publicados (o livro cresce com o tempo — nada de número fixo). */
+export async function getTotalCapitulos(): Promise<number> {
+  const data = await apiGet<Paginated<ChapterListItem>>('/capitulos/?page=1');
+  return data.count;
+}
+
 export const getChapter = (numero: number) =>
   apiGet<Chapter>(`/capitulos/${numero}/`);
 

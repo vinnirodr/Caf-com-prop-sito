@@ -47,7 +47,7 @@ export default function Onboarding() {
 
         <Text style={styles.title}>Comece o dia devagar, com fé e um bom café</Text>
         <Text style={styles.lead}>
-          São 75 capítulos para ler ou ouvir — um por dia, no seu tempo. Uma pausa
+          Capítulos para ler ou ouvir — um por dia, no seu tempo. Uma pausa
           diária para o coração e a Palavra.
         </Text>
 
