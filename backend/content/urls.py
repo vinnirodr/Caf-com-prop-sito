@@ -9,4 +9,5 @@ urlpatterns = [
     path("lembretes/", views.LembreteList.as_view(), name="lembrete-list"),
     path("produtos/", views.ProdutoList.as_view(), name="produto-list"),
     path("banners/", views.BannerList.as_view(), name="banner-list"),
+    path("musicas-fundo/", views.MusicaFundoList.as_view(), name="musicafundo-list"),
 ]

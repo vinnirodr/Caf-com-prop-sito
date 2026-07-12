@@ -14,7 +14,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { getChapter, getTotalCapitulos, Chapter } from '@/api/content';
@@ -22,6 +22,7 @@ import { listarAnotacoes, type Anotacao } from '@/api/engagement';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
 import { useAudioControls } from '@/audio/AudioContext';
+import { usarMusicaFundo } from '@/audio/BackgroundMusicContext';
 import { audioFontePara, temAudioDisponivel, bloqueadoPremium } from '@/lib/audio';
 import { usePremium } from '@/subscription/PremiumContext';
 import NoteSheet from '@/components/NoteSheet';
@@ -59,6 +60,15 @@ export default function CapituloLeitura() {
   const { isFavorito, statusCapitulo, alternarFavorito, marcarLido, registrarLeitura } = useEngagement();
   const { tocar } = useAudioControls();
   const { premium } = usePremium();
+  const musica = usarMusicaFundo();
+
+  useFocusEffect(
+    useCallback(() => {
+      musica.entrarLeitura();
+      return () => musica.sairLeitura();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [musica.entrarLeitura, musica.sairLeitura])
+  );
 
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -326,6 +336,21 @@ export default function CapituloLeitura() {
               <Text style={styles.ouvirText}>Ouvir</Text>
             </Pressable>
           )}
+          {musica.temFaixas && (
+            <Pressable
+              onPress={musica.alternar}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Ligar/Desligar música de fundo"
+              style={styles.musicaBtn}
+            >
+              <Ionicons
+                name={musica.ativa ? 'musical-notes' : 'musical-notes-outline'}
+                size={20}
+                color={musica.ativa ? palette.douradoAmanhecer : c.soft}
+              />
+            </Pressable>
+          )}
         </View>
 
         {/* Navegação */}
@@ -493,6 +518,7 @@ const makeStyles = (
       borderRadius: 13,
     },
     ouvirText: { fontFamily: fonts.sansBold, fontSize: 14, color: palette.cafeEscuro },
+    musicaBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
 
     nav: {
       flexDirection: 'row',

@@ -6,10 +6,11 @@ usavam isso, derrubando a lista inteira. Também há guard para `.url` de mídia
 inacessível (ex.: R2 não configurado).
 """
 from django.contrib.admin.sites import AdminSite
-from django.test import SimpleTestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import SimpleTestCase, TestCase
 
 from content.admin import ChapterAdmin
-from content.models import Chapter
+from content.models import Chapter, MusicaFundo
 
 
 class _MidiaQueFalha:
@@ -58,3 +59,28 @@ class ChapterAdminGuardTests(SimpleTestCase):
             audio = _MidiaQueFalha()
 
         self.assertIn("indisponível", str(self.admin.audio_player(Obj())))
+
+
+class MusicaFundoApiTests(TestCase):
+    def test_lista_so_ativas_com_url(self):
+        MusicaFundo.objects.create(
+            titulo="Piano suave",
+            arquivo=SimpleUploadedFile("piano.mp3", b"fake-audio"),
+            ativa=True,
+            ordem=1,
+        )
+        MusicaFundo.objects.create(
+            titulo="Inativa",
+            arquivo=SimpleUploadedFile("x.mp3", b"fake"),
+            ativa=False,
+            ordem=2,
+        )
+        resp = self.client.get("/api/musicas-fundo/")
+        self.assertEqual(resp.status_code, 200)
+        results = resp.json()["results"]
+        self.assertEqual(len(results), 1)
+        item = results[0]
+        self.assertEqual(item["titulo"], "Piano suave")
+        self.assertIn("url", item)
+        self.assertTrue(item["url"])
+        self.assertEqual(item["ordem"], 1)

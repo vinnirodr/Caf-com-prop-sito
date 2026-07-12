@@ -31,6 +31,16 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-12 · 💻 LOCAL · Música de fundo
+- **Backend:** model `MusicaFundo` + `GET /api/musicas-fundo/` + admin (autora cadastra faixas).
+- **App:** `src/audio/BackgroundMusicContext` (2º player expo-audio, ducking 0.4/0.2, fades,
+  contínua entre capítulos via debounce de 600ms). Controles em **Ajustes** (liga/desliga +
+  escolher faixa) e atalho na leitura. Grátis; toca por baixo da narração.
+- **Hotspots (só adição):** `_layout.tsx` (BackgroundMusicProvider dentro do AudioProvider),
+  `capitulo/[numero].tsx` (entrar/sair + atalho), `ajustes.tsx`, `content.ts`, `storage.ts`.
+- **Depende de dados:** a autora precisa subir faixas no admin (e R2 em prod p/ o arquivo persistir).
+- Ver `docs/superpowers/plans/2026-07-12-musica-fundo.md`.
+
 ### 2026-07-12 · 💻 LOCAL · Fase A páginas especiais
 - Implementada a Fase A (`docs/fase-a-paginas-especiais.md`): tela de leitura das páginas
   especiais do livro, seção "Do livro" na Biblioteca, rota registrada. Leitura sempre livre

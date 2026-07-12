@@ -221,3 +221,24 @@ class Banner(models.Model):
 
     def __str__(self):
         return self.titulo or f"Banner {self.pk}"
+
+
+class MusicaFundo(models.Model):
+    """Faixa de música de fundo para a leitura. A autora cadastra várias; o app
+    lista as ativas e o usuário escolhe uma para tocar por baixo da leitura/narração."""
+
+    titulo = models.CharField("título", max_length=120)
+    arquivo = models.FileField("arquivo de áudio", upload_to="musicas/")
+    ativa = models.BooleanField(
+        "ativa", default=True, help_text="Desmarque para tirar esta faixa do app."
+    )
+    ordem = models.PositiveIntegerField("ordem", default=0)
+    criado_em = models.DateTimeField("criado em", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "música de fundo"
+        verbose_name_plural = "músicas de fundo"
+        ordering = ["ordem", "id"]
+
+    def __str__(self):
+        return self.titulo

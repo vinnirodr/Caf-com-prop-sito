@@ -20,6 +20,7 @@ import { AuthProvider } from '@/auth/AuthContext';
 import { PremiumProvider } from '@/subscription/PremiumContext';
 import { EngagementProvider } from '@/engagement/EngagementContext';
 import { AudioProvider } from '@/audio/AudioContext';
+import { BackgroundMusicProvider } from '@/audio/BackgroundMusicContext';
 import { configurarCanaisAndroid } from '@/lib/notifications';
 import { sincronizarLembretes } from '@/lib/reminders';
 
@@ -64,26 +65,28 @@ export default function RootLayout() {
       <PremiumProvider>
         <EngagementProvider>
           <AudioProvider>
-            <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-            <Stack initialRouteName="splash" screenOptions={screenOptions}>
-              <Stack.Screen name="splash" options={{ animation: 'fade' }} />
-              <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="capitulo/[numero]" />
-              <Stack.Screen name="pagina/[id]" />
-              <Stack.Screen name="anotacoes" />
-              <Stack.Screen name="favoritos" />
-              <Stack.Screen name="ajustes" />
-              <Stack.Screen name="loja" />
-              <Stack.Screen name="conta" />
-              <Stack.Screen name="conta/senha" />
-              <Stack.Screen name="conta/email" />
-              <Stack.Screen name="apoiar" />
-              <Stack.Screen name="player" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-              <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-              <Stack.Screen name="continuar-lendo" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-            </Stack>
+            <BackgroundMusicProvider>
+              <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+              <Stack initialRouteName="splash" screenOptions={screenOptions}>
+                <Stack.Screen name="splash" options={{ animation: 'fade' }} />
+                <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="capitulo/[numero]" />
+                <Stack.Screen name="pagina/[id]" />
+                <Stack.Screen name="anotacoes" />
+                <Stack.Screen name="favoritos" />
+                <Stack.Screen name="ajustes" />
+                <Stack.Screen name="loja" />
+                <Stack.Screen name="conta" />
+                <Stack.Screen name="conta/senha" />
+                <Stack.Screen name="conta/email" />
+                <Stack.Screen name="apoiar" />
+                <Stack.Screen name="player" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+                <Stack.Screen name="continuar-lendo" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+              </Stack>
+            </BackgroundMusicProvider>
           </AudioProvider>
         </EngagementProvider>
       </PremiumProvider>
