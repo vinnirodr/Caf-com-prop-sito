@@ -31,6 +31,14 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-10 · ☁️ CLOUD · ficha Play Store + handoff de monetização
+- `docs/play-store-ficha.md` — conteúdo pronto da ficha (textos, imagens, data safety, etc.).
+- `docs/monetizacao.md` — **HANDOFF pra 💻 LOCAL**: assinatura Premium + doação (R$2–20),
+  ambas via **Google Play Billing + RevenueCat** (decisão do dono). Contém pontos de
+  integração no código (`premium.tsx`, `audio.ts` `bloqueadoPremium`, `meu-espaco.tsx`,
+  `_layout.tsx`, `eas.json`) e o que depende da conta Play (merchant/produtos/RevenueCat).
+- 💻 **Irmã:** a monetização é sua — o design está no doc; o dono confirmou Play Billing.
+
 ### 2026-07-10 · ☁️ CLOUD · e-mail real nos termos
 - E-mail de contato mockado → **cafecomproposito@luminaflow.io** (domínio próprio na
   Hostinger) nos templates `content/templates/legal/{privacidade,termos}.html`.
