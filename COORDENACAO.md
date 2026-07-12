@@ -31,6 +31,19 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-12 · 💻 LOCAL · Monetização (Premium + Doação)
+- **RevenueCat/Play Billing** integrado com **fallback gracioso** (no-op sem
+  `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`). Novos: `src/lib/purchases.ts`,
+  `src/subscription/PremiumContext.tsx`, `src/app/apoiar.tsx`.
+- **Gating real:** `usePremium()` substituiu o `false` hardcoded do áudio cap.3+
+  em `(tabs)/index.tsx` e `capitulo/[numero].tsx`.
+- **Hotspots tocados:** `_layout.tsx` (PremiumProvider + Stack.Screen `apoiar`),
+  `(tabs)/meu-espaco.tsx` (item "Apoiar o projeto"), `eas.json` (env da chave).
+- **Loja (produtos físicos) NÃO entra aqui** — bem físico não pode Play Billing;
+  é épico à parte com gateway externo (ver `docs/loja-ecommerce.md`).
+- **Não fica funcional** até: conta Play aprovada + produtos + projeto RevenueCat +
+  chave no eas.json + build novo. Ver `docs/monetizacao.md`.
+
 ### 2026-07-10 · ☁️ CLOUD · ficha Play Store + handoff de monetização
 - `docs/play-store-ficha.md` — conteúdo pronto da ficha (textos, imagens, data safety, etc.).
 - `docs/monetizacao.md` — **HANDOFF pra 💻 LOCAL**: assinatura Premium + doação (R$2–20),
