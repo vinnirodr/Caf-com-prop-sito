@@ -16,7 +16,7 @@ import { getPacotesPremium, comprarPacote } from '@/lib/purchases';
 import { usePremium } from '@/subscription/PremiumContext';
 
 const BENEFICIOS = [
-  'Áudio ilimitado dos 75 capítulos',
+  'Áudio ilimitado de todos os capítulos',
   'Sem anúncios, só o essencial',
   'Novos devocionais toda semana',
 ];
@@ -80,7 +80,7 @@ export default function Premium() {
         </Pressable>
 
         <View style={styles.selo}><Text style={styles.seloText}>Premium</Text></View>
-        <Text style={styles.headline}>Ouça os 75 capítulos, sem pressa e sem anúncios</Text>
+        <Text style={styles.headline}>Ouça todos os capítulos, sem pressa e sem anúncios</Text>
         <Text style={styles.lead}>No plano gratuito, o áudio dos capítulos 1 e 2 é livre. A leitura é sempre sua.</Text>
 
         <View style={styles.beneficios}>

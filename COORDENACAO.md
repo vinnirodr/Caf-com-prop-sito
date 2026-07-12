@@ -43,6 +43,21 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
   é épico à parte com gateway externo (ver `docs/loja-ecommerce.md`).
 - **Não fica funcional** até: conta Play aprovada + produtos + projeto RevenueCat +
   chave no eas.json + build novo. Ver `docs/monetizacao.md`.
+- Mergeado com a #32 da irmã (149 capítulos) — gating usa a regra `audio_acesso`, não número fixo; sem choque.
+
+### 2026-07-12 · ☁️ CLOUD · conteúdo real: 149 capítulos + fim do "75" fixo
+- **Livro passou de 75 → 149 capítulos** (fonte do manuscrito, renumerado 1→149,
+  títulos normalizados). Conteúdo em `backend/dados/capitulos.json`.
+- **Backend:** novo comando `import_capitulos` (idempotente, `update_or_create` por número,
+  **preserva `audio`/`imagem`** já enviados no admin) + `gerar_capitulos_json` (regenera o
+  JSON a partir dos .docx, **dev-only**, requer `python-docx`). `build.sh` roda
+  `import_capitulos` antes do `import_planilha` (este último segue só p/ páginas especiais).
+- **Frontend:** `content.ts` ganhou **`getTotalCapitulos()`** (usa o `count` da API). Início
+  e Leitura (`capitulo/[numero].tsx`) não têm mais `TOTAL_CAPITULOS = 75` — total é dinâmico.
+- **Removidas todas as citações de "75 capítulos"** (premium, onboarding, continuar-lendo,
+  meu-espaço, ficha da Play, CLAUDE.md) → texto amplo, livro "em evolução contínua".
+- ⚠️ **Heads-up p/ 💻 irmã:** `content.ts` foi tocado (arquivo compartilhado — só **adicionei**
+  `getTotalCapitulos`, sem mexer no resto). Regra de áudio inalterada (grátis caps. 1–2).
 
 ### 2026-07-10 · ☁️ CLOUD · ficha Play Store + handoff de monetização
 - `docs/play-store-ficha.md` — conteúdo pronto da ficha (textos, imagens, data safety, etc.).

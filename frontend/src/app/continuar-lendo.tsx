@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 
 const BENEFICIOS = [
-  'Leia os 75 capítulos de graça',
+  'Leia os capítulos de graça',
   'Salve favoritos e anotações',
   'Acompanhe o seu progresso',
 ];
