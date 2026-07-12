@@ -16,6 +16,8 @@ const KEYS = {
   reminderEnabled: 'ccp.reminder.enabled',
   reminderHour: 'ccp.reminder.hour',
   reminderMinute: 'ccp.reminder.minute',
+  musicaAtiva: 'ccp.musica.ativa',
+  musicaFaixaId: 'ccp.musica.faixaId',
 } as const;
 
 export type Tokens = { access: string; refresh: string };
@@ -133,6 +135,35 @@ export async function saveReminderPrefs(prefs: ReminderPrefs): Promise<void> {
       [KEYS.reminderEnabled, prefs.enabled ? '1' : '0'],
       [KEYS.reminderHour, String(prefs.hour)],
       [KEYS.reminderMinute, String(prefs.minute)],
+    ]);
+  } catch {
+    // ignora
+  }
+}
+
+// Preferência da música de fundo da leitura (local, sem conta).
+export type MusicaFundoPrefs = { ativa: boolean; faixaId: number | null };
+
+export async function getMusicaFundoPrefs(): Promise<MusicaFundoPrefs> {
+  try {
+    const [ativa, faixaId] = await Promise.all([
+      AsyncStorage.getItem(KEYS.musicaAtiva),
+      AsyncStorage.getItem(KEYS.musicaFaixaId),
+    ]);
+    return {
+      ativa: ativa === '1',
+      faixaId: faixaId != null ? Number(faixaId) : null,
+    };
+  } catch {
+    return { ativa: false, faixaId: null };
+  }
+}
+
+export async function saveMusicaFundoPrefs(prefs: MusicaFundoPrefs): Promise<void> {
+  try {
+    await AsyncStorage.multiSet([
+      [KEYS.musicaAtiva, prefs.ativa ? '1' : '0'],
+      [KEYS.musicaFaixaId, prefs.faixaId != null ? String(prefs.faixaId) : ''],
     ]);
   } catch {
     // ignora

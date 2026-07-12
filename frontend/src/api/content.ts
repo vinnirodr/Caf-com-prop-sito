@@ -110,3 +110,14 @@ export type Banner = {
 
 /** Banners ativos da tela inicial (o app usa o primeiro). */
 export const getBanners = () => apiGet<Banner[]>('/banners/');
+
+export type MusicaFundo = {
+  id: number;
+  titulo: string;
+  url: string | null;
+  ordem: number;
+};
+
+/** Faixas de música de fundo cadastradas pela autora (endpoint público). */
+export const getMusicasFundo = () =>
+  apiGet<Paginated<MusicaFundo>>('/musicas-fundo/');
