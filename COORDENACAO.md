@@ -31,6 +31,16 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-12 · ☁️ CLOUD · handoff da FASE A (páginas especiais) → 💻 LOCAL
+- **Spec pronta em `docs/fase-a-paginas-especiais.md`.** Exibir no app as páginas de
+  introdução/encerramento do livro (apresentação, "como utilizar", manifesto, contracapa…).
+- 💻 **Irmã: é sua e é SÓ FRONTEND** — o backend já está pronto (model `SpecialPage`,
+  serializer, endpoint `GET /api/paginas-especiais/` com `conteudo`, e as 8 páginas já vêm da
+  planilha via `import_planilha`). `getSpecialPages()` já existe em `content.ts` (sem uso).
+- Falta: tela `src/app/pagina/[id].tsx`, seção "Do livro" na Biblioteca, rota no `_layout.tsx`.
+  Detalhes, exemplos e checklist no doc. **Rebase antes** (`_layout.tsx`/`biblioteca.tsx`/
+  `content.ts` já mexidos).
+
 ### 2026-07-12 · 💻 LOCAL · Monetização (Premium + Doação)
 - **RevenueCat/Play Billing** integrado com **fallback gracioso** (no-op sem
   `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`). Novos: `src/lib/purchases.ts`,
