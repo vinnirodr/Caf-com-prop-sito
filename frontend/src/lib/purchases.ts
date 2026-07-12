@@ -87,7 +87,11 @@ export async function comprarPacote(
 
 export async function restaurarCompras(): Promise<CustomerInfo | null> {
   if (!configuradoRevenueCat()) return null;
-  return Purchases.restorePurchases();
+  try {
+    return await Purchases.restorePurchases();
+  } catch {
+    return null;
+  }
 }
 
 /** Assina atualizações do CustomerInfo. Devolve função de cleanup. No-op sem chave. */
