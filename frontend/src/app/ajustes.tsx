@@ -11,6 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/auth/AuthContext';
+import { usarMusicaFundo } from '@/audio/BackgroundMusicContext';
 import { obterPushToken, sincronizarToken, pedirPermissaoNotificacoes } from '@/lib/notifications';
 import { agendarLembretes, cancelarLembretes } from '@/lib/reminders';
 import { getReminderPrefs, saveReminderPrefs, REMINDER_PADRAO } from '@/lib/storage';
@@ -23,6 +24,7 @@ export default function Ajustes() {
   const t = useTheme();
   const router = useRouter();
   const { user } = useAuth();
+  const musica = usarMusicaFundo();
   const styles = useMemo(() => makeStyles(t), [t]);
 
   const [broadcast, setBroadcast] = useState(user?.notificacoes_ativas ?? true);
@@ -143,6 +145,50 @@ export default function Ajustes() {
           )}
         </View>
 
+        {/* Música de fundo — trilha suave durante a leitura */}
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Ionicons name="musical-notes-outline" size={20} color={t.palette.cafe} />
+            <View style={styles.rowText}>
+              <Text style={styles.rowLabel}>Música de fundo</Text>
+              <Text style={styles.rowSub}>Uma trilha suave por baixo da leitura.</Text>
+            </View>
+            <View style={!musica.temFaixas ? styles.switchDesabilitado : undefined}>
+              <Switch
+                on={musica.ativa}
+                onPress={musica.temFaixas ? musica.alternar : () => {}}
+                label="Música de fundo na leitura"
+              />
+            </View>
+          </View>
+
+          {musica.temFaixas ? (
+            <View style={styles.faixas}>
+              {musica.faixas.map((f) => {
+                const selecionada = musica.faixaSelecionada?.id === f.id;
+                return (
+                  <Pressable
+                    key={f.id}
+                    onPress={() => musica.escolherFaixa(f.id)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: selecionada }}
+                    style={styles.faixaItem}
+                  >
+                    <Text style={[styles.faixaTitulo, selecionada && styles.faixaTituloAtiva]}>
+                      {f.titulo}
+                    </Text>
+                    {selecionada && (
+                      <Ionicons name="checkmark-circle" size={20} color={t.palette.douradoAmanhecer} />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : (
+            <Text style={styles.faixasVazio}>Nenhuma faixa disponível ainda.</Text>
+          )}
+        </View>
+
         <Text style={styles.rodape}>
           O lembrete toca no seu aparelho, sem precisar de internet no momento.
         </Text>
@@ -210,9 +256,36 @@ const makeStyles = (t: Theme) =>
     switch: { width: 46, height: 27, borderRadius: 999, padding: 3, justifyContent: 'center' },
     switchOn: { backgroundColor: t.palette.douradoAmanhecer },
     switchOff: { backgroundColor: t.ui.linha },
+    switchDesabilitado: { opacity: 0.5 },
     knob: { width: 21, height: 21, borderRadius: 999, backgroundColor: '#fff' },
     knobOn: { alignSelf: 'flex-end' },
     knobOff: { alignSelf: 'flex-start' },
+
+    faixas: {
+      marginTop: 18,
+      paddingTop: 14,
+      borderTopWidth: 1,
+      borderTopColor: t.ui.linha,
+      gap: 4,
+    },
+    faixaItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+      gap: spacing.sm,
+    },
+    faixaTitulo: { flex: 1, fontFamily: fonts.sans, fontSize: 14, color: t.ui.texto },
+    faixaTituloAtiva: { fontFamily: fonts.sansBold, color: t.palette.cafeEscuro },
+    faixasVazio: {
+      fontFamily: fonts.sans,
+      fontSize: 12.5,
+      color: t.ui.textoSuave,
+      marginTop: 14,
+      paddingTop: 14,
+      borderTopWidth: 1,
+      borderTopColor: t.ui.linha,
+    },
 
     horario: {
       marginTop: 18,
