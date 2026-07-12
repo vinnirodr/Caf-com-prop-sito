@@ -3,6 +3,10 @@
 services:
   - type: web
     name: cafe-com-proposito-api
+    # Deploy SEMPRE a partir da main (branch de integração das duas sessões).
+    # Sem isto, o Render pode voltar a seguir a branch de uma das sessões e
+    # deixar de publicar o que foi mergeado na main. Trava permanente.
+    branch: main
     # PLANO: 'free' hiberna após ~15 min sem tráfego (cold start ao acordar).
     # Para produção, troque por 'starter' (~US$7/mês): NÃO hiberna, fica sempre no ar.
     plan: free
