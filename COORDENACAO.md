@@ -31,6 +31,16 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-12 · 💻 LOCAL · Fase A páginas especiais
+- Implementada a Fase A (`docs/fase-a-paginas-especiais.md`): tela de leitura das páginas
+  especiais do livro, seção "Do livro" na Biblioteca, rota registrada. Leitura sempre livre
+  (sem gate de conta, sem áudio) — só consumindo `getSpecialPages()` (já existia).
+- Arquivos: `frontend/src/app/pagina/[id].tsx` (NOVO), `frontend/src/app/(tabs)/biblioteca.tsx`
+  (bloco "Do livro" no `renderHeader`), `frontend/src/app/_layout.tsx` (`<Stack.Screen
+  name="pagina/[id]" />`). Não mexi em `meu-espaco.tsx` (atalho opcional, deixado de fora pra
+  manter o diff limpo). PR aberto contra `main`.
+- `npx tsc --noEmit` limpo (só o erro pré-existente conhecido de `Field.tsx:38`).
+
 ### 2026-07-12 · ☁️ CLOUD · handoff da FASE A (páginas especiais) → 💻 LOCAL
 - **Spec pronta em `docs/fase-a-paginas-especiais.md`.** Exibir no app as páginas de
   introdução/encerramento do livro (apresentação, "como utilizar", manifesto, contracapa…).
