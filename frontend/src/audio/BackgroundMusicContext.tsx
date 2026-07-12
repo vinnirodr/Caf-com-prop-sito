@@ -51,6 +51,7 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
   const carregadaRef = useRef<number | null>(null); // id da faixa já carregada no player
   const ativaRef = useRef(false); // espelha `ativa` p/ callbacks lerem o valor fresco
   const parandoRef = useRef(false); // true durante o fade-out de `parar()` (ainda não pausou)
+  const tocandoRef = useRef(false); // espelha `narracao.tocando` sem entrar na cadeia de deps de `iniciar`/`value`
   const [idParaReiniciar, setIdParaReiniciar] = useState<number | null>(null); // troca de faixa em andamento
 
   const faixaSelecionada = useMemo(
@@ -103,10 +104,10 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     return true;
   }, [faixaSelecionada, player]);
 
-  const alvoDuck = useCallback(
-    () => (narracao.tocando ? VOL_DUCK : VOL_LEITURA),
-    [narracao.tocando]
-  );
+  // Lê `tocandoRef` (não `narracao.tocando`) p/ não entrar na cadeia de deps de
+  // `iniciar`/`entrarLeitura`/`value` — senão a identidade do contexto mudaria a
+  // cada play/pause da narração, derrubando o `useFocusEffect` da tela de leitura.
+  const alvoDuck = useCallback(() => (tocandoRef.current ? VOL_DUCK : VOL_LEITURA), []);
 
   // Começa a tocar com fade-in (se as condições permitirem).
   // Lê `ativaRef` (não `ativa`) p/ não ficar preso ao valor da renderização em
@@ -158,8 +159,11 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Ducking: ao mudar o estado da narração, se está tocando, ramp curto ao novo alvo.
+  // Ducking: ao mudar o estado da narração, atualiza a ref e, se está tocando,
+  // ramp curto ao novo alvo. A ref é atualizada aqui (não num efeito à parte)
+  // pra manter uma única fonte de sincronização com `narracao.tocando`.
   useEffect(() => {
+    tocandoRef.current = narracao.tocando;
     if (ativa && emLeituraRef.current && player.playing) {
       rampaVolume(alvoDuck(), DUCK_MS);
     }

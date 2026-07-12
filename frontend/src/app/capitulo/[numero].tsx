@@ -66,7 +66,8 @@ export default function CapituloLeitura() {
     useCallback(() => {
       musica.entrarLeitura();
       return () => musica.sairLeitura();
-    }, [musica])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [musica.entrarLeitura, musica.sairLeitura])
   );
 
   const [chapter, setChapter] = useState<Chapter | null>(null);
