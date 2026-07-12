@@ -8,8 +8,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE": "https://cafe-com-proposito-api.onrender.com",
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": ""
+        "EXPO_PUBLIC_API_BASE": "https://cafe-com-proposito-api.onrender.com"
       }
     },
     "preview": {
@@ -18,8 +17,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE": "https://cafe-com-proposito-api.onrender.com",
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": ""
+        "EXPO_PUBLIC_API_BASE": "https://cafe-com-proposito-api.onrender.com"
       }
     },
     "production": {
@@ -28,8 +26,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE": "https://cafe-com-proposito-api.onrender.com",
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": ""
+        "EXPO_PUBLIC_API_BASE": "https://cafe-com-proposito-api.onrender.com"
       }
     }
   },
