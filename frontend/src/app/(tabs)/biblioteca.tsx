@@ -17,7 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getAllChapters, ChapterListItem } from '@/api/content';
+import { getAllChapters, ChapterListItem, getSpecialPages, SpecialPage } from '@/api/content';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
 import { fonts, spacing, radius, typography } from '@/theme/ccpTheme';
@@ -48,6 +48,8 @@ export default function Biblioteca() {
   const [query, setQuery] = useState('');
   const [filtro, setFiltro] = useState<Filtro>('todos');
 
+  const [paginas, setPaginas] = useState<SpecialPage[]>([]);
+
   const load = useCallback(async () => {
     setError(null);
     try {
@@ -63,6 +65,21 @@ export default function Biblioteca() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Páginas especiais do livro (abertura, apresentação da autora etc.) — leitura livre.
+  useEffect(() => {
+    let ativo = true;
+    getSpecialPages()
+      .then((data) => {
+        if (ativo) setPaginas([...data.results].sort((a, b) => a.ordem - b.ordem));
+      })
+      .catch(() => {
+        if (ativo) setPaginas([]);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const filtrados = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -97,6 +114,29 @@ export default function Biblioteca() {
       <Text style={styles.subtitle}>
         {error ? 'Verifique a conexão' : `${items.length} capítulos`}
       </Text>
+
+      {paginas.length > 0 && (
+        <View style={styles.doLivro}>
+          <Text style={styles.doLivroLabel}>Do livro</Text>
+          {paginas.map((p) => (
+            <Pressable
+              key={p.id}
+              style={({ pressed }) => [styles.doLivroRow, pressed && styles.rowPressed]}
+              onPress={() => router.push(`/pagina/${p.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={`Abrir página: ${p.titulo}`}
+            >
+              <View style={styles.doLivroIcon}>
+                <Ionicons name="book-outline" size={18} color="#B07F3C" />
+              </View>
+              <Text style={styles.doLivroTitle} numberOfLines={1}>
+                {p.titulo}
+              </Text>
+              <Ionicons name="chevron-forward" size={18} color={t.ui.linha} />
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       <View style={styles.search}>
         <Ionicons name="search-outline" size={18} color={t.palette.salvia} />
@@ -270,6 +310,37 @@ const makeStyles = (t: Theme) =>
     header: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.sm },
     title: { fontFamily: fonts.serif, fontSize: 32, color: t.palette.cafeEscuro },
     subtitle: { ...typography.caption, color: t.palette.salvia, marginTop: 2 },
+
+    doLivro: { marginTop: spacing.md },
+    doLivroLabel: {
+      fontFamily: fonts.sansBold,
+      fontSize: 12,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      color: t.palette.salvia,
+      marginBottom: spacing.sm,
+    },
+    doLivroRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      backgroundColor: t.ui.superficie,
+      borderWidth: 1,
+      borderColor: t.ui.linha,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 12,
+      marginBottom: spacing.sm,
+    },
+    doLivroIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: radius.sm,
+      backgroundColor: t.ui.painel,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    doLivroTitle: { flex: 1, minWidth: 0, fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
 
     search: {
       flexDirection: 'row',
