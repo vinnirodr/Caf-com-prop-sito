@@ -1,11 +1,12 @@
 from rest_framework import generics
 
-from .models import Banner, Chapter, LembreteTexto, Produto, SpecialPage
+from .models import Banner, Chapter, LembreteTexto, MusicaFundo, Produto, SpecialPage
 from .serializers import (
     BannerSerializer,
     ChapterListSerializer,
     ChapterDetailSerializer,
     LembreteTextoSerializer,
+    MusicaFundoSerializer,
     ProdutoSerializer,
     SpecialPageSerializer,
 )
@@ -61,3 +62,10 @@ class BannerList(generics.ListAPIView):
 
     def get_queryset(self):
         return Banner.objects.filter(ativo=True)
+
+
+class MusicaFundoList(generics.ListAPIView):
+    serializer_class = MusicaFundoSerializer
+
+    def get_queryset(self):
+        return MusicaFundo.objects.filter(ativa=True).order_by("ordem", "id")

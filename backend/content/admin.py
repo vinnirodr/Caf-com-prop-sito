@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from .models import Banner, Chapter, LembreteTexto, Produto, SpecialPage
+from .models import Banner, Chapter, LembreteTexto, MusicaFundo, Produto, SpecialPage
 
 admin.site.site_header = "Café com Propósito — Administração"
 admin.site.site_title = "Café com Propósito"
@@ -115,6 +115,13 @@ class ProdutoAdmin(admin.ModelAdmin):
     @admin.display(description="imagem")
     def imagem_thumb(self, obj):
         return thumb(obj.imagem)
+
+
+@admin.register(MusicaFundo)
+class MusicaFundoAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "ativa", "ordem")
+    list_display_links = ("titulo",)
+    list_editable = ("ativa", "ordem")
 
 
 @admin.register(Banner)

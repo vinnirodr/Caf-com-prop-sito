@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Banner, Chapter, LembreteTexto, Produto, SpecialPage
+from .models import Banner, Chapter, LembreteTexto, MusicaFundo, Produto, SpecialPage
 
 
 class ChapterListSerializer(serializers.ModelSerializer):
@@ -57,3 +57,14 @@ class BannerSerializer(serializers.ModelSerializer):
             "id", "titulo", "subtitulo", "imagem",
             "destino", "link_externo", "capitulo_numero",
         )
+
+
+class MusicaFundoSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MusicaFundo
+        fields = ("id", "titulo", "url", "ordem")
+
+    def get_url(self, obj):
+        return obj.arquivo.url if obj.arquivo else None
