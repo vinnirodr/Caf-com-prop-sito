@@ -115,6 +115,8 @@ export default function Onboarding() {
         </View>
 
         <View style={[styles.body, { paddingBottom: insets.bottom + 24 }]}>
+          {/* Cada página renderiza suas próprias bolinhas (ativa = seu índice).
+              Como só a página visível aparece, não precisa de estado de índice global. */}
           <View style={styles.dots}>
             {SLIDES.map((s, i) => (
               <View key={s.chave} style={[styles.dot, i === index && styles.dotActive]} />
@@ -149,6 +151,7 @@ export default function Onboarding() {
       <StatusBar style="light" />
       <FlatList
         ref={listRef}
+        style={styles.fill}
         data={SLIDES}
         keyExtractor={(s) => s.chave}
         renderItem={renderItem}
