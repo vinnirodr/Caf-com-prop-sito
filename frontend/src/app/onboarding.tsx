@@ -31,14 +31,11 @@ type Grad = {
   end: { x: number; y: number };
 };
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
-type Slide = {
-  chave: string;
-  gradiente: Grad;
-  seal?: boolean;
-  icone?: IconName;
-  titulo: string;
-  subtitulo: string;
-};
+type SlideBase = { chave: string; gradiente: Grad; titulo: string; subtitulo: string };
+// Ou tem o selo da marca, ou tem um ícone — nunca ambíguo (garantido pelo tipo).
+type Slide =
+  | (SlideBase & { seal: true; icone?: undefined })
+  | (SlideBase & { seal?: false; icone: IconName });
 
 const SLIDES: Slide[] = [
   {
@@ -98,7 +95,7 @@ export default function Onboarding() {
             {item.seal ? (
               <BrandSeal size={124} color="#F4E6CF" />
             ) : (
-              <Ionicons name={item.icone!} size={64} color="#F4E6CF" />
+              <Ionicons name={item.icone} size={64} color="#F4E6CF" />
             )}
           </LinearGradient>
           {!ultima && (
