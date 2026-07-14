@@ -118,10 +118,11 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // A música deve tocar quando: ligada + tem faixa + (lendo um capítulo OU a narração
-  // está tocando). Assim ela acompanha a escuta em qualquer tela (player, mini-player),
-  // não só na tela do capítulo.
-  const deveTocar = ativa && !!faixaSelecionada && (emLeitura || narracao.tocando);
+  // A música deve tocar quando: ligada + tem faixa + (lendo um capítulo OU há uma
+  // sessão de narração ativa). Usar `faixaAtual != null` (sessão aberta) em vez de só
+  // `tocando` mantém a música contínua durante o "Ouvir" mesmo que a narração demore
+  // alguns instantes pra iniciar, e acompanha a escuta em qualquer tela (player/mini).
+  const deveTocar = ativa && !!faixaSelecionada && (emLeitura || narracao.faixaAtual != null);
   // Volume-alvo: abaixa sob a narração (ducking), volume de leitura caso contrário.
   const alvo = narracao.tocando ? VOL_DUCK : VOL_LEITURA;
 
@@ -173,26 +174,22 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const alternar = useCallback(() => {
-    setAtiva((prev) => {
-      const nova = !prev;
-      saveMusicaFundoPrefs({ ativa: nova, faixaId });
-      return nova;
-    });
-  }, [faixaId]);
+    const nova = !ativa;
+    saveMusicaFundoPrefs({ ativa: nova, faixaId });
+    setAtiva(nova);
+  }, [ativa, faixaId]);
 
   const escolherFaixa = useCallback(
     (id: number) => {
+      if (id === faixaId) return;
       saveMusicaFundoPrefs({ ativa, faixaId: id });
-      const trocar = () => {
-        carregadaRef.current = null; // força o reconcile a recarregar a nova faixa
-        setFaixaId(id);
-      };
-      // Se está tocando, fade-out antes de trocar a fonte (o reconcile faz o fade-in
-      // da nova faixa). Senão, troca direto.
-      if (player.playing) rampaVolume(0, DUCK_MS, trocar);
-      else trocar();
+      // Aplica o estado na hora (não num callback de fade — senão um reconcile
+      // concorrente poderia descartar a troca). O reconcile recarrega a nova faixa
+      // (carregadaRef limpo) e ajusta o volume.
+      carregadaRef.current = null;
+      setFaixaId(id);
     },
-    [ativa, player, rampaVolume]
+    [ativa, faixaId]
   );
 
   const value = useMemo<MusicaValue>(
