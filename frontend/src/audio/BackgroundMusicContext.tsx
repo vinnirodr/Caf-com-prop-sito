@@ -1,7 +1,9 @@
 /**
  * Música de fundo da leitura. 2º player expo-audio (em loop, volume baixo) que toca
- * por baixo da narração enquanto o usuário está num capítulo. Ducking dinâmico +
- * fades + continuidade entre capítulos. Gracioso: sem faixa, nada toca e nada quebra.
+ * por baixo da experiência de leitura/escuta: enquanto o usuário lê um capítulo OU
+ * enquanto a narração está tocando (inclusive no player e no mini-player, em qualquer
+ * tela). Ducking dinâmico (abaixa sob a narração) + fades. Gracioso: sem faixa, nada
+ * toca e nada quebra.
  */
 import {
   createContext,
@@ -44,25 +46,16 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
   const [faixas, setFaixas] = useState<MusicaFundo[]>([]);
   const [ativa, setAtiva] = useState(false);
   const [faixaId, setFaixaId] = useState<number | null>(null);
+  const [emLeitura, setEmLeitura] = useState(false); // está numa tela de leitura de capítulo
 
-  const emLeituraRef = useRef(false);
   const rampaRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sairTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const carregadaRef = useRef<number | null>(null); // id da faixa já carregada no player
-  const ativaRef = useRef(false); // espelha `ativa` p/ callbacks lerem o valor fresco
-  const parandoRef = useRef(false); // true durante o fade-out de `parar()` (ainda não pausou)
-  const tocandoRef = useRef(false); // espelha `narracao.tocando` sem entrar na cadeia de deps de `iniciar`/`value`
-  const [idParaReiniciar, setIdParaReiniciar] = useState<number | null>(null); // troca de faixa em andamento
 
   const faixaSelecionada = useMemo(
     () => faixas.find((f) => f.id === faixaId) ?? null,
     [faixas, faixaId]
   );
-
-  // Mantém a ref sempre sincronizada com o estado (fonte única: `ativa`).
-  useEffect(() => {
-    ativaRef.current = ativa;
-  }, [ativa]);
 
   // Rampa de volume manual (expo-audio não tem fade nativo).
   const rampaVolume = useCallback(
@@ -89,7 +82,7 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     [player]
   );
 
-  // Garante a faixa certa carregada no player.
+  // Garante a faixa certa carregada no player (recarrega só se mudou).
   const garantirCarregada = useCallback(() => {
     if (!faixaSelecionada?.url) return false;
     if (carregadaRef.current !== faixaSelecionada.id) {
@@ -103,40 +96,6 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     }
     return true;
   }, [faixaSelecionada, player]);
-
-  // Lê `tocandoRef` (não `narracao.tocando`) p/ não entrar na cadeia de deps de
-  // `iniciar`/`entrarLeitura`/`value` — senão a identidade do contexto mudaria a
-  // cada play/pause da narração, derrubando o `useFocusEffect` da tela de leitura.
-  const alvoDuck = useCallback(() => (tocandoRef.current ? VOL_DUCK : VOL_LEITURA), []);
-
-  // Começa a tocar com fade-in (se as condições permitirem).
-  // Lê `ativaRef` (não `ativa`) p/ não ficar preso ao valor da renderização em
-  // que este callback foi criado — essencial p/ chamadas logo após um setAtiva.
-  const iniciar = useCallback(() => {
-    if (!ativaRef.current || !emLeituraRef.current || !garantirCarregada()) return;
-    parandoRef.current = false;
-    try {
-      player.volume = 0;
-      player.play();
-      rampaVolume(alvoDuck(), FADE_MS);
-    } catch {
-      /* ignora */
-    }
-  }, [garantirCarregada, player, rampaVolume, alvoDuck]);
-
-  // Para com fade-out. Marca `parandoRef` durante o fade p/ `entrarLeitura`
-  // conseguir detectar e cancelar uma saída em andamento.
-  const parar = useCallback(() => {
-    parandoRef.current = true;
-    rampaVolume(0, FADE_MS, () => {
-      parandoRef.current = false;
-      try {
-        player.pause();
-      } catch {
-        /* ignora */
-      }
-    });
-  }, [player, rampaVolume]);
 
   // Boot: carrega prefs + faixas.
   useEffect(() => {
@@ -159,84 +118,82 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Ducking: ao mudar o estado da narração, atualiza a ref e, se está tocando,
-  // ramp curto ao novo alvo. A ref é atualizada aqui (não num efeito à parte)
-  // pra manter uma única fonte de sincronização com `narracao.tocando`.
-  useEffect(() => {
-    tocandoRef.current = narracao.tocando;
-    if (ativa && emLeituraRef.current && player.playing) {
-      rampaVolume(alvoDuck(), DUCK_MS);
-    }
-  }, [narracao.tocando, ativa, player, rampaVolume, alvoDuck]);
+  // A música deve tocar quando: ligada + tem faixa + (lendo um capítulo OU a narração
+  // está tocando). Assim ela acompanha a escuta em qualquer tela (player, mini-player),
+  // não só na tela do capítulo.
+  const deveTocar = ativa && !!faixaSelecionada && (emLeitura || narracao.tocando);
+  // Volume-alvo: abaixa sob a narração (ducking), volume de leitura caso contrário.
+  const alvo = narracao.tocando ? VOL_DUCK : VOL_LEITURA;
 
+  // Reconcilia o player com o estado desejado (play/pause + volume), com fades.
+  // Reage a deveTocar (liga/desliga/entra-sai/narração) e a alvo (ducking).
+  useEffect(() => {
+    if (deveTocar) {
+      if (!garantirCarregada()) return;
+      if (player.playing) {
+        // já tocando → ajusta o volume (ex.: ducking quando a narração começa/para)
+        rampaVolume(alvo, DUCK_MS);
+      } else {
+        // começa com fade-in a partir do silêncio
+        try {
+          player.volume = 0;
+          player.play();
+        } catch {
+          /* ignora */
+        }
+        rampaVolume(alvo, FADE_MS);
+      }
+    } else if (player.playing) {
+      rampaVolume(0, FADE_MS, () => {
+        try {
+          player.pause();
+        } catch {
+          /* ignora */
+        }
+      });
+    }
+  }, [deveTocar, alvo, garantirCarregada, player, rampaVolume]);
+
+  // Entrar/sair da tela de leitura do capítulo. `sairLeitura` tem janela de graça
+  // (~600ms) p/ não derrubar a música numa transição capítulo→capítulo.
   const entrarLeitura = useCallback(() => {
-    // "Estava saindo" cobre tanto o timer de graça (ainda não chamou parar())
-    // quanto um fade-out já em andamento (parar() chamado, ainda tocando).
-    const estavaSaindo = !!sairTimerRef.current || parandoRef.current;
     if (sairTimerRef.current) {
       clearTimeout(sairTimerRef.current);
       sairTimerRef.current = null;
     }
-    parandoRef.current = false;
-    emLeituraRef.current = true;
-    // Se não está tocando, ou se estava no meio de um fade-out (player ainda
-    // `playing` mas a caminho do silêncio), (re)inicia — senão fica mudo.
-    if (!player.playing || estavaSaindo) iniciar();
-  }, [player, iniciar]);
+    setEmLeitura(true);
+  }, []);
 
   const sairLeitura = useCallback(() => {
     if (sairTimerRef.current) clearTimeout(sairTimerRef.current);
     sairTimerRef.current = setTimeout(() => {
-      emLeituraRef.current = false;
       sairTimerRef.current = null;
-      parar();
+      setEmLeitura(false);
     }, GRACA_SAIR_MS);
-  }, [parar]);
+  }, []);
 
-  // Não chama efeitos colaterais dentro do updater de `setAtiva` (impuro, e
-  // sob Strict Mode dispararia I/O + áudio 2x). Calcula `nova` fora, aplica o
-  // estado, atualiza a ref na hora (p/ `iniciar`/`parar` lerem o valor fresco
-  // já nesta mesma chamada) e só então roda os efeitos colaterais.
   const alternar = useCallback(() => {
-    const nova = !ativaRef.current;
-    ativaRef.current = nova;
-    setAtiva(nova);
-    saveMusicaFundoPrefs({ ativa: nova, faixaId });
-    if (nova) {
-      if (emLeituraRef.current) iniciar();
-    } else {
-      parar();
-    }
-  }, [faixaId, iniciar, parar]);
+    setAtiva((prev) => {
+      const nova = !prev;
+      saveMusicaFundoPrefs({ ativa: nova, faixaId });
+      return nova;
+    });
+  }, [faixaId]);
 
   const escolherFaixa = useCallback(
     (id: number) => {
-      setFaixaId(id);
-      saveMusicaFundoPrefs({ ativa: ativaRef.current, faixaId: id });
-      // troca de faixa: fade-out, recarrega, fade-in (se tocando)
-      const tocando = player.playing;
-      rampaVolume(0, DUCK_MS, () => {
-        carregadaRef.current = null; // força recarregar na próxima
-        if (ativaRef.current && emLeituraRef.current && tocando) {
-          // Não chama o `iniciar` fechado aqui — está preso ao `faixaSelecionada`
-          // anterior. Em vez disso, sinaliza o id alvo; o efeito abaixo dispara
-          // quando `faixaSelecionada` já refletir esse id (valor fresco).
-          setIdParaReiniciar(id);
-        }
-      });
+      saveMusicaFundoPrefs({ ativa, faixaId: id });
+      const trocar = () => {
+        carregadaRef.current = null; // força o reconcile a recarregar a nova faixa
+        setFaixaId(id);
+      };
+      // Se está tocando, fade-out antes de trocar a fonte (o reconcile faz o fade-in
+      // da nova faixa). Senão, troca direto.
+      if (player.playing) rampaVolume(0, DUCK_MS, trocar);
+      else trocar();
     },
-    [player, rampaVolume]
+    [ativa, player, rampaVolume]
   );
-
-  // Reinicia a reprodução após uma troca de faixa, usando sempre o `iniciar`
-  // (e o `faixaSelecionada` dentro dele) da renderização mais recente.
-  useEffect(() => {
-    if (idParaReiniciar === null) return;
-    if (faixaSelecionada?.id === idParaReiniciar) {
-      setIdParaReiniciar(null);
-      iniciar();
-    }
-  }, [idParaReiniciar, faixaSelecionada, iniciar]);
 
   const value = useMemo<MusicaValue>(
     () => ({
