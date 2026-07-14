@@ -116,26 +116,21 @@ export default function Biblioteca() {
       </Text>
 
       {paginas.length > 0 && (
-        <View style={styles.doLivro}>
-          <Text style={styles.doLivroLabel}>Do livro</Text>
-          {paginas.map((p) => (
-            <Pressable
-              key={p.id}
-              style={({ pressed }) => [styles.doLivroRow, pressed && styles.rowPressed]}
-              onPress={() => router.push(`/pagina/${p.id}`)}
-              accessibilityRole="button"
-              accessibilityLabel={`Abrir página: ${p.titulo}`}
-            >
-              <View style={styles.doLivroIcon}>
-                <Ionicons name="book-outline" size={18} color="#B07F3C" />
-              </View>
-              <Text style={styles.doLivroTitle} numberOfLines={1}>
-                {p.titulo}
-              </Text>
-              <Ionicons name="chevron-forward" size={18} color={t.ui.linha} />
-            </Pressable>
-          ))}
-        </View>
+        <Pressable
+          style={({ pressed }) => [styles.introducaoRow, pressed && styles.rowPressed]}
+          onPress={() => router.push('/introducao')}
+          accessibilityRole="button"
+          accessibilityLabel="Abrir Introdução: sobre o livro e a autora"
+        >
+          <View style={styles.introducaoIcon}>
+            <Ionicons name="book-outline" size={18} color="#B07F3C" />
+          </View>
+          <View style={styles.introducaoText}>
+            <Text style={styles.introducaoTitle}>Introdução</Text>
+            <Text style={styles.introducaoSubtitle}>Sobre o livro e a autora</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={t.ui.linha} />
+        </Pressable>
       )}
 
       <View style={styles.search}>
@@ -311,16 +306,7 @@ const makeStyles = (t: Theme) =>
     title: { fontFamily: fonts.serif, fontSize: 32, color: t.palette.cafeEscuro },
     subtitle: { ...typography.caption, color: t.palette.salvia, marginTop: 2 },
 
-    doLivro: { marginTop: spacing.md },
-    doLivroLabel: {
-      fontFamily: fonts.sansBold,
-      fontSize: 12,
-      letterSpacing: 1,
-      textTransform: 'uppercase',
-      color: t.palette.salvia,
-      marginBottom: spacing.sm,
-    },
-    doLivroRow: {
+    introducaoRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
@@ -330,9 +316,9 @@ const makeStyles = (t: Theme) =>
       borderRadius: radius.md,
       paddingHorizontal: spacing.md,
       paddingVertical: 12,
-      marginBottom: spacing.sm,
+      marginTop: spacing.md,
     },
-    doLivroIcon: {
+    introducaoIcon: {
       width: 36,
       height: 36,
       borderRadius: radius.sm,
@@ -340,7 +326,9 @@ const makeStyles = (t: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    doLivroTitle: { flex: 1, minWidth: 0, fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
+    introducaoText: { flex: 1, minWidth: 0 },
+    introducaoTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
+    introducaoSubtitle: { fontFamily: fonts.sans, fontSize: 12, color: t.palette.salvia, marginTop: 2 },
 
     search: {
       flexDirection: 'row',
