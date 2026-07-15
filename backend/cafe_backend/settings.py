@@ -33,6 +33,10 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
 if not RESEND_API_KEY:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+# Segredo compartilhado com o RevenueCat (header Authorization do webhook).
+# Sem valor, o endpoint fica fechado (503) — ver accounts/assinaturas.py.
+REVENUECAT_WEBHOOK_AUTH = env("REVENUECAT_WEBHOOK_AUTH", "")
+
 # O Render injeta automaticamente o domínio público nesta variável.
 RENDER_HOST = env("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_HOST:

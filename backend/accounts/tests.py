@@ -316,3 +316,34 @@ class EuPremiumTests(APITestCase):
         u.perfil.save()
         resp = self.client.get("/api/auth/eu/")
         self.assertTrue(resp.json()["premium"])
+
+
+@override_settings(REVENUECAT_WEBHOOK_AUTH="segredo123")
+class RevenueCatWebhookTests(APITestCase):
+    def _evento(self, tipo, app_user_id, exp_ms=None):
+        return {"event": {"type": tipo, "app_user_id": str(app_user_id), "expiration_at_ms": exp_ms}}
+
+    def test_compra_ativa_premium_pago(self):
+        import time
+        u = criar_usuario(email="rc@example.com")
+        exp = int((time.time() + 30 * 86400) * 1000)
+        resp = self.client.post("/api/assinaturas/revenuecat-webhook/",
+                                self._evento("INITIAL_PURCHASE", u.id, exp),
+                                format="json", HTTP_AUTHORIZATION="segredo123")
+        self.assertEqual(resp.status_code, 200)
+        u.perfil.refresh_from_db()
+        self.assertIsNotNone(u.perfil.premium_pago_ate)
+        self.assertTrue(u.perfil.premium_ativo)
+
+    def test_sem_segredo_rejeita(self):
+        u = criar_usuario(email="rc2@example.com")
+        resp = self.client.post("/api/assinaturas/revenuecat-webhook/",
+                                self._evento("INITIAL_PURCHASE", u.id, 1),
+                                format="json", HTTP_AUTHORIZATION="errado")
+        self.assertEqual(resp.status_code, 401)
+
+    def test_app_user_anonimo_ignora(self):
+        resp = self.client.post("/api/assinaturas/revenuecat-webhook/",
+                                self._evento("INITIAL_PURCHASE", "$RCAnonymousID:abc", 1),
+                                format="json", HTTP_AUTHORIZATION="segredo123")
+        self.assertEqual(resp.status_code, 200)
