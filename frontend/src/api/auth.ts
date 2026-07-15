@@ -21,6 +21,7 @@ export type Usuario = {
   notificacoes_ativas: boolean;
   premium: boolean;
   premium_ate?: string | null;
+  avatar: string | null;
 };
 
 export type RegistroPayload = {
@@ -210,6 +211,17 @@ export async function trocarEmail(novo_email: string, senha_atual: string): Prom
     body: JSON.stringify({ novo_email, senha_atual }),
   });
   return lerOuErro<Usuario>(res);
+}
+
+export async function trocarAvatar(uri: string): Promise<Usuario> {
+  const nome = uri.split('/').pop() || 'avatar.jpg';
+  const match = /\.(\w+)$/.exec(nome);
+  const tipo = match ? `image/${match[1].toLowerCase() === 'jpg' ? 'jpeg' : match[1].toLowerCase()}` : 'image/jpeg';
+  const form = new FormData();
+  form.append('avatar', { uri, name: nome, type: tipo } as unknown as Blob);
+  const res = await authFetch('/auth/avatar/', { method: 'POST', body: form });
+  if (!res.ok) throw new ApiError(res.status, {}, 'Não foi possível enviar a foto.');
+  return (await res.json()) as Usuario;
 }
 
 export async function excluirConta(senha: string): Promise<void> {
