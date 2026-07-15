@@ -31,6 +31,18 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-14 · 💻 LOCAL · Assinaturas (premium manual + webhook RevenueCat)
+- **Backend:** campos premium no `Profile` (`premium_manual` + validade, `premium_pago_ate`) +
+  `premium_ativo`; admin **"Assinaturas"** (proxy `Assinatura` — liga premium sem pagar + lista/filtro);
+  `/api/auth/eu/` devolve `premium`/`premium_ate`; **webhook** `/api/assinaturas/revenuecat-webhook/`
+  (gracioso, env `REVENUECAT_WEBHOOK_AUTH`). Migration 0005.
+- **App:** `usePremium()` = **backend OU RevenueCat**; `Purchases.logIn(id)` no login; tela **"Assinaturas"**
+  em Meu Espaço (status + Assinar + Restaurar).
+- **Hotspots (só adição):** `accounts/{models,admin,serializers}`, `cafe_backend/{urls,settings}`,
+  `meu-espaco.tsx`, `_layout.tsx`, `auth.ts`, `PremiumContext.tsx`, `purchases.ts`, `AuthContext.tsx`.
+- **Ativa já:** premium manual (liga no admin → app respeita). **Pendente:** configurar o webhook no
+  painel do RevenueCat + `REVENUECAT_WEBHOOK_AUTH` no Render (quando houver produtos/chave).
+
 ### 2026-07-12 · 💻 LOCAL · Música de fundo
 - **Backend:** model `MusicaFundo` + `GET /api/musicas-fundo/` + admin (autora cadastra faixas).
 - **App:** `src/audio/BackgroundMusicContext` (2º player expo-audio, ducking 0.4/0.2, fades,
