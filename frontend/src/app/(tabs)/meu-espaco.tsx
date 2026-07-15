@@ -7,10 +7,13 @@ import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
+import { usePremium } from '@/subscription/PremiumContext';
+import { mediaUrl } from '@/api/content';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
@@ -28,14 +31,12 @@ const MENU: { icon: IconName; label: string; rota: Rota; requerLogin: boolean }[
   { icon: 'settings-outline', label: 'Ajustes', rota: '/ajustes', requerLogin: false },
 ];
 
-const emBreve = () =>
-  Alert.alert('Em breve', 'Esta área chega nos próximos blocos do desenvolvimento.');
-
 export default function MeuEspaco() {
   const t = useTheme();
   const router = useRouter();
   const { user, sair } = useAuth();
   const { resumo } = useEngagement();
+  const { premium } = usePremium();
   const styles = useMemo(() => makeStyles(t), [t]);
 
   const pct = resumo && resumo.total > 0 ? Math.round((resumo.lidos / resumo.total) * 100) : 0;
@@ -68,24 +69,39 @@ export default function MeuEspaco() {
         {/* Cartão de conta */}
         <Pressable
           style={styles.profileCard}
-          onPress={user ? emBreve : () => router.push('/(auth)/entrar')}
+          onPress={user ? () => router.push('/conta') : () => router.push('/(auth)/entrar')}
           accessibilityRole="button"
           accessibilityLabel={user ? 'Ver dados da conta' : 'Entrar na sua conta'}
         >
-          <LinearGradient
-            colors={gradients.avatar.colors}
-            start={gradients.avatar.start}
-            end={gradients.avatar.end}
-            style={styles.avatar}
-          >
-            {user ? (
-              <Text style={styles.avatarLetra}>{inicial}</Text>
-            ) : (
-              <Ionicons name="person" size={24} color="#FAF7F2" />
-            )}
-          </LinearGradient>
+          {user?.avatar ? (
+            <Image
+              source={{ uri: mediaUrl(user.avatar) ?? undefined }}
+              style={styles.avatar}
+              contentFit="cover"
+            />
+          ) : (
+            <LinearGradient
+              colors={gradients.avatar.colors}
+              start={gradients.avatar.start}
+              end={gradients.avatar.end}
+              style={styles.avatar}
+            >
+              {user ? (
+                <Text style={styles.avatarLetra}>{inicial}</Text>
+              ) : (
+                <Ionicons name="person" size={24} color="#FAF7F2" />
+              )}
+            </LinearGradient>
+          )}
           <View style={styles.profileText}>
-            <Text style={styles.profileName}>{nomeCompleto ?? 'Entre na sua conta'}</Text>
+            <View style={styles.profileNameRow}>
+              <Text style={styles.profileName}>{nomeCompleto ?? 'Entre na sua conta'}</Text>
+              {premium && (
+                <View style={styles.premiumPill}>
+                  <Text style={styles.premiumPillText}>Premium</Text>
+                </View>
+              )}
+            </View>
             <Text style={styles.profileSub}>
               {user?.email ?? 'Para salvar progresso, favoritos e anotações'}
             </Text>
@@ -169,8 +185,16 @@ const makeStyles = (t: Theme) =>
     avatar: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center' },
     avatarLetra: { fontFamily: fonts.serif, fontSize: 22, color: '#FAF7F2' },
     profileText: { flex: 1, minWidth: 0 },
-    profileName: { fontFamily: fonts.serif, fontSize: 18, color: t.palette.cafeEscuro },
+    profileNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+    profileName: { fontFamily: fonts.serif, fontSize: 18, color: t.palette.cafeEscuro, flexShrink: 1 },
     profileSub: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave, marginTop: 2 },
+    premiumPill: {
+      backgroundColor: t.ui.painel,
+      borderRadius: radius.pill,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+    },
+    premiumPillText: { fontFamily: fonts.sansBold, fontSize: 11, color: '#B07F3C' },
 
     jornada: {
       backgroundColor: t.ui.superficie,

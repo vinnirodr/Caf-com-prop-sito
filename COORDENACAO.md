@@ -31,6 +31,16 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-14 · 💻 LOCAL · Perfil: foto + selo Premium + cartão clicável
+- **Backend:** `Profile.avatar` (ImageField → R2 em prod) + `POST /api/auth/avatar/` (multipart) +
+  `avatar` no `/eu/`. Migration 0006.
+- **App:** expo-image-picker (~56.0.21); `/conta` com avatar 96px + "Trocar foto"; cartão do Meu
+  Espaço agora abre "Dados pessoais", exibe a foto e a pill **"Premium"** (via `usePremium`).
+- **Hotspots (só adição):** accounts/{models,serializers,views,urls}, conta.tsx, meu-espaco.tsx,
+  auth.ts, package.json. `emBreve` do cartão removido (não era usado em mais nada).
+- **iOS (futuro):** expo-image-picker vai precisar do config plugin (string de permissão de fotos).
+
+
 ### 2026-07-14 · 💻 LOCAL · Assinaturas (premium manual + webhook RevenueCat)
 - **Backend:** campos premium no `Profile` (`premium_manual` + validade, `premium_pago_ate`) +
   `premium_ativo`; admin **"Assinaturas"** (proxy `Assinatura` — liga premium sem pagar + lista/filtro);

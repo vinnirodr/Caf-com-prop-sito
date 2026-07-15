@@ -347,3 +347,26 @@ class RevenueCatWebhookTests(APITestCase):
                                 self._evento("INITIAL_PURCHASE", "$RCAnonymousID:abc", 1),
                                 format="json", HTTP_AUTHORIZATION="segredo123")
         self.assertEqual(resp.status_code, 200)
+
+
+class AvatarTests(APITestCase):
+    def test_upload_avatar(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        # PNG 1x1 mínimo válido
+        png = (b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+               b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01"
+               b"\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
+        u = criar_usuario(email="ava@example.com")
+        self.client.force_authenticate(user=u)
+        img = SimpleUploadedFile("foto.png", png, content_type="image/png")
+        resp = self.client.post("/api/auth/avatar/", {"avatar": img}, format="multipart")
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.assertTrue(resp.json()["avatar"])
+        u.perfil.refresh_from_db()
+        self.assertTrue(u.perfil.avatar)
+
+    def test_sem_arquivo_400(self):
+        u = criar_usuario(email="ava2@example.com")
+        self.client.force_authenticate(user=u)
+        resp = self.client.post("/api/auth/avatar/", {}, format="multipart")
+        self.assertEqual(resp.status_code, 400)
