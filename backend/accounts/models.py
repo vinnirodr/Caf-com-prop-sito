@@ -30,6 +30,7 @@ class Profile(models.Model):
         default=True,
         help_text="Quando desativado, o usuário não recebe push notifications.",
     )
+    avatar = models.ImageField("foto", upload_to="avatars/", null=True, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     premium_manual = models.BooleanField(
         "premium (concedido)", default=False,

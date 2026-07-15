@@ -27,6 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
     )
     premium = serializers.SerializerMethodField()
     premium_ate = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     def get_premium(self, obj):
         perfil = getattr(obj, "perfil", None)
@@ -35,6 +36,10 @@ class UserSerializer(serializers.ModelSerializer):
     def get_premium_ate(self, obj):
         perfil = getattr(obj, "perfil", None)
         return perfil.premium_ate.isoformat() if (perfil and perfil.premium_ate) else None
+
+    def get_avatar(self, obj):
+        perfil = getattr(obj, "perfil", None)
+        return perfil.avatar.url if (perfil and perfil.avatar) else None
 
     class Meta:
         model = User
@@ -48,6 +53,7 @@ class UserSerializer(serializers.ModelSerializer):
             "notificacoes_ativas",
             "premium",
             "premium_ate",
+            "avatar",
         ]
 
 

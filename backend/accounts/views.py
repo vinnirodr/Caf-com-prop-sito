@@ -1,6 +1,8 @@
 """Views de autenticação: cadastro, login e dados do usuário logado."""
 from django.conf import settings
 from rest_framework import generics, permissions, status
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -179,3 +181,17 @@ class DispararAgendadasView(APIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
         enviadas = push.disparar_agendadas()
         return Response({"enviadas": enviadas})
+
+
+class AvatarView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        arquivo = request.FILES.get("avatar")
+        if not arquivo:
+            return Response({"detail": "Envie uma imagem em 'avatar'."}, status=status.HTTP_400_BAD_REQUEST)
+        perfil = request.user.perfil
+        perfil.avatar = arquivo
+        perfil.save(update_fields=["avatar"])
+        return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
