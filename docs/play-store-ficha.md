@@ -95,7 +95,9 @@ Coleta (tudo "para funcionalidade do app"; **não** para anúncios, **não** ven
 | ID do dispositivo (token de push) | Sim | Sim | Notificações |
 
 - Criptografado em trânsito: **Sim** (HTTPS).
-- Usuário pode pedir exclusão: **Sim** — há "Excluir conta" no app.
+- Usuário pode pedir exclusão: **Sim** — no app (Meu Espaço → Dados pessoais → Excluir conta)
+  **ou** por e-mail. **URL para exclusão de contas** (campo obrigatório da Data Safety):
+  `https://cafe-com-proposito-api.onrender.com/excluir-conta/`
 - Compartilha/vende dados: **Não** (usa serviços para operar; declarar na Política, não como venda).
 
 ## 7. Classificação de conteúdo (IARC)

@@ -26,6 +26,11 @@ urlpatterns = [
         TemplateView.as_view(template_name="legal/termos.html"),
         name="termos",
     ),
+    path(
+        "excluir-conta/",
+        TemplateView.as_view(template_name="legal/excluir-conta.html"),
+        name="excluir-conta",
+    ),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
     path("api/assinaturas/revenuecat-webhook/", RevenueCatWebhook.as_view(), name="revenuecat-webhook"),
