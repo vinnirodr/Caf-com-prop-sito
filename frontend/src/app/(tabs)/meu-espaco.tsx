@@ -16,7 +16,7 @@ import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
-type Rota = '/anotacoes' | '/favoritos' | '/conta' | '/ajustes' | '/apoiar';
+type Rota = '/anotacoes' | '/favoritos' | '/conta' | '/assinaturas' | '/ajustes' | '/apoiar';
 
 // Rotas pessoais exigem login; Ajustes e Apoiar funcionam sem conta (não dependem de perfil).
 const MENU: { icon: IconName; label: string; rota: Rota; requerLogin: boolean }[] = [
@@ -24,6 +24,7 @@ const MENU: { icon: IconName; label: string; rota: Rota; requerLogin: boolean }[
   { icon: 'document-text-outline', label: 'Minhas anotações', rota: '/anotacoes', requerLogin: true },
   { icon: 'heart-outline', label: 'Favoritos', rota: '/favoritos', requerLogin: true },
   { icon: 'gift-outline', label: 'Apoiar o projeto', rota: '/apoiar', requerLogin: false },
+  { icon: 'card-outline', label: 'Assinaturas', rota: '/assinaturas', requerLogin: true },
   { icon: 'settings-outline', label: 'Ajustes', rota: '/ajustes', requerLogin: false },
 ];
 

@@ -82,6 +82,7 @@ export default function RootLayout() {
                 <Stack.Screen name="conta/senha" />
                 <Stack.Screen name="conta/email" />
                 <Stack.Screen name="apoiar" />
+                <Stack.Screen name="assinaturas" />
                 <Stack.Screen name="player" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
                 <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
                 <Stack.Screen name="continuar-lendo" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
