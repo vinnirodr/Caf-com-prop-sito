@@ -1,6 +1,8 @@
 /**
- * Estado global de assinatura (RevenueCat). `usePremium()` devolve se o usuário
- * tem Premium ativo. Sem config (sem chave), `premium` é sempre false e nada quebra.
+ * Estado global de assinatura (RevenueCat + backend). `usePremium()` devolve se o
+ * usuário tem Premium ativo: `premium = premium do backend OU premium do RevenueCat`.
+ * Sem config do RevenueCat (sem chave), `premiumRC` é sempre false e nada quebra —
+ * o premium ainda pode vir do backend.
  */
 import {
   createContext,
@@ -18,6 +20,7 @@ import {
   restaurarCompras,
   aoAtualizarCliente,
 } from '@/lib/purchases';
+import { useAuth } from '@/auth/AuthContext';
 
 type PremiumValue = {
   premium: boolean;
@@ -28,7 +31,8 @@ type PremiumValue = {
 const PremiumContext = createContext<PremiumValue | undefined>(undefined);
 
 export function PremiumProvider({ children }: { children: ReactNode }) {
-  const [premium, setPremium] = useState(false);
+  const { user } = useAuth();
+  const [premiumRC, setPremiumRC] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,12 +41,12 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       await inicializarCompras();
       const info = await getCustomerInfoAtual();
       if (ativo) {
-        setPremium(checarPremium(info));
+        setPremiumRC(checarPremium(info));
         setLoading(false);
       }
     })();
     const desinscrever = aoAtualizarCliente((info) => {
-      if (ativo) setPremium(checarPremium(info));
+      if (ativo) setPremiumRC(checarPremium(info));
     });
     return () => {
       ativo = false;
@@ -53,9 +57,12 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const restaurar = useCallback(async (): Promise<boolean> => {
     const info = await restaurarCompras();
     const ativo = checarPremium(info);
-    setPremium(ativo);
+    setPremiumRC(ativo);
     return ativo;
   }, []);
+
+  const premiumBackend = !!user?.premium;
+  const premium = premiumBackend || premiumRC;
 
   const value = useMemo(
     () => ({ premium, loading, restaurar }),

@@ -3,8 +3,11 @@ Perfil do usuário do app. Mantemos o User padrão do Django (nome, sobrenome,
 e-mail, senha) e guardamos aqui os campos extras do cadastro (telefone e data
 de nascimento). O e-mail é usado como login (gravado também em `username`).
 """
+from datetime import date
+
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -28,6 +31,19 @@ class Profile(models.Model):
         help_text="Quando desativado, o usuário não recebe push notifications.",
     )
     criado_em = models.DateTimeField(auto_now_add=True)
+    premium_manual = models.BooleanField(
+        "premium (concedido)", default=False,
+        help_text="Liga o Premium manualmente (comp/brinde), sem pagamento.",
+    )
+    premium_manual_ate = models.DateField(
+        "premium manual até", null=True, blank=True,
+        help_text="Opcional. Vazio = permanente; com data = expira nesse dia.",
+    )
+    premium_pago_ate = models.DateTimeField(
+        "premium pago até", null=True, blank=True,
+        help_text="Validade da assinatura paga (sincronizada do RevenueCat).",
+    )
+    rc_ultimo_evento = models.CharField("último evento RevenueCat", max_length=60, blank=True, default="")
 
     class Meta:
         verbose_name = "perfil"
@@ -35,6 +51,32 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"Perfil de {self.usuario}"
+
+    @property
+    def premium_ativo(self):
+        manual = self.premium_manual and (
+            self.premium_manual_ate is None or self.premium_manual_ate >= date.today()
+        )
+        pago = self.premium_pago_ate is not None and self.premium_pago_ate >= timezone.now()
+        return bool(manual or pago)
+
+    @property
+    def premium_ate(self):
+        """Data efetiva mais distante (manual/pago) enquanto premium; senão None."""
+        from datetime import datetime, time
+        candidatos = []
+        if self.premium_manual and self.premium_manual_ate:
+            candidatos.append(timezone.make_aware(datetime.combine(self.premium_manual_ate, time.max)))
+        if self.premium_pago_ate:
+            candidatos.append(self.premium_pago_ate)
+        return max(candidatos) if candidatos else None
+
+
+class Assinatura(Profile):
+    class Meta:
+        proxy = True
+        verbose_name = "assinatura"
+        verbose_name_plural = "assinaturas"
 
 
 class Notificacao(models.Model):

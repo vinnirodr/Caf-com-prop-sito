@@ -5,6 +5,8 @@ from django.http import JsonResponse
 from django.urls import path, include
 from django.views.generic import TemplateView
 
+from accounts.assinaturas import RevenueCatWebhook
+
 
 def healthz(request):
     """Health check leve para monitoramento e keep-warm (sem tocar no banco)."""
@@ -26,6 +28,7 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
+    path("api/assinaturas/revenuecat-webhook/", RevenueCatWebhook.as_view(), name="revenuecat-webhook"),
     path("api/", include("content.urls")),
     path("api/", include("engagement.urls")),
 ]

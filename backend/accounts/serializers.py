@@ -25,10 +25,30 @@ class UserSerializer(serializers.ModelSerializer):
     notificacoes_ativas = serializers.BooleanField(
         source="perfil.notificacoes_ativas", read_only=True
     )
+    premium = serializers.SerializerMethodField()
+    premium_ate = serializers.SerializerMethodField()
+
+    def get_premium(self, obj):
+        perfil = getattr(obj, "perfil", None)
+        return bool(perfil and perfil.premium_ativo)
+
+    def get_premium_ate(self, obj):
+        perfil = getattr(obj, "perfil", None)
+        return perfil.premium_ate.isoformat() if (perfil and perfil.premium_ate) else None
 
     class Meta:
         model = User
-        fields = ["id", "nome", "sobrenome", "email", "telefone", "data_nascimento", "notificacoes_ativas"]
+        fields = [
+            "id",
+            "nome",
+            "sobrenome",
+            "email",
+            "telefone",
+            "data_nascimento",
+            "notificacoes_ativas",
+            "premium",
+            "premium_ate",
+        ]
 
 
 class GoogleLoginSerializer(serializers.Serializer):

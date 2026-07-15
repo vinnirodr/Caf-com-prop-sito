@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils import timezone
 
 from . import push
-from .models import Notificacao, Profile
+from .models import Assinatura, Notificacao, Profile
 
 User = get_user_model()
 
@@ -15,8 +15,9 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name = "perfil"
     verbose_name_plural = "perfil"
-    readonly_fields = ("push_token",)
-    fields = ("telefone", "data_nascimento", "push_token", "notificacoes_ativas")
+    readonly_fields = ("push_token", "premium_pago_ate", "rc_ultimo_evento")
+    fields = ("telefone", "data_nascimento", "push_token", "notificacoes_ativas",
+              "premium_manual", "premium_manual_ate", "premium_pago_ate", "rc_ultimo_evento")
 
 
 class UserAdmin(BaseUserAdmin):
@@ -26,6 +27,27 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
+
+@admin.register(Assinatura)
+class AssinaturaAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "premium_badge", "origem", "premium_manual", "premium_manual_ate", "premium_pago_ate")
+    list_editable = ("premium_manual", "premium_manual_ate")
+    list_filter = ("premium_manual",)
+    search_fields = ("usuario__email", "usuario__first_name", "usuario__last_name", "usuario__username")
+    readonly_fields = ("premium_pago_ate", "rc_ultimo_evento", "criado_em")
+
+    @admin.display(description="premium", boolean=True)
+    def premium_badge(self, obj):
+        return obj.premium_ativo
+
+    @admin.display(description="origem")
+    def origem(self, obj):
+        if obj.premium_manual:
+            return "Manual"
+        if obj.premium_pago_ate:
+            return "Pago"
+        return "—"
 
 
 @admin.action(description="📣 Enviar agora para todos os usuários ativos")
