@@ -303,3 +303,16 @@ class PremiumProfileTests(TestCase):
         self.assertTrue(p.premium_ativo)  # pago válido
         p.premium_pago_ate = timezone.now() - timedelta(days=1)
         self.assertFalse(p.premium_ativo)  # pago expirado
+
+
+class EuPremiumTests(APITestCase):
+    def test_eu_reflete_premium_manual(self):
+        u = criar_usuario(email="eu@example.com")
+        self.client.force_authenticate(user=u)
+        resp = self.client.get("/api/auth/eu/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.json()["premium"])
+        u.perfil.premium_manual = True
+        u.perfil.save()
+        resp = self.client.get("/api/auth/eu/")
+        self.assertTrue(resp.json()["premium"])
