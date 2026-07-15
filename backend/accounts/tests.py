@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core import mail
-from django.test import override_settings
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
@@ -284,3 +284,22 @@ class EnvioEmailResendTests(APITestCase):
         resp = self._pedir()
         self.assertEqual(resp.status_code, 200)  # anti-enumeração + não pode dar 500
         self.assertEqual(PasswordResetCode.objects.filter(usuario=self.user).count(), 1)
+
+
+class PremiumProfileTests(TestCase):
+    def test_premium_ativo_manual_e_pago(self):
+        from datetime import date, timedelta
+        from django.utils import timezone
+        from accounts.models import Profile
+        u = criar_usuario(email="prem@example.com")
+        p = u.perfil
+        self.assertFalse(p.premium_ativo)
+        p.premium_manual = True
+        self.assertTrue(p.premium_ativo)  # manual sem validade = permanente
+        p.premium_manual_ate = date.today() - timedelta(days=1)
+        self.assertFalse(p.premium_ativo)  # manual expirado
+        p.premium_manual = False
+        p.premium_pago_ate = timezone.now() + timedelta(days=5)
+        self.assertTrue(p.premium_ativo)  # pago válido
+        p.premium_pago_ate = timezone.now() - timedelta(days=1)
+        self.assertFalse(p.premium_ativo)  # pago expirado
