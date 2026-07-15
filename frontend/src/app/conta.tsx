@@ -8,12 +8,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 import Field from '@/components/Field';
 import Button from '@/components/Button';
 import { useAuth } from '@/auth/AuthContext';
-import { atualizarPerfil, ApiError, type PerfilPatch } from '@/api/auth';
+import { atualizarPerfil, trocarAvatar, ApiError, type PerfilPatch } from '@/api/auth';
+import { mediaUrl } from '@/api/content';
 import { maskDateBR, brParaISO, isoParaBR } from '@/lib/dateInput';
 import { fonts, palette, spacing } from '@/theme/ccpTheme';
+import { gradients } from '@/theme/gradients';
 import { useTheme } from '@/theme/useTheme';
 
 export default function Conta() {
@@ -30,6 +35,33 @@ export default function Conta() {
   const [mostrarExcluir, setMostrarExcluir] = useState(false);
   const [senhaExcluir, setSenhaExcluir] = useState('');
   const [excluindo, setExcluindo] = useState(false);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
+
+  const inicial = (user?.nome?.trim()?.[0] ?? '?').toUpperCase();
+
+  const escolherFoto = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Permissão necessária', 'Autorize o acesso às fotos para trocar sua imagem.');
+      return;
+    }
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (r.canceled || !r.assets?.[0]) return;
+    setEnviandoFoto(true);
+    try {
+      const atualizado = await trocarAvatar(r.assets[0].uri);
+      atualizarUsuario(atualizado);
+    } catch {
+      Alert.alert('Ops', 'Não foi possível enviar a foto. Tente de novo.');
+    } finally {
+      setEnviandoFoto(false);
+    }
+  };
 
   const salvar = async () => {
     setErro(null);
@@ -85,6 +117,33 @@ export default function Conta() {
           <Ionicons name="chevron-back" size={24} color={palette.cafeEscuro} />
         </Pressable>
         <Text style={styles.titulo}>Minha Conta</Text>
+
+        <View style={styles.avatarBloco}>
+          <View style={styles.avatar}>
+            {user?.avatar ? (
+              <Image source={{ uri: mediaUrl(user.avatar) ?? undefined }} style={styles.avatarImagem} />
+            ) : (
+              <LinearGradient
+                colors={gradients.avatar.colors}
+                start={gradients.avatar.start}
+                end={gradients.avatar.end}
+                style={styles.avatarGradiente}
+              >
+                <Text style={styles.avatarLetra}>{inicial}</Text>
+              </LinearGradient>
+            )}
+          </View>
+          <Pressable
+            onPress={escolherFoto}
+            disabled={enviandoFoto}
+            hitSlop={8}
+            style={styles.trocarFoto}
+            accessibilityRole="button"
+            accessibilityLabel="Trocar foto de perfil"
+          >
+            <Text style={styles.trocarFotoTexto}>{enviandoFoto ? 'Enviando…' : 'Trocar foto'}</Text>
+          </Pressable>
+        </View>
 
         <Field label="Nome" value={nome} onChangeText={setNome} style={styles.field} />
         <Field label="Sobrenome" value={sobrenome} onChangeText={setSobrenome} style={styles.field} />
@@ -144,6 +203,13 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.xl },
   voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
   titulo: { fontFamily: fonts.serif, fontSize: 30, color: palette.cafeEscuro, marginBottom: spacing.md },
+  avatarBloco: { alignItems: 'center', marginBottom: spacing.sm },
+  avatar: { width: 96, height: 96, borderRadius: 48, overflow: 'hidden' },
+  avatarImagem: { width: 96, height: 96, borderRadius: 48 },
+  avatarGradiente: { width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
+  avatarLetra: { fontFamily: fonts.serif, fontSize: 36, color: '#FAF7F2' },
+  trocarFoto: { marginTop: 10, minHeight: 44, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
+  trocarFotoTexto: { fontFamily: fonts.sansBold, fontSize: 14, color: palette.douradoAmanhecer },
   field: { marginTop: 16 },
   emailRow: { marginTop: 16, flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
   emailField: { flex: 1 },
