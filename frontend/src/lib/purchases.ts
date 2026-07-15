@@ -100,3 +100,23 @@ export function aoAtualizarCliente(cb: (info: CustomerInfo) => void): () => void
   Purchases.addCustomerInfoUpdateListener(cb);
   return () => Purchases.removeCustomerInfoUpdateListener(cb);
 }
+
+/** Identifica o usuário logado no RevenueCat (App User ID = id do backend). No-op sem chave. */
+export async function identificarUsuario(id: string | number): Promise<void> {
+  if (!configuradoRevenueCat()) return;
+  try {
+    await Purchases.logIn(String(id));
+  } catch {
+    // não deve derrubar o app
+  }
+}
+
+/** Desvincula o usuário do RevenueCat (logout). No-op sem chave. */
+export async function desidentificarUsuario(): Promise<void> {
+  if (!configuradoRevenueCat()) return;
+  try {
+    await Purchases.logOut();
+  } catch {
+    // não deve derrubar o app
+  }
+}

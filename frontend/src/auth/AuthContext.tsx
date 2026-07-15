@@ -24,6 +24,7 @@ import {
 import { getTokens } from '@/lib/storage';
 import { obterPushToken, sincronizarToken } from '@/lib/notifications';
 import { obterIdTokenGoogle, sairDoGoogle } from '@/lib/google';
+import { identificarUsuario, desidentificarUsuario } from '@/lib/purchases';
 
 type AuthValue = {
   user: Usuario | null;
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const u = await buscarEu();
           if (active) {
             setUser(u);
+            identificarUsuario(u.id);
             // Re-sincroniza o token (pode ter mudado se o app foi reinstalado).
             obterPushToken()
               .then((t) => { if (t) sincronizarToken(t, u.notificacoes_ativas ?? true); })
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const entrar = useCallback(async (email: string, senha: string) => {
     const { user } = await apiLogin(email, senha);
     setUser(user);
+    identificarUsuario(user.id);
     obterPushToken()
       .then((t) => { if (t) sincronizarToken(t, true); })
       .catch(() => {});
@@ -79,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const cadastrar = useCallback(async (payload: RegistroPayload) => {
     const { user } = await apiRegistrar(payload);
     setUser(user);
+    identificarUsuario(user.id);
     obterPushToken()
       .then((t) => { if (t) sincronizarToken(t, true); })
       .catch(() => {});
@@ -89,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!idToken) return false; // usuário cancelou
     const user = await loginGoogle(idToken);
     setUser(user);
+    identificarUsuario(user.id);
     obterPushToken()
       .then((t) => { if (t) sincronizarToken(t, true); })
       .catch(() => {});
@@ -98,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const sair = useCallback(async () => {
     await apiSair();
     await sairDoGoogle(); // encerra a sessão nativa do Google (senão gruda a conta)
+    await desidentificarUsuario();
     setUser(null);
   }, []);
 

@@ -19,6 +19,8 @@ export type Usuario = {
   telefone: string;
   data_nascimento: string | null;
   notificacoes_ativas: boolean;
+  premium: boolean;
+  premium_ate?: string | null;
 };
 
 export type RegistroPayload = {
