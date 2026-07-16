@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <title>Café com Propósito — Um café com Deus, todos os dias</title>
+  <meta name="description" content="Uma reflexão por dia para ler ou ouvir — no seu tempo, com calma e propósito. Baixe o Café com Propósito no Google Play.">
+  <meta property="og:title" content="Café com Propósito">
+  <meta property="og:description" content="Um café com Deus, todos os dias. Uma reflexão por dia para ler ou ouvir.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cafecomproposito.luminaflow.io/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cafe:#5B4636; --cafe-esc:#3A2D22; --dourado:#C8924A; --dourado-suave:#E0B878;
+      --salvia:#8B9D83; --bg:#FAF7F2; --texto:#2A2422; --suave:#6E625A; --linha:#EAE0D4;
+      --creme:#F4E6CF;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body { background: var(--bg); color: var(--texto); font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; }
+    .serif { font-family: 'Lora', Georgia, serif; }
+    a { text-decoration: none; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+    /* Header */
+    header { position: sticky; top: 0; background: rgba(250,247,242,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--linha); z-index: 10; }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+    .marca { display: flex; align-items: center; gap: 10px; color: var(--cafe-esc); }
+    .marca-selo { width: 30px; height: 30px; border-radius: 50%; background: var(--dourado); color: var(--creme); display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+    .marca-nome { font-family: 'Lora', serif; font-size: 17px; }
+    .nav-cta { background: var(--cafe); color: var(--creme); font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 999px; transition: background .2s; }
+    .nav-cta:hover { background: var(--cafe-esc); }
+
+    /* Hero (gradiente céu da marca) */
+    .hero { background: linear-gradient(160deg, #5B4636 0%, #8A5E34 55%, #C8924A 100%); color: var(--creme); text-align: center; padding: 72px 24px 64px; border-radius: 0 0 40px 40px; }
+    .hero h1 { font-family: 'Lora', serif; font-weight: 600; font-size: clamp(30px, 5.5vw, 46px); line-height: 1.2; letter-spacing: -0.5px; max-width: 620px; margin: 0 auto; }
+    .hero p { font-size: clamp(15px, 2.3vw, 18px); color: #EFDCC0; max-width: 480px; margin: 18px auto 0; }
+    .badge-play { display: inline-flex; align-items: center; gap: 11px; background: #2A2422; color: #FAF7F2; border-radius: 12px; padding: 12px 22px; margin-top: 30px; transition: transform .15s, box-shadow .15s; box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+    .badge-play:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+    .badge-play svg { width: 26px; height: 26px; }
+    .badge-play .txt { text-align: left; line-height: 1.15; }
+    .badge-play .txt small { display: block; font-size: 10px; letter-spacing: 1px; color: #C9BAA8; }
+    .badge-play .txt strong { display: block; font-size: 16px; font-weight: 600; }
+
+    /* Mockup do app (CSS puro; trocar por screenshot real quando houver) */
+    .phone { width: 250px; margin: 46px auto -140px; background: #FFFFFF; border-radius: 34px; padding: 16px 14px 22px; box-shadow: 0 24px 60px rgba(42,36,34,.35); text-align: left; position: relative; z-index: 2; }
+    .phone-hero { height: 96px; border-radius: 18px; background: linear-gradient(140deg, #E0B878, #C8924A); }
+    .phone h3 { font-family: 'Lora', serif; font-size: 15px; color: var(--cafe-esc); margin: 12px 4px 8px; }
+    .phone .linha-txt { height: 7px; border-radius: 4px; background: #F0E8DC; margin: 6px 4px; }
+    .phone .ouvir { display: flex; align-items: center; gap: 8px; margin: 14px 4px 0; }
+    .phone .ouvir-btn { width: 30px; height: 30px; border-radius: 50%; background: var(--dourado); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+    .phone .ouvir small { font-size: 11px; color: var(--suave); }
+
+    /* Versículo */
+    .verso { background: var(--cafe); color: var(--creme); text-align: center; padding: 190px 24px 48px; margin-top: -40px; }
+    .verso blockquote { font-family: 'Lora', serif; font-style: italic; font-size: clamp(17px, 2.8vw, 22px); max-width: 560px; margin: 0 auto; line-height: 1.5; }
+    .verso cite { display: block; font-style: normal; font-size: 13px; color: #C9AE8C; margin-top: 12px; }
+
+    /* Benefícios */
+    .beneficios { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px; padding: 64px 0; text-align: center; }
+    .beneficio .icone { width: 54px; height: 54px; border-radius: 50%; background: #F4E9DB; color: #B07F3C; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; }
+    .beneficio h2 { font-size: 17px; font-weight: 600; color: var(--cafe-esc); margin-top: 14px; }
+    .beneficio p { font-size: 14px; color: var(--suave); margin-top: 6px; }
+
+    /* Autora */
+    .autora { background: #FFFFFF; border-top: 1px solid var(--linha); border-bottom: 1px solid var(--linha); }
+    .autora-in { display: flex; align-items: center; gap: 20px; padding: 34px 0; }
+    .autora-foto { width: 64px; height: 64px; border-radius: 50%; background: var(--salvia); color: #F4F1EA; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+    .autora h2 { font-size: 16px; font-weight: 600; color: var(--cafe-esc); }
+    .autora p { font-size: 14px; color: var(--suave); margin-top: 4px; }
+
+    /* CTA final */
+    .cta-final { text-align: center; padding: 72px 24px; }
+    .cta-final h2 { font-family: 'Lora', serif; font-weight: 600; font-size: clamp(22px, 3.6vw, 30px); color: var(--cafe-esc); max-width: 520px; margin: 0 auto; }
+
+    footer { border-top: 1px solid var(--linha); }
+    .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 20px 0; font-size: 12.5px; color: #9a8d7f; }
+    .foot a { color: #B07F3C; }
+    .foot a + a { margin-left: 14px; }
+
+    @media (max-width: 560px) {
+      .hero { padding: 56px 20px 48px; }
+      .phone { width: 210px; margin-bottom: -120px; }
+      .verso { padding-top: 160px; }
+      .autora-in { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="wrap nav">
+      <div class="marca">
+        <span class="marca-selo">☕</span>
+        <span class="marca-nome">Café com Propósito</span>
+      </div>
+      <a class="nav-cta" href="https://play.google.com/store/apps/details?id=com.cafecomproposito.app">Baixar o app</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1>Um café com Deus,<br>todos os dias</h1>
+    <p>Uma reflexão por dia para ler ou ouvir — no seu tempo, com calma e propósito.</p>
+    <a class="badge-play" href="https://play.google.com/store/apps/details?id=com.cafecomproposito.app" aria-label="Baixar no Google Play">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.6 2.3c-.4.2-.6.7-.6 1.3v16.8c0 .6.2 1.1.6 1.3l.1.1 9.4-9.4v-.2L3.7 2.3h-.1z" fill="#00D7FE"/><path d="M16.2 15.5 13.1 12.4v-.2l3.1-3.1.1.1 3.7 2.1c1.1.6 1.1 1.6 0 2.2l-3.7 2.1-.1-.1z" fill="#FFCE00"/><path d="m16.3 15.4-3.2-3.2-9.5 9.5c.4.4 1 .4 1.7 0l11-6.3" fill="#FF3A44"/><path d="M16.3 9.2 5.3 2.9c-.7-.4-1.3-.3-1.7.1l9.5 9.4 3.2-3.2z" fill="#00F076"/></svg>
+      <span class="txt"><small>DISPONÍVEL NO</small><strong>Google Play</strong></span>
+    </a>
+    <div class="phone" aria-hidden="true">
+      <div class="phone-hero"></div>
+      <h3>Capítulo 12 — Recomece devagar</h3>
+      <div class="linha-txt"></div>
+      <div class="linha-txt" style="width:86%"></div>
+      <div class="linha-txt" style="width:72%"></div>
+      <div class="linha-txt" style="width:90%"></div>
+      <div class="ouvir"><span class="ouvir-btn">▶</span><small>Ouvir capítulo</small></div>
+    </div>
+  </section>
+
+  <section class="verso">
+    <blockquote>“As misericórdias do Senhor são a causa de não sermos consumidos; renovam-se a cada manhã.”</blockquote>
+    <cite>Lamentações 3:22-23</cite>
+  </section>
+
+  <main class="wrap">
+    <section class="beneficios">
+      <div class="beneficio">
+        <span class="icone">🎧</span>
+        <h2>Leia ou ouça</h2>
+        <p>Reflexões narradas, com música suave ao fundo para relaxar e se concentrar.</p>
+      </div>
+      <div class="beneficio">
+        <span class="icone">🔖</span>
+        <h2>Guarde o que tocou</h2>
+        <p>Favoritos, anotações pessoais e a sua jornada de leitura, sempre com você.</p>
+      </div>
+      <div class="beneficio">
+        <span class="icone">🌱</span>
+        <h2>Cresça no seu ritmo</h2>
+        <p>Um livro em evolução contínua — um capítulo por vez, sem pressa e sem cobrança.</p>
+      </div>
+    </section>
+  </main>
+
+  <section class="autora">
+    <div class="wrap autora-in">
+      <span class="autora-foto" aria-hidden="true">🖋️</span>
+      <div>
+        <h2>Escrito por Marinilde Rodrigues Gregório</h2>
+        <p>Reflexões nascidas da caminhada com Deus, escritas com carinho para o seu dia a dia.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-final">
+    <h2>Comece o dia devagar, com fé e um bom café</h2>
+    <a class="badge-play" href="https://play.google.com/store/apps/details?id=com.cafecomproposito.app" aria-label="Baixar no Google Play">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.6 2.3c-.4.2-.6.7-.6 1.3v16.8c0 .6.2 1.1.6 1.3l.1.1 9.4-9.4v-.2L3.7 2.3h-.1z" fill="#00D7FE"/><path d="M16.2 15.5 13.1 12.4v-.2l3.1-3.1.1.1 3.7 2.1c1.1.6 1.1 1.6 0 2.2l-3.7 2.1-.1-.1z" fill="#FFCE00"/><path d="m16.3 15.4-3.2-3.2-9.5 9.5c.4.4 1 .4 1.7 0l11-6.3" fill="#FF3A44"/><path d="M16.3 9.2 5.3 2.9c-.7-.4-1.3-.3-1.7.1l9.5 9.4 3.2-3.2z" fill="#00F076"/></svg>
+      <span class="txt"><small>DISPONÍVEL NO</small><strong>Google Play</strong></span>
+    </a>
+  </section>
+
+  <footer>
+    <div class="wrap foot">
+      <span>© 2026 LuminaFlow Studios · Café com Propósito</span>
+      <span>
+        <a href="/privacidade/">Política de Privacidade</a>
+        <a href="/termos/">Termos de Uso</a>
+        <a href="mailto:cafecomproposito@luminaflow.io">Contato</a>
+      </span>
+    </div>
+  </footer>
+
+</body>
+</html>

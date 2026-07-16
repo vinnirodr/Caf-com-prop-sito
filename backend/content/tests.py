@@ -84,3 +84,13 @@ class MusicaFundoApiTests(TestCase):
         self.assertIn("url", item)
         self.assertTrue(item["url"])
         self.assertEqual(item["ordem"], 1)
+
+
+class LandingPageTests(TestCase):
+    def test_landing_na_raiz(self):
+        resp = self.client.get("/")
+        self.assertEqual(resp.status_code, 200)
+        html = resp.content.decode()
+        self.assertIn("Um café com Deus", html)
+        self.assertIn("play.google.com/store/apps/details?id=com.cafecomproposito.app", html)
+        self.assertIn("/privacidade/", html)
