@@ -14,6 +14,9 @@ def healthz(request):
 
 
 urlpatterns = [
+    # Landing page pública (marketing → Google Play). Servida em
+    # https://cafecomproposito.luminaflow.io/ via domínio customizado no Render.
+    path("", TemplateView.as_view(template_name="site/landing.html"), name="landing"),
     path("healthz/", healthz, name="healthz"),
     # Páginas legais públicas (exigidas pela Play Store; linkadas no app).
     path(
