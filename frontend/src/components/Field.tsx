@@ -36,7 +36,7 @@ export default function Field({ label, icon, secure, error, style, ...rest }: Pr
 
   return (
     <View style={style}>
-      <Text style={[s.label, { color: palette.cafeEscuro }]}>{label}</Text>
+      <Text style={[s.label, { color: t.ui.texto }]}>{label}</Text>
       <View
         style={[
           s.box,

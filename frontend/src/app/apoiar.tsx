@@ -1,5 +1,5 @@
 /** Tela de doação ("Apoiar o projeto"): compras únicas (consumíveis) R$2–20. */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -7,11 +7,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import type { PurchasesPackage } from 'react-native-purchases';
 import { getPacotesDoacao, comprarPacote } from '@/lib/purchases';
-import { fonts, palette, spacing } from '@/theme/ccpTheme';
-import { useTheme } from '@/theme/useTheme';
+import { fonts, spacing } from '@/theme/ccpTheme';
+import { useTheme, type Theme } from '@/theme/useTheme';
 
 export default function Apoiar() {
   const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
   const router = useRouter();
   const [tiers, setTiers] = useState<PurchasesPackage[]>([]);
   const [processando, setProcessando] = useState(false);
@@ -35,11 +36,11 @@ export default function Apoiar() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: t.ui.fundo }]} edges={['top', 'bottom']}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
       <ScrollView contentContainerStyle={styles.content}>
         <Pressable onPress={() => router.back()} hitSlop={8} style={styles.voltar} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={palette.cafeEscuro} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <Text style={styles.titulo}>Apoiar o projeto</Text>
         <Text style={styles.sub}>
@@ -64,7 +65,7 @@ export default function Apoiar() {
                 accessibilityRole="button"
                 accessibilityLabel={`Doar ${pkg.product.priceString}`}
               >
-                <Ionicons name="heart" size={18} color={palette.douradoAmanhecer} />
+                <Ionicons name="heart" size={18} color={t.palette.douradoAmanhecer} />
                 <Text style={styles.tierValor}>{pkg.product.priceString}</Text>
               </Pressable>
             ))}
@@ -75,23 +76,24 @@ export default function Apoiar() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.lg },
-  voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
-  titulo: { fontFamily: fonts.serif, fontSize: 30, color: palette.cafeEscuro, marginBottom: 8 },
-  sub: { fontFamily: fonts.sans, fontSize: 14, color: '#6E625A', marginBottom: spacing.lg, lineHeight: 21 },
-  grade: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  tier: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    minWidth: '46%', flexGrow: 1, paddingVertical: 18,
-    borderWidth: 1.5, borderColor: palette.douradoSuave, borderRadius: 16,
-  },
-  tierInativo: { opacity: 0.5 },
-  tierValor: { fontFamily: fonts.sansBold, fontSize: 17, color: palette.cafeEscuro },
-  emBreve: {
-    borderWidth: 1, borderColor: '#EAE0D4', borderRadius: 16, padding: 20,
-    backgroundColor: '#FFF',
-  },
-  emBreveText: { fontFamily: fonts.sans, fontSize: 14, color: '#6E625A', lineHeight: 21, textAlign: 'center' },
-});
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: t.ui.fundo },
+    content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.lg },
+    voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
+    titulo: { fontFamily: fonts.serif, fontSize: 30, color: t.ui.texto, marginBottom: 8 },
+    sub: { fontFamily: fonts.sans, fontSize: 14, color: t.ui.textoSuave, marginBottom: spacing.lg, lineHeight: 21 },
+    grade: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+    tier: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+      minWidth: '46%', flexGrow: 1, paddingVertical: 18,
+      borderWidth: 1.5, borderColor: t.palette.douradoSuave, borderRadius: 16,
+    },
+    tierInativo: { opacity: 0.5 },
+    tierValor: { fontFamily: fonts.sansBold, fontSize: 17, color: t.ui.texto },
+    emBreve: {
+      borderWidth: 1, borderColor: t.ui.linha, borderRadius: 16, padding: 20,
+      backgroundColor: t.ui.superficie,
+    },
+    emBreveText: { fontFamily: fonts.sans, fontSize: 14, color: t.ui.textoSuave, lineHeight: 21, textAlign: 'center' },
+  });

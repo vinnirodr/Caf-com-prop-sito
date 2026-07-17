@@ -3,7 +3,7 @@
  * + confirmação, senha + confirmação, aceite de termos). Valida no cliente e
  * mostra erros do backend por campo. Sucesso → entra logado.
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -24,10 +24,11 @@ import { useAuth } from '@/auth/AuthContext';
 import { ApiError } from '@/api/auth';
 import { maskTelefone, maskData, dataParaISO } from '@/lib/masks';
 import { fonts, palette, spacing } from '@/theme/ccpTheme';
-import { useTheme } from '@/theme/useTheme';
+import { useTheme, type Theme } from '@/theme/useTheme';
 
 export default function Cadastro() {
   const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
   const router = useRouter();
   const { proximo } = useLocalSearchParams<{ proximo?: string }>();
   const { cadastrar } = useAuth();
@@ -113,12 +114,12 @@ export default function Cadastro() {
 
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: t.ui.fundo }]} edges={['top']}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={palette.cafe} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <View style={styles.flex}>
           <Text style={styles.titulo}>Criar conta</Text>
@@ -200,38 +201,39 @@ export default function Cadastro() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  flex: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: 22,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EFE6D9',
-  },
-  titulo: { fontFamily: fonts.serif, fontSize: 23, color: palette.cafeEscuro },
-  sub: { fontFamily: fonts.sans, fontSize: 12, color: palette.salvia, marginTop: 1 },
-  content: { paddingHorizontal: 22, paddingTop: 16, paddingBottom: 24 },
-  row: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  col: { flex: 1 },
-  single: { marginTop: 12 },
-  termos: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 18 },
-  check: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    borderColor: '#D8C4A8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  checkOn: { backgroundColor: palette.douradoAmanhecer, borderColor: palette.douradoAmanhecer },
-  termosText: { flex: 1, fontFamily: fonts.sans, fontSize: 12.5, lineHeight: 19, color: '#6E625A' },
-  link: { fontFamily: fonts.sansBold, color: palette.douradoAmanhecer },
-  erroGeral: { fontFamily: fonts.sans, fontSize: 13, color: palette.erro, marginTop: 14, textAlign: 'center' },
-  footer: { paddingHorizontal: 22, paddingTop: 12, paddingBottom: 28, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#EAE0D4' },
-});
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: t.ui.fundo },
+    flex: { flex: 1 },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingHorizontal: 22,
+      paddingBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: t.ui.linha,
+    },
+    titulo: { fontFamily: fonts.serif, fontSize: 23, color: t.ui.texto },
+    sub: { fontFamily: fonts.sans, fontSize: 12, color: palette.salvia, marginTop: 1 },
+    content: { paddingHorizontal: 22, paddingTop: 16, paddingBottom: 24 },
+    row: { flexDirection: 'row', gap: 10, marginTop: 12 },
+    col: { flex: 1 },
+    single: { marginTop: 12 },
+    termos: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 18 },
+    check: {
+      width: 22,
+      height: 22,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      borderColor: t.ui.linha,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 1,
+    },
+    checkOn: { backgroundColor: palette.douradoAmanhecer, borderColor: palette.douradoAmanhecer },
+    termosText: { flex: 1, fontFamily: fonts.sans, fontSize: 12.5, lineHeight: 19, color: t.ui.textoSuave },
+    link: { fontFamily: fonts.sansBold, color: palette.douradoAmanhecer },
+    erroGeral: { fontFamily: fonts.sans, fontSize: 13, color: palette.erro, marginTop: 14, textAlign: 'center' },
+    footer: { paddingHorizontal: 22, paddingTop: 12, paddingBottom: 28, backgroundColor: t.ui.superficie, borderTopWidth: 1, borderTopColor: t.ui.linha },
+  });

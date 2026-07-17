@@ -75,7 +75,7 @@ export default function Loja() {
       <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={t.palette.cafe} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <View style={styles.flex}>
           <Text style={styles.titulo}>Loja</Text>
@@ -155,7 +155,7 @@ const makeStyles = (t: Theme) =>
       borderBottomWidth: 1,
       borderBottomColor: t.ui.linha,
     },
-    titulo: { fontFamily: fonts.serif, fontSize: 26, color: t.palette.cafeEscuro },
+    titulo: { fontFamily: fonts.serif, fontSize: 26, color: t.ui.texto },
     sub: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave, marginTop: 1 },
 
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.xl },
@@ -203,8 +203,8 @@ const makeStyles = (t: Theme) =>
       textTransform: 'uppercase',
       color: t.palette.douradoAmanhecer,
     },
-    nome: { fontFamily: fonts.serif, fontSize: 20, color: t.palette.cafeEscuro, marginTop: 2 },
-    preco: { fontFamily: fonts.sansBold, fontSize: 16, color: t.palette.cafe, marginTop: 2 },
+    nome: { fontFamily: fonts.serif, fontSize: 20, color: t.ui.texto, marginTop: 2 },
+    preco: { fontFamily: fonts.sansBold, fontSize: 16, color: t.ui.texto, marginTop: 2 },
     descricao: { fontFamily: fonts.sans, fontSize: 13.5, lineHeight: 20, color: t.ui.textoSuave, marginTop: 6 },
     botao: { marginTop: spacing.md },
     rodape: {

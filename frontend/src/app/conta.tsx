@@ -2,7 +2,7 @@
  * Minha Conta. Edita dados básicos; e-mail e senha têm fluxos próprios;
  * excluir conta é destrutivo e confirmado por senha (Task 10).
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -19,10 +19,11 @@ import { mediaUrl } from '@/api/content';
 import { maskDateBR, brParaISO, isoParaBR } from '@/lib/dateInput';
 import { fonts, palette, spacing } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
-import { useTheme } from '@/theme/useTheme';
+import { useTheme, type Theme } from '@/theme/useTheme';
 
 export default function Conta() {
   const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
   const router = useRouter();
   const { user, atualizarUsuario, excluir } = useAuth();
 
@@ -110,11 +111,11 @@ export default function Conta() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: t.ui.fundo }]} edges={['top', 'bottom']}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Pressable onPress={() => router.back()} hitSlop={8} style={styles.voltar} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={palette.cafeEscuro} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <Text style={styles.titulo}>Minha Conta</Text>
 
@@ -198,27 +199,28 @@ export default function Conta() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.xl },
-  voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
-  titulo: { fontFamily: fonts.serif, fontSize: 30, color: palette.cafeEscuro, marginBottom: spacing.md },
-  avatarBloco: { alignItems: 'center', marginBottom: spacing.sm },
-  avatar: { width: 96, height: 96, borderRadius: 48, overflow: 'hidden' },
-  avatarImagem: { width: 96, height: 96, borderRadius: 48 },
-  avatarGradiente: { width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
-  avatarLetra: { fontFamily: fonts.serif, fontSize: 36, color: '#FAF7F2' },
-  trocarFoto: { marginTop: 10, minHeight: 44, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
-  trocarFotoTexto: { fontFamily: fonts.sansBold, fontSize: 14, color: palette.douradoAmanhecer },
-  field: { marginTop: 16 },
-  emailRow: { marginTop: 16, flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
-  emailField: { flex: 1 },
-  alterar: { paddingBottom: 16 },
-  alterarText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.douradoAmanhecer },
-  erro: { fontFamily: fonts.sans, fontSize: 13, color: palette.erro, marginTop: 14, textAlign: 'center' },
-  cta: { marginTop: 24 },
-  acoes: { marginTop: 28 },
-  acaoItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#EAE0D4' },
-  acaoLabel: { flex: 1, fontFamily: fonts.sansBold, fontSize: 15, color: palette.cafeEscuro },
-  excluirBox: { marginTop: 8 },
-});
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: t.ui.fundo },
+    content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.xl },
+    voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
+    titulo: { fontFamily: fonts.serif, fontSize: 30, color: t.ui.texto, marginBottom: spacing.md },
+    avatarBloco: { alignItems: 'center', marginBottom: spacing.sm },
+    avatar: { width: 96, height: 96, borderRadius: 48, overflow: 'hidden' },
+    avatarImagem: { width: 96, height: 96, borderRadius: 48 },
+    avatarGradiente: { width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
+    avatarLetra: { fontFamily: fonts.serif, fontSize: 36, color: '#FAF7F2' },
+    trocarFoto: { marginTop: 10, minHeight: 44, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
+    trocarFotoTexto: { fontFamily: fonts.sansBold, fontSize: 14, color: t.palette.douradoAmanhecer },
+    field: { marginTop: 16 },
+    emailRow: { marginTop: 16, flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+    emailField: { flex: 1 },
+    alterar: { paddingBottom: 16 },
+    alterarText: { fontFamily: fonts.sansBold, fontSize: 13, color: t.palette.douradoAmanhecer },
+    erro: { fontFamily: fonts.sans, fontSize: 13, color: palette.erro, marginTop: 14, textAlign: 'center' },
+    cta: { marginTop: 24 },
+    acoes: { marginTop: 28 },
+    acaoItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16, borderTopWidth: 1, borderTopColor: t.ui.linha },
+    acaoLabel: { flex: 1, fontFamily: fonts.sansBold, fontSize: 15, color: t.ui.texto },
+    excluirBox: { marginTop: 8 },
+  });

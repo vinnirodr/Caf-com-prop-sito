@@ -303,7 +303,7 @@ const makeStyles = (t: Theme) =>
 
     listContent: { paddingBottom: spacing.xl },
     header: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.sm },
-    title: { fontFamily: fonts.serif, fontSize: 32, color: t.palette.cafeEscuro },
+    title: { fontFamily: fonts.serif, fontSize: 32, color: t.ui.texto },
     subtitle: { ...typography.caption, color: t.palette.salvia, marginTop: 2 },
 
     introducaoRow: {
@@ -327,7 +327,7 @@ const makeStyles = (t: Theme) =>
       justifyContent: 'center',
     },
     introducaoText: { flex: 1, minWidth: 0 },
-    introducaoTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
+    introducaoTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.ui.texto },
     introducaoSubtitle: { fontFamily: fonts.sans, fontSize: 12, color: t.palette.salvia, marginTop: 2 },
 
     search: {
@@ -381,7 +381,7 @@ const makeStyles = (t: Theme) =>
     },
     numText: { fontFamily: fonts.serifBold, fontSize: 14, color: t.palette.douradoAmanhecer },
     rowText: { flex: 1, minWidth: 0 },
-    rowTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
+    rowTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.ui.texto },
     rowMeta: { fontFamily: fonts.sans, fontSize: 11.5, color: t.palette.salvia, marginTop: 2 },
 
     trailing: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

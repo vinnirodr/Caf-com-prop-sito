@@ -1,5 +1,5 @@
 /** Alterar e-mail: novo e-mail + senha atual (v1 sem verificação por e-mail). */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -10,10 +10,11 @@ import Button from '@/components/Button';
 import { useAuth } from '@/auth/AuthContext';
 import { trocarEmail, ApiError } from '@/api/auth';
 import { fonts, palette, spacing } from '@/theme/ccpTheme';
-import { useTheme } from '@/theme/useTheme';
+import { useTheme, type Theme } from '@/theme/useTheme';
 
 export default function AlterarEmail() {
   const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
   const router = useRouter();
   const { user, atualizarUsuario } = useAuth();
   const [novo, setNovo] = useState('');
@@ -39,11 +40,11 @@ export default function AlterarEmail() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: t.ui.fundo }]} edges={['top', 'bottom']}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Pressable onPress={() => router.back()} hitSlop={8} style={styles.voltar} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={palette.cafeEscuro} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <Text style={styles.titulo}>Alterar e-mail</Text>
         <Text style={styles.sub}>E-mail atual: {user?.email}</Text>
@@ -58,13 +59,14 @@ export default function AlterarEmail() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.lg },
-  voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
-  titulo: { fontFamily: fonts.serif, fontSize: 30, color: palette.cafeEscuro, marginBottom: 6 },
-  sub: { fontFamily: fonts.sans, fontSize: 14, color: '#6E625A', marginBottom: spacing.md },
-  field: { marginTop: 16 },
-  erro: { fontFamily: fonts.sans, fontSize: 13, color: palette.erro, marginTop: 14, textAlign: 'center' },
-  cta: { marginTop: 24 },
-});
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: t.ui.fundo },
+    content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.lg },
+    voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
+    titulo: { fontFamily: fonts.serif, fontSize: 30, color: t.ui.texto, marginBottom: 6 },
+    sub: { fontFamily: fonts.sans, fontSize: 14, color: t.ui.textoSuave, marginBottom: spacing.md },
+    field: { marginTop: 16 },
+    erro: { fontFamily: fonts.sans, fontSize: 13, color: palette.erro, marginTop: 14, textAlign: 'center' },
+    cta: { marginTop: 24 },
+  });
