@@ -10,7 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { fonts, spacing, radius } from '@/theme/ccpTheme';
+import { fonts, palette, spacing, radius } from '@/theme/ccpTheme';
 
 const BENEFICIOS = [
   'Leia os capítulos de graça',
@@ -32,7 +32,7 @@ export default function ContinuarLendo() {
 
   return (
     <LinearGradient
-      colors={['#2E2018', '#3A2D22', '#5B4636']}
+      colors={['#2E2018', palette.cafeEscuro, palette.cafe]}
       locations={[0, 0.45, 1]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -50,7 +50,7 @@ export default function ContinuarLendo() {
         </Pressable>
 
         <View style={styles.selo}>
-          <Ionicons name="cafe" size={16} color="#E0B878" />
+          <Ionicons name="cafe" size={16} color={palette.douradoSuave} />
           <Text style={styles.seloText}>Gratuito</Text>
         </View>
 
@@ -63,7 +63,7 @@ export default function ContinuarLendo() {
         <View style={styles.beneficios}>
           {BENEFICIOS.map((b) => (
             <View key={b} style={styles.beneficio}>
-              <Ionicons name="checkmark-circle" size={18} color="#E0B878" />
+              <Ionicons name="checkmark-circle" size={18} color={palette.douradoSuave} />
               <Text style={styles.beneficioText}>{b}</Text>
             </View>
           ))}
@@ -99,14 +99,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     marginTop: spacing.sm,
   },
-  seloText: { fontFamily: fonts.sansBold, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: '#E0B878' },
+  seloText: { fontFamily: fonts.sansBold, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: palette.douradoSuave },
   headline: { fontFamily: fonts.serif, fontSize: 29, lineHeight: 36, color: '#FAF7F2', marginTop: 18 },
   lead: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 22, color: '#D8C3A6', marginTop: 10 },
   beneficios: { gap: 13, marginTop: 24 },
   beneficio: { flexDirection: 'row', alignItems: 'center', gap: 11 },
   beneficioText: { fontFamily: fonts.sans, fontSize: 14, color: '#FAF7F2' },
 
-  cta: { backgroundColor: '#C8924A', height: 54, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginTop: 18 },
-  ctaText: { fontFamily: fonts.sansBold, fontSize: 16, color: '#3A2D22' },
-  jaTenho: { fontFamily: fonts.sansBold, fontSize: 13, color: '#E0B878', textAlign: 'center', marginTop: 16 },
+  cta: { backgroundColor: palette.douradoAmanhecer, height: 54, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginTop: 18 },
+  ctaText: { fontFamily: fonts.sansBold, fontSize: 16, color: palette.cafeEscuro },
+  jaTenho: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.douradoSuave, textAlign: 'center', marginTop: 16 },
 });
