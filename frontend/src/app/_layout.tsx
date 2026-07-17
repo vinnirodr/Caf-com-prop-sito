@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react';
-import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -16,6 +15,7 @@ import {
   Inter_600SemiBold,
 } from '@expo-google-fonts/inter';
 import { useTheme } from '@/theme/useTheme';
+import { ThemeModeProvider } from '@/theme/ThemeModeContext';
 import { AuthProvider } from '@/auth/AuthContext';
 import { PremiumProvider } from '@/subscription/PremiumContext';
 import { EngagementProvider } from '@/engagement/EngagementContext';
@@ -27,8 +27,6 @@ import { sincronizarLembretes } from '@/lib/reminders';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const t = useTheme();
-  const scheme = useColorScheme();
   const [loaded] = useFonts({
     Lora_400Regular,
     Lora_500Medium,
@@ -45,6 +43,18 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  if (!loaded) return null;
+
+  return (
+    <ThemeModeProvider>
+      <RootInner />
+    </ThemeModeProvider>
+  );
+}
+
+function RootInner() {
+  const t = useTheme();
+
   // Canais de notificação do Android + reabastece os lembretes locais na abertura.
   useEffect(() => {
     configurarCanaisAndroid().then(() => sincronizarLembretes());
@@ -58,15 +68,13 @@ export default function RootLayout() {
     [t.ui.fundo]
   );
 
-  if (!loaded) return null;
-
   return (
     <AuthProvider>
       <PremiumProvider>
         <EngagementProvider>
           <AudioProvider>
             <BackgroundMusicProvider>
-              <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+              <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
               <Stack initialRouteName="splash" screenOptions={screenOptions}>
                 <Stack.Screen name="splash" options={{ animation: 'fade' }} />
                 <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />

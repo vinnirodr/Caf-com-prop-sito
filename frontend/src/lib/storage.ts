@@ -18,6 +18,7 @@ const KEYS = {
   reminderMinute: 'ccp.reminder.minute',
   musicaAtiva: 'ccp.musica.ativa',
   musicaFaixaId: 'ccp.musica.faixaId',
+  temaModo: 'ccp.tema.modo',
 } as const;
 
 export type Tokens = { access: string; refresh: string };
@@ -165,6 +166,25 @@ export async function saveMusicaFundoPrefs(prefs: MusicaFundoPrefs): Promise<voi
       [KEYS.musicaAtiva, prefs.ativa ? '1' : '0'],
       [KEYS.musicaFaixaId, prefs.faixaId != null ? String(prefs.faixaId) : ''],
     ]);
+  } catch {
+    // ignora
+  }
+}
+
+export type TemaModo = 'auto' | 'claro' | 'escuro';
+
+export async function getTemaModo(): Promise<TemaModo> {
+  try {
+    const v = await AsyncStorage.getItem(KEYS.temaModo);
+    return v === 'claro' || v === 'escuro' ? v : 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+
+export async function saveTemaModo(modo: TemaModo): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.temaModo, modo);
   } catch {
     // ignora
   }
