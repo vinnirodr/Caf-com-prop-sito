@@ -31,6 +31,13 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-17 · 💻 LOCAL · Modo escuro
+- `ThemeModeProvider` (Automático/Claro/Escuro persistido) + `useTheme()` rewire (mesma API);
+  seção "Aparência" em Ajustes; varredura de cores cravadas → tokens em ~20 telas/componentes;
+  StatusBar dinâmica; onboarding/continuar-lendo/Button tematizados.
+- **Intocados:** leitura/introdução (temas próprios), splash/premium/player (escuros por design).
+- Hotspots (só adição/troca de cor): storage.ts, _layout.tsx, ajustes.tsx e as telas listadas no plano.
+
 ### 2026-07-14 · 💻 LOCAL · Perfil: foto + selo Premium + cartão clicável
 - **Backend:** `Profile.avatar` (ImageField → R2 em prod) + `POST /api/auth/avatar/` (multipart) +
   `avatar` no `/eu/`. Migration 0006.
