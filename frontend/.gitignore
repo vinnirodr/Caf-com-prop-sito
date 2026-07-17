@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# Credenciais de publicação (NUNCA commitar — chave da conta de serviço do Play)
+credentials/
