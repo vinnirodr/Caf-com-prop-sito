@@ -2,6 +2,7 @@
  * API de autenticação. Conversa com /api/auth/ do backend e cuida do
  * refresh do token de acesso quando ele expira.
  */
+import * as FileSystem from 'expo-file-system/legacy';
 import { API_URL } from './config';
 import {
   getTokens,
@@ -213,15 +214,37 @@ export async function trocarEmail(novo_email: string, senha_atual: string): Prom
   return lerOuErro<Usuario>(res);
 }
 
+/**
+ * Envia a foto de perfil. Usa o uploader nativo do Expo (FileSystem.uploadAsync)
+ * em vez de FormData+fetch: o RN 0.85 (Android/New Architecture) tem um bug
+ * conhecido em que upload de arquivo via fetch falha com "Network request failed"
+ * antes de sair do aparelho (facebook/react-native#56404).
+ */
 export async function trocarAvatar(uri: string): Promise<Usuario> {
-  const nome = uri.split('/').pop() || 'avatar.jpg';
-  const match = /\.(\w+)$/.exec(nome);
-  const tipo = match ? `image/${match[1].toLowerCase() === 'jpg' ? 'jpeg' : match[1].toLowerCase()}` : 'image/jpeg';
-  const form = new FormData();
-  form.append('avatar', { uri, name: nome, type: tipo } as unknown as Blob);
-  const res = await authFetch('/auth/avatar/', { method: 'POST', body: form });
-  if (!res.ok) throw new ApiError(res.status, {}, 'Não foi possível enviar a foto.');
-  return (await res.json()) as Usuario;
+  const tokens = await getTokens();
+  if (!tokens) throw new ApiError(401, {}, 'Sem sessão.');
+
+  const enviar = (access: string) =>
+    FileSystem.uploadAsync(`${API_URL}/auth/avatar/`, uri, {
+      httpMethod: 'POST',
+      uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+      fieldName: 'avatar',
+      headers: { Authorization: `Bearer ${access}`, Accept: 'application/json' },
+    });
+
+  let res = await enviar(tokens.access);
+  if (res.status === 401) {
+    const novo = await tentarRefresh(tokens);
+    if (!novo) {
+      await clearTokens();
+      throw new ApiError(401, {}, 'Sessão expirada.');
+    }
+    res = await enviar(novo);
+  }
+  if (res.status < 200 || res.status >= 300) {
+    throw new ApiError(res.status, {}, 'Não foi possível enviar a foto.');
+  }
+  return JSON.parse(res.body) as Usuario;
 }
 
 export async function excluirConta(senha: string): Promise<void> {
