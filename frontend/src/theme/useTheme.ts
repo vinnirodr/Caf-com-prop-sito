@@ -1,8 +1,10 @@
 /**
  * Hook do tema do app (claro/escuro).
  *
- * Retorna o tema resolvido do design system (`ccpTheme`) conforme o esquema de
- * cor do sistema — o app.json já define `userInterfaceStyle: "automatic"`.
+ * Retorna o tema resolvido do design system (`ccpTheme`) conforme a preferência
+ * do app (Automático/Claro/Escuro, ver `ThemeModeContext`) — com fallback no
+ * esquema de cor do sistema quando não há provider (o app.json já define
+ * `userInterfaceStyle: "automatic"`).
  *
  * Uso:
  *   const t = useTheme();
@@ -13,14 +15,14 @@
  * são escolhidos manualmente lá e usam os tokens `reading` — são independentes
  * do claro/escuro do app.
  */
-import { useColorScheme } from 'react-native';
 import { theme, type Theme } from './ccpTheme';
+import { useResolvedMode } from './ThemeModeContext';
 
 export type { Theme } from './ccpTheme';
 
 export function useTheme(): Theme {
-  const scheme = useColorScheme();
-  return scheme === 'dark' ? theme.dark : theme.light;
+  const mode = useResolvedMode();
+  return mode === 'dark' ? theme.dark : theme.light;
 }
 
 export default useTheme;

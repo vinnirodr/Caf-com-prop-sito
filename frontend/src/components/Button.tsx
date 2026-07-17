@@ -5,9 +5,10 @@
  *  - outline   : transparente, borda, texto café
  * Alvo ≥ 44px, raio 14, leve "scale" ao pressionar.
  */
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { Pressable, Text, StyleSheet, ViewStyle, View } from 'react-native';
 import { fonts, palette, spacing } from '@/theme/ccpTheme';
+import { useTheme, type Theme } from '@/theme/useTheme';
 
 type Variant = 'primary' | 'secondary' | 'outline';
 
@@ -28,6 +29,9 @@ export default function Button({
   style,
   disabled,
 }: Props) {
+  const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
+
   return (
     <Pressable
       onPress={onPress}
@@ -50,24 +54,25 @@ export default function Button({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    height: 54,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-  },
-  inner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  pressed: { transform: [{ scale: 0.98 }], opacity: 0.95 },
-  disabled: { backgroundColor: '#E3D6C4', borderColor: 'transparent' },
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    base: {
+      height: 54,
+      borderRadius: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.lg,
+    },
+    inner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    pressed: { transform: [{ scale: 0.98 }], opacity: 0.95 },
+    disabled: { backgroundColor: t.ui.linha, borderColor: 'transparent' },
 
-  primary: { backgroundColor: palette.douradoAmanhecer },
-  secondary: { backgroundColor: palette.cafe },
-  outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#D8C4A8' },
+    primary: { backgroundColor: palette.douradoAmanhecer },
+    secondary: { backgroundColor: palette.cafe },
+    outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: t.ui.linha },
 
-  label: { fontFamily: fonts.sansBold, fontSize: 16 },
-  primaryLabel: { color: palette.cafeEscuro },
-  secondaryLabel: { color: '#FAF7F2' },
-  outlineLabel: { color: palette.cafe },
-});
+    label: { fontFamily: fonts.sansBold, fontSize: 16 },
+    primaryLabel: { color: palette.cafeEscuro },
+    secondaryLabel: { color: '#FAF7F2' },
+    outlineLabel: { color: t.ui.texto },
+  });

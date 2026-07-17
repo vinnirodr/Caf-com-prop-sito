@@ -1,7 +1,7 @@
 /**
  * 03 · Entrar. Login por e-mail + senha, com Google e recuperação de senha.
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -21,10 +21,11 @@ import Field from '@/components/Field';
 import { useAuth } from '@/auth/AuthContext';
 import { ApiError } from '@/api/auth';
 import { fonts, palette, spacing } from '@/theme/ccpTheme';
-import { useTheme } from '@/theme/useTheme';
+import { useTheme, type Theme } from '@/theme/useTheme';
 
 export default function Entrar() {
   const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
   const router = useRouter();
   const { proximo } = useLocalSearchParams<{ proximo?: string }>();
   const { entrar, entrarComGoogle } = useAuth();
@@ -63,11 +64,11 @@ export default function Entrar() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: t.ui.fundo }]} edges={['top', 'bottom']}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <BrandSeal size={60} variant="min" color={palette.cafe} />
+          <BrandSeal size={60} variant="min" color={t.ui.texto} />
           <Text style={styles.titulo}>Bem-vindo de volta</Text>
           <Text style={styles.sub}>Entre para continuar de onde parou.</Text>
 
@@ -153,45 +154,47 @@ export default function Entrar() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  flex: { flex: 1 },
-  flexSpacer: { flex: 1, minHeight: spacing.lg },
-  content: { flexGrow: 1, paddingHorizontal: 30, paddingTop: spacing.md, paddingBottom: spacing.lg },
-  titulo: { fontFamily: fonts.serif, fontSize: 32, color: palette.cafeEscuro, marginTop: 14, letterSpacing: -0.3 },
-  sub: { fontFamily: fonts.sans, fontSize: 15, color: '#6E625A', marginTop: 8 },
-  field: { marginTop: 18 },
-  esqueci: { alignSelf: 'flex-end', marginTop: 12 },
-  esqueciText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.douradoAmanhecer },
-  erro: { fontFamily: fonts.sans, fontSize: 13, color: palette.erro, marginTop: 14, textAlign: 'center' },
-  cta: { marginTop: 18 },
-  divisor: { flexDirection: 'row', alignItems: 'center', gap: 14, marginVertical: 18 },
-  linha: { flex: 1, height: 1, backgroundColor: '#EAE0D4' },
-  ou: { fontFamily: fonts.sans, fontSize: 12, color: palette.salvia },
-  google: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm + 2,
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
-    borderColor: '#EAE0D4',
-    height: 52,
-    borderRadius: 14,
-  },
-  googleBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#F2E9D8',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleG: { fontFamily: fonts.serifBold, fontSize: 14, color: palette.cafe },
-  googleText: { fontFamily: fonts.sansBold, fontSize: 15, color: palette.cafeEscuro },
-  criar: { marginTop: 12 },
-  entrarDepois: { alignSelf: 'center', marginTop: 16, paddingVertical: 4 },
-  entrarDepoisText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.salvia },
-  termos: { fontFamily: fonts.sans, fontSize: 12, color: palette.salvia, textAlign: 'center', lineHeight: 18 },
-  termosLink: { fontFamily: fonts.sansBold, color: palette.douradoAmanhecer },
-});
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: t.ui.fundo },
+    flex: { flex: 1 },
+    flexSpacer: { flex: 1, minHeight: spacing.lg },
+    content: { flexGrow: 1, paddingHorizontal: 30, paddingTop: spacing.md, paddingBottom: spacing.lg },
+    titulo: { fontFamily: fonts.serif, fontSize: 32, color: t.ui.texto, marginTop: 14, letterSpacing: -0.3 },
+    sub: { fontFamily: fonts.sans, fontSize: 15, color: t.ui.textoSuave, marginTop: 8 },
+    field: { marginTop: 18 },
+    esqueci: { alignSelf: 'flex-end', marginTop: 12 },
+    esqueciText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.douradoAmanhecer },
+    erro: { fontFamily: fonts.sans, fontSize: 13, color: palette.erro, marginTop: 14, textAlign: 'center' },
+    cta: { marginTop: 18 },
+    divisor: { flexDirection: 'row', alignItems: 'center', gap: 14, marginVertical: 18 },
+    linha: { flex: 1, height: 1, backgroundColor: t.ui.linha },
+    ou: { fontFamily: fonts.sans, fontSize: 12, color: palette.salvia },
+    // Botão do Google: mantém branco/creme fixo (identidade do provedor), como um "chip" fixo.
+    google: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm + 2,
+      backgroundColor: '#fff',
+      borderWidth: 1.5,
+      borderColor: '#EAE0D4',
+      height: 52,
+      borderRadius: 14,
+    },
+    googleBadge: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: '#F2E9D8',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    googleG: { fontFamily: fonts.serifBold, fontSize: 14, color: palette.cafe },
+    googleText: { fontFamily: fonts.sansBold, fontSize: 15, color: palette.cafeEscuro },
+    criar: { marginTop: 12 },
+    entrarDepois: { alignSelf: 'center', marginTop: 16, paddingVertical: 4 },
+    entrarDepoisText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.salvia },
+    termos: { fontFamily: fonts.sans, fontSize: 12, color: palette.salvia, textAlign: 'center', lineHeight: 18 },
+    termosLink: { fontFamily: fonts.sansBold, color: palette.douradoAmanhecer },
+  });

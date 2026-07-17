@@ -3,6 +3,7 @@
  * assinar ou restaurar uma compra já feita. Compra real fica no paywall
  * (`premium.tsx`) — aqui é só status + atalhos.
  */
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -12,7 +13,7 @@ import Button from '@/components/Button';
 import { useAuth } from '@/auth/AuthContext';
 import { usePremium } from '@/subscription/PremiumContext';
 import { fonts, palette, spacing, radius } from '@/theme/ccpTheme';
-import { useTheme } from '@/theme/useTheme';
+import { useTheme, type Theme } from '@/theme/useTheme';
 
 const BENEFICIOS = [
   'Áudio de todos os capítulos, sem limite',
@@ -22,6 +23,7 @@ const BENEFICIOS = [
 
 export default function Assinaturas() {
   const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
   const router = useRouter();
   const { user } = useAuth();
   const { premium, restaurar } = usePremium();
@@ -39,11 +41,11 @@ export default function Assinaturas() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: t.ui.fundo }]} edges={['top', 'bottom']}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
       <ScrollView contentContainerStyle={styles.content}>
         <Pressable onPress={() => router.back()} hitSlop={8} style={styles.voltar} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={palette.cafeEscuro} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <Text style={styles.titulo}>Assinaturas</Text>
 
@@ -61,7 +63,7 @@ export default function Assinaturas() {
         ) : (
           <View style={styles.card}>
             <View style={styles.cardHead}>
-              <Ionicons name="cafe-outline" size={22} color={palette.cafe} />
+              <Ionicons name="cafe-outline" size={22} color={t.ui.texto} />
               <Text style={styles.cardTitulo}>Plano gratuito</Text>
             </View>
             <Text style={styles.cardSub}>Você ainda não tem o Premium.</Text>
@@ -87,30 +89,31 @@ export default function Assinaturas() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.xl },
-  voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
-  titulo: { fontFamily: fonts.serif, fontSize: 30, color: palette.cafeEscuro, marginBottom: spacing.md },
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: t.ui.fundo },
+    content: { paddingHorizontal: 30, paddingTop: spacing.sm, paddingBottom: spacing.xl },
+    voltar: { alignSelf: 'flex-start', marginBottom: spacing.sm },
+    titulo: { fontFamily: fonts.serif, fontSize: 30, color: t.ui.texto, marginBottom: spacing.md },
 
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#EAE0D4',
-    borderRadius: radius.md,
-    padding: 20,
-    marginTop: spacing.sm,
-  },
-  cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  cardTitulo: { fontFamily: fonts.serif, fontSize: 20, color: palette.cafeEscuro },
-  cardSub: { fontFamily: fonts.sans, fontSize: 14, color: palette.cafe, marginTop: 6 },
-  agradecimento: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: palette.cafe, marginTop: 14 },
+    card: {
+      backgroundColor: t.ui.superficie,
+      borderWidth: 1,
+      borderColor: t.ui.linha,
+      borderRadius: radius.md,
+      padding: 20,
+      marginTop: spacing.sm,
+    },
+    cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    cardTitulo: { fontFamily: fonts.serif, fontSize: 20, color: t.ui.texto },
+    cardSub: { fontFamily: fonts.sans, fontSize: 14, color: t.ui.textoSuave, marginTop: 6 },
+    agradecimento: { fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: t.ui.textoSuave, marginTop: 14 },
 
-  beneficios: { gap: 10, marginTop: 16 },
-  beneficio: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  beneficioText: { fontFamily: fonts.sans, fontSize: 14, color: palette.cafeEscuro },
-  cta: { marginTop: 20 },
+    beneficios: { gap: 10, marginTop: 16 },
+    beneficio: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    beneficioText: { fontFamily: fonts.sans, fontSize: 14, color: t.ui.texto },
+    cta: { marginTop: 20 },
 
-  restaurar: { alignSelf: 'center', marginTop: 24, paddingVertical: 8 },
-  restaurarText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.salvia },
-});
+    restaurar: { alignSelf: 'center', marginTop: 24, paddingVertical: 8 },
+    restaurarText: { fontFamily: fonts.sansBold, fontSize: 13, color: palette.salvia },
+  });

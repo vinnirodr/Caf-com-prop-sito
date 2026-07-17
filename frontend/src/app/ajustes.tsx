@@ -14,9 +14,16 @@ import { useAuth } from '@/auth/AuthContext';
 import { usarMusicaFundo } from '@/audio/BackgroundMusicContext';
 import { obterPushToken, sincronizarToken, pedirPermissaoNotificacoes } from '@/lib/notifications';
 import { agendarLembretes, cancelarLembretes } from '@/lib/reminders';
-import { getReminderPrefs, saveReminderPrefs, REMINDER_PADRAO } from '@/lib/storage';
+import { getReminderPrefs, saveReminderPrefs, REMINDER_PADRAO, type TemaModo } from '@/lib/storage';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { useTheme, type Theme } from '@/theme/useTheme';
+import { useThemeMode } from '@/theme/ThemeModeContext';
+
+const OPCOES_APARENCIA: { valor: TemaModo; label: string; sub: string; icone: keyof typeof Ionicons.glyphMap }[] = [
+  { valor: 'auto', label: 'Automático', sub: 'Segue o tema do celular', icone: 'phone-portrait-outline' },
+  { valor: 'claro', label: 'Claro', sub: 'Fundo claro, sempre.', icone: 'sunny-outline' },
+  { valor: 'escuro', label: 'Escuro', sub: 'Fundo escuro, sempre.', icone: 'moon-outline' },
+];
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -25,6 +32,7 @@ export default function Ajustes() {
   const router = useRouter();
   const { user } = useAuth();
   const musica = usarMusicaFundo();
+  const { modo, definirModo } = useThemeMode();
   const styles = useMemo(() => makeStyles(t), [t]);
 
   const [broadcast, setBroadcast] = useState(user?.notificacoes_ativas ?? true);
@@ -101,7 +109,7 @@ export default function Ajustes() {
       <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={t.palette.cafe} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <Text style={styles.titulo}>Ajustes</Text>
       </View>
@@ -111,7 +119,7 @@ export default function Ajustes() {
         {user && (
           <View style={styles.card}>
             <View style={styles.row}>
-              <Ionicons name="notifications-outline" size={20} color={t.palette.cafe} />
+              <Ionicons name="notifications-outline" size={20} color={t.ui.texto} />
               <View style={styles.rowText}>
                 <Text style={styles.rowLabel}>Receber notificações</Text>
                 <Text style={styles.rowSub}>Avisos e mensagens especiais da autora.</Text>
@@ -124,7 +132,7 @@ export default function Ajustes() {
         {/* Lembrete diário — local, funciona com ou sem conta */}
         <View style={styles.card}>
           <View style={styles.row}>
-            <Ionicons name="cafe-outline" size={20} color={t.palette.cafe} />
+            <Ionicons name="cafe-outline" size={20} color={t.ui.texto} />
             <View style={styles.rowText}>
               <Text style={styles.rowLabel}>Lembrete diário de leitura</Text>
               <Text style={styles.rowSub}>Um toque suave no horário que você escolher.</Text>
@@ -145,10 +153,52 @@ export default function Ajustes() {
           )}
         </View>
 
+        {/* Aparência — tema claro/escuro/automático */}
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Ionicons name="contrast-outline" size={20} color={t.ui.texto} />
+            <View style={styles.rowText}>
+              <Text style={styles.rowLabel}>Aparência</Text>
+              <Text style={styles.rowSub}>Escolha como o app deve parecer.</Text>
+            </View>
+          </View>
+
+          <View style={styles.faixas}>
+            {OPCOES_APARENCIA.map((op) => {
+              const selecionada = modo === op.valor;
+              return (
+                <Pressable
+                  key={op.valor}
+                  onPress={() => definirModo(op.valor)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: selecionada }}
+                  accessibilityLabel={op.label}
+                  style={styles.faixaItem}
+                >
+                  <Ionicons
+                    name={op.icone}
+                    size={18}
+                    color={selecionada ? t.ui.texto : t.ui.textoSuave}
+                  />
+                  <View style={styles.rowText}>
+                    <Text style={[styles.faixaTitulo, selecionada && styles.faixaTituloAtiva]}>
+                      {op.label}
+                    </Text>
+                    <Text style={styles.rowSub}>{op.sub}</Text>
+                  </View>
+                  {selecionada && (
+                    <Ionicons name="checkmark-circle" size={20} color={t.palette.douradoAmanhecer} />
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
         {/* Música de fundo — trilha suave durante a leitura */}
         <View style={styles.card}>
           <View style={styles.row}>
-            <Ionicons name="musical-notes-outline" size={20} color={t.palette.cafe} />
+            <Ionicons name="musical-notes-outline" size={20} color={t.ui.texto} />
             <View style={styles.rowText}>
               <Text style={styles.rowLabel}>Música de fundo</Text>
               <Text style={styles.rowSub}>Uma trilha suave por baixo da leitura.</Text>
@@ -215,11 +265,11 @@ function Stepper({
   return (
     <View style={styles.stepper}>
       <Pressable onPress={onUp} hitSlop={8} accessibilityLabel={`Aumentar ${label}`} style={styles.stepBtn}>
-        <Ionicons name="chevron-up" size={22} color={theme.palette.cafe} />
+        <Ionicons name="chevron-up" size={22} color={theme.ui.texto} />
       </Pressable>
       <Text style={styles.stepValor}>{value}</Text>
       <Pressable onPress={onDown} hitSlop={8} accessibilityLabel={`Diminuir ${label}`} style={styles.stepBtn}>
-        <Ionicons name="chevron-down" size={22} color={theme.palette.cafe} />
+        <Ionicons name="chevron-down" size={22} color={theme.ui.texto} />
       </Pressable>
     </View>
   );
@@ -237,7 +287,7 @@ const makeStyles = (t: Theme) =>
       borderBottomWidth: 1,
       borderBottomColor: t.ui.linha,
     },
-    titulo: { fontFamily: fonts.serif, fontSize: 23, color: t.palette.cafeEscuro },
+    titulo: { fontFamily: fonts.serif, fontSize: 23, color: t.ui.texto },
     content: { padding: spacing.lg, gap: spacing.md },
 
     card: {
@@ -276,7 +326,7 @@ const makeStyles = (t: Theme) =>
       gap: spacing.sm,
     },
     faixaTitulo: { flex: 1, fontFamily: fonts.sans, fontSize: 14, color: t.ui.texto },
-    faixaTituloAtiva: { fontFamily: fonts.sansBold, color: t.palette.cafeEscuro },
+    faixaTituloAtiva: { fontFamily: fonts.sansBold, color: t.ui.texto },
     faixasVazio: {
       fontFamily: fonts.sans,
       fontSize: 12.5,
@@ -296,7 +346,7 @@ const makeStyles = (t: Theme) =>
     },
     horarioTitulo: { fontFamily: fonts.sans, fontSize: 13, color: t.ui.textoSuave },
     relogio: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 10 },
-    doisPontos: { fontFamily: fonts.serif, fontSize: 34, color: t.palette.cafeEscuro, marginHorizontal: 4 },
+    doisPontos: { fontFamily: fonts.serif, fontSize: 34, color: t.ui.texto, marginHorizontal: 4 },
     stepper: { alignItems: 'center', gap: 2 },
     stepBtn: {
       width: 44,
@@ -308,7 +358,7 @@ const makeStyles = (t: Theme) =>
     stepValor: {
       fontFamily: fonts.serif,
       fontSize: 40,
-      color: t.palette.cafeEscuro,
+      color: t.ui.texto,
       minWidth: 60,
       textAlign: 'center',
     },

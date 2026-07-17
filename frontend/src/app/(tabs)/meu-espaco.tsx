@@ -106,7 +106,7 @@ export default function MeuEspaco() {
               {user?.email ?? 'Para salvar progresso, favoritos e anotações'}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#C9BAA8" />
+          <Ionicons name="chevron-forward" size={20} color={t.ui.textoSuave} />
         </Pressable>
 
         {/* Jornada (logado) */}
@@ -145,9 +145,9 @@ export default function MeuEspaco() {
               accessibilityRole="button"
               accessibilityLabel={m.label}
             >
-              <Ionicons name={m.icon} size={20} color={t.palette.cafe} />
+              <Ionicons name={m.icon} size={20} color={t.ui.texto} />
               <Text style={styles.menuLabel}>{m.label}</Text>
-              <Ionicons name="chevron-forward" size={18} color="#C9BAA8" />
+              <Ionicons name="chevron-forward" size={18} color={t.ui.textoSuave} />
             </Pressable>
           ))}
         </View>
@@ -169,7 +169,7 @@ const makeStyles = (t: Theme) =>
   StyleSheet.create({
     safe: { flex: 1, backgroundColor: t.ui.fundo },
     content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.xl, gap: spacing.md },
-    title: { fontFamily: fonts.serif, fontSize: 30, color: t.palette.cafeEscuro },
+    title: { fontFamily: fonts.serif, fontSize: 30, color: t.ui.texto },
 
     profileCard: {
       flexDirection: 'row',
@@ -186,7 +186,7 @@ const makeStyles = (t: Theme) =>
     avatarLetra: { fontFamily: fonts.serif, fontSize: 22, color: '#FAF7F2' },
     profileText: { flex: 1, minWidth: 0 },
     profileNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-    profileName: { fontFamily: fonts.serif, fontSize: 18, color: t.palette.cafeEscuro, flexShrink: 1 },
+    profileName: { fontFamily: fonts.serif, fontSize: 18, color: t.ui.texto, flexShrink: 1 },
     profileSub: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave, marginTop: 2 },
     premiumPill: {
       backgroundColor: t.ui.painel,
@@ -194,7 +194,7 @@ const makeStyles = (t: Theme) =>
       paddingHorizontal: 8,
       paddingVertical: 2,
     },
-    premiumPillText: { fontFamily: fonts.sansBold, fontSize: 11, color: '#B07F3C' },
+    premiumPillText: { fontFamily: fonts.sansBold, fontSize: 11, color: t.palette.douradoAmanhecer },
 
     jornada: {
       backgroundColor: t.ui.superficie,
@@ -206,12 +206,12 @@ const makeStyles = (t: Theme) =>
     },
     jornadaHead: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
     jornadaLabel: { fontFamily: fonts.sans, fontSize: 13, color: t.ui.textoSuave },
-    jornadaValor: { fontFamily: fonts.sansBold, fontSize: 13, color: t.palette.cafeEscuro },
+    jornadaValor: { fontFamily: fonts.sansBold, fontSize: 13, color: t.ui.texto },
     barra: { height: 10, borderRadius: 5, backgroundColor: t.ui.linha, overflow: 'hidden' },
     barraFill: { height: 10, borderRadius: 5 },
     chips: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' },
     chip: { backgroundColor: t.ui.painel, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
-    chipText: { fontFamily: fonts.sansBold, fontSize: 12, color: '#B07F3C' },
+    chipText: { fontFamily: fonts.sansBold, fontSize: 12, color: t.palette.douradoAmanhecer },
 
     menu: {
       backgroundColor: t.ui.superficie,
@@ -228,7 +228,7 @@ const makeStyles = (t: Theme) =>
       paddingHorizontal: 18,
       paddingVertical: 14,
     },
-    menuDivider: { borderBottomWidth: 1, borderBottomColor: '#F0E8DC' },
+    menuDivider: { borderBottomWidth: 1, borderBottomColor: t.ui.linha },
     menuLabel: { flex: 1, fontFamily: fonts.sans, fontSize: 15, color: t.ui.texto },
 
     sair: {

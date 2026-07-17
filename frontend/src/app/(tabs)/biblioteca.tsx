@@ -123,7 +123,7 @@ export default function Biblioteca() {
           accessibilityLabel="Abrir Introdução: sobre o livro e a autora"
         >
           <View style={styles.introducaoIcon}>
-            <Ionicons name="book-outline" size={18} color="#B07F3C" />
+            <Ionicons name="book-outline" size={18} color={t.palette.douradoAmanhecer} />
           </View>
           <View style={styles.introducaoText}>
             <Text style={styles.introducaoTitle}>Introdução</Text>
@@ -275,7 +275,7 @@ export default function Biblioteca() {
                   </View>
                 ) : item.tem_audio ? (
                   <View style={styles.badgeAudio}>
-                    <Ionicons name="play" size={11} color="#B07F3C" />
+                    <Ionicons name="play" size={11} color={t.palette.douradoAmanhecer} />
                     <Text style={styles.badgeAudioText}>Áudio</Text>
                   </View>
                 ) : null}
@@ -303,7 +303,7 @@ const makeStyles = (t: Theme) =>
 
     listContent: { paddingBottom: spacing.xl },
     header: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.sm },
-    title: { fontFamily: fonts.serif, fontSize: 32, color: t.palette.cafeEscuro },
+    title: { fontFamily: fonts.serif, fontSize: 32, color: t.ui.texto },
     subtitle: { ...typography.caption, color: t.palette.salvia, marginTop: 2 },
 
     introducaoRow: {
@@ -327,7 +327,7 @@ const makeStyles = (t: Theme) =>
       justifyContent: 'center',
     },
     introducaoText: { flex: 1, minWidth: 0 },
-    introducaoTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
+    introducaoTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.ui.texto },
     introducaoSubtitle: { fontFamily: fonts.sans, fontSize: 12, color: t.palette.salvia, marginTop: 2 },
 
     search: {
@@ -379,9 +379,9 @@ const makeStyles = (t: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    numText: { fontFamily: fonts.serifBold, fontSize: 14, color: '#B07F3C' },
+    numText: { fontFamily: fonts.serifBold, fontSize: 14, color: t.palette.douradoAmanhecer },
     rowText: { flex: 1, minWidth: 0 },
-    rowTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
+    rowTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.ui.texto },
     rowMeta: { fontFamily: fonts.sans, fontSize: 11.5, color: t.palette.salvia, marginTop: 2 },
 
     trailing: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
@@ -394,7 +394,7 @@ const makeStyles = (t: Theme) =>
       paddingHorizontal: 10,
       paddingVertical: 5,
     },
-    badgeAudioText: { fontFamily: fonts.sansBold, fontSize: 11, color: '#B07F3C' },
+    badgeAudioText: { fontFamily: fonts.sansBold, fontSize: 11, color: t.palette.douradoAmanhecer },
     badgeLido: {
       flexDirection: 'row',
       alignItems: 'center',

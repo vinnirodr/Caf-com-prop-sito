@@ -76,7 +76,7 @@ export default function Anotacoes() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={t.palette.cafe} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <Text style={styles.title}>Anotações</Text>
         <Text style={styles.count}>{notas.length > 0 ? `${notas.length} notas` : ''}</Text>
@@ -141,7 +141,7 @@ const makeStyles = (t: Theme) =>
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
     },
-    title: { flex: 1, fontFamily: fonts.serif, fontSize: 26, color: t.palette.cafeEscuro },
+    title: { flex: 1, fontFamily: fonts.serif, fontSize: 26, color: t.ui.texto },
     count: { fontFamily: fonts.sansBold, fontSize: 13, color: t.palette.salvia },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
     vazio: { ...typography.bodyUi, color: t.ui.textoSuave, textAlign: 'center' },
@@ -165,5 +165,5 @@ const makeStyles = (t: Theme) =>
     },
     cardHeadRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
     cardData: { fontFamily: fonts.sans, fontSize: 11, color: t.ui.textoSuave },
-    cardTexto: { fontFamily: fonts.serif, fontSize: 15.5, lineHeight: 24, color: t.palette.cafeEscuro },
+    cardTexto: { fontFamily: fonts.serif, fontSize: 15.5, lineHeight: 24, color: t.ui.texto },
   });

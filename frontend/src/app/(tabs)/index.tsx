@@ -227,7 +227,7 @@ export default function Inicio() {
               accessibilityLabel={banner?.titulo || 'Abrir a loja do Café com Propósito'}
             >
               <View style={styles.bannerIcon}>
-                <Ionicons name="bag-handle-outline" size={22} color={t.palette.cafe} />
+                <Ionicons name="bag-handle-outline" size={22} color={t.ui.texto} />
               </View>
               <View style={styles.bannerText}>
                 <Text style={styles.bannerTitle}>{banner?.titulo || 'Conheça a Loja'}</Text>
@@ -312,7 +312,7 @@ const makeStyles = (t: Theme) =>
       color: t.palette.douradoAmanhecer,
     },
     heroMeta: { fontFamily: fonts.sansBold, fontSize: 11, color: t.palette.salvia },
-    heroTitle: { fontFamily: fonts.serif, fontSize: 23, lineHeight: 28, color: t.palette.cafeEscuro },
+    heroTitle: { fontFamily: fonts.serif, fontSize: 23, lineHeight: 28, color: t.ui.texto },
     heroVerse: {
       fontFamily: fonts.serif,
       fontStyle: 'italic',
@@ -336,7 +336,7 @@ const makeStyles = (t: Theme) =>
       fontSize: 10.5,
       letterSpacing: 1.6,
       textTransform: 'uppercase',
-      color: '#B07F3C',
+      color: t.palette.douradoAmanhecer,
       marginBottom: spacing.sm,
     },
     guardarText: {
@@ -344,7 +344,7 @@ const makeStyles = (t: Theme) =>
       fontStyle: 'italic',
       fontSize: 16,
       lineHeight: 23,
-      color: t.palette.cafeEscuro,
+      color: t.ui.texto,
     },
 
     banner: {
@@ -367,7 +367,7 @@ const makeStyles = (t: Theme) =>
       justifyContent: 'center',
     },
     bannerText: { flex: 1, minWidth: 0 },
-    bannerTitle: { fontFamily: fonts.serif, fontSize: 17, color: t.palette.cafeEscuro },
+    bannerTitle: { fontFamily: fonts.serif, fontSize: 17, color: t.ui.texto },
     bannerSub: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave, marginTop: 2 },
 
     bannerImgWrap: { borderRadius: 18, overflow: 'hidden', ...t.elevation.level1 },

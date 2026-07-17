@@ -3,7 +3,7 @@
  * Deslizável (swipe) + bolinhas. "Pular"/"Começar" entram nas abas; "Entrar" vai ao login.
  * Todas as saídas marcam o onboarding como visto.
  */
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import BrandSeal from '@/components/BrandSeal';
 import Button from '@/components/Button';
 import { fonts, palette, spacing } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
+import { useTheme, type Theme } from '@/theme/useTheme';
 import { setOnboardingDone } from '@/lib/storage';
 
 type Grad = {
@@ -67,6 +68,8 @@ export default function Onboarding() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const listRef = useRef<FlatList<Slide>>(null);
+  const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
 
   const começar = async () => {
     await setOnboardingDone();
@@ -162,32 +165,33 @@ export default function Onboarding() {
   );
 }
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: '#FAF7F2' },
-  hero: {
-    height: 354,
-    borderBottomLeftRadius: 34,
-    borderBottomRightRadius: 34,
-    overflow: 'hidden',
-  },
-  heroFill: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  pular: { position: 'absolute', right: 22 },
-  pularText: { fontFamily: fonts.sansBold, fontSize: 14, color: '#F4E6CF' },
-  body: { flex: 1, paddingHorizontal: 30, paddingTop: 34 },
-  dots: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', marginBottom: 26 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E3D6C4' },
-  dotActive: { width: 26, backgroundColor: palette.douradoAmanhecer },
-  title: {
-    fontFamily: fonts.serif,
-    fontSize: 29,
-    lineHeight: 35,
-    letterSpacing: -0.3,
-    color: palette.cafeEscuro,
-  },
-  lead: { fontFamily: fonts.sans, fontSize: 16, lineHeight: 26, color: '#6E625A', marginTop: 16 },
-  spacer: { flex: 1 },
-  signin: { alignItems: 'center', marginTop: 18 },
-  signinSpacer: { height: 20, marginTop: 18 },
-  signinText: { fontFamily: fonts.sans, fontSize: 14, color: '#6E625A' },
-  signinLink: { fontFamily: fonts.sansBold, color: palette.douradoAmanhecer },
-});
+const makeStyles = (t: Theme) =>
+  StyleSheet.create({
+    fill: { flex: 1, backgroundColor: t.ui.fundo },
+    hero: {
+      height: 354,
+      borderBottomLeftRadius: 34,
+      borderBottomRightRadius: 34,
+      overflow: 'hidden',
+    },
+    heroFill: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    pular: { position: 'absolute', right: 22 },
+    pularText: { fontFamily: fonts.sansBold, fontSize: 14, color: '#F4E6CF' },
+    body: { flex: 1, paddingHorizontal: 30, paddingTop: 34 },
+    dots: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', marginBottom: 26 },
+    dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: t.ui.linha },
+    dotActive: { width: 26, backgroundColor: palette.douradoAmanhecer },
+    title: {
+      fontFamily: fonts.serif,
+      fontSize: 29,
+      lineHeight: 35,
+      letterSpacing: -0.3,
+      color: t.ui.texto,
+    },
+    lead: { fontFamily: fonts.sans, fontSize: 16, lineHeight: 26, color: t.ui.textoSuave, marginTop: 16 },
+    spacer: { flex: 1 },
+    signin: { alignItems: 'center', marginTop: 18 },
+    signinSpacer: { height: 20, marginTop: 18 },
+    signinText: { fontFamily: fonts.sans, fontSize: 14, color: t.ui.textoSuave },
+    signinLink: { fontFamily: fonts.sansBold, color: palette.douradoAmanhecer },
+  });

@@ -21,7 +21,7 @@ export default function Favoritos() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Voltar">
-          <Ionicons name="chevron-back" size={24} color={t.palette.cafe} />
+          <Ionicons name="chevron-back" size={24} color={t.ui.texto} />
         </Pressable>
         <Text style={styles.title}>Favoritos</Text>
         <Text style={styles.count}>{favoritos.length > 0 ? `${favoritos.length}` : ''}</Text>
@@ -76,7 +76,7 @@ const makeStyles = (t: Theme) =>
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
     },
-    title: { flex: 1, fontFamily: fonts.serif, fontSize: 26, color: t.palette.cafeEscuro },
+    title: { flex: 1, fontFamily: fonts.serif, fontSize: 26, color: t.ui.texto },
     count: { fontFamily: fonts.sansBold, fontSize: 13, color: t.palette.salvia },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
     vazio: { ...typography.bodyUi, color: t.ui.textoSuave, textAlign: 'center' },
@@ -101,8 +101,8 @@ const makeStyles = (t: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    numText: { fontFamily: fonts.serifBold, fontSize: 14, color: '#B07F3C' },
+    numText: { fontFamily: fonts.serifBold, fontSize: 14, color: t.palette.douradoAmanhecer },
     rowText: { flex: 1, minWidth: 0 },
-    rowTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
+    rowTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.ui.texto },
     rowMeta: { fontFamily: fonts.sans, fontSize: 11.5, color: t.palette.salvia, marginTop: 2 },
   });
