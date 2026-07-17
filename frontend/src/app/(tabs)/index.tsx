@@ -336,7 +336,7 @@ const makeStyles = (t: Theme) =>
       fontSize: 10.5,
       letterSpacing: 1.6,
       textTransform: 'uppercase',
-      color: '#B07F3C',
+      color: t.palette.douradoAmanhecer,
       marginBottom: spacing.sm,
     },
     guardarText: {

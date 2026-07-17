@@ -123,7 +123,7 @@ export default function Biblioteca() {
           accessibilityLabel="Abrir Introdução: sobre o livro e a autora"
         >
           <View style={styles.introducaoIcon}>
-            <Ionicons name="book-outline" size={18} color="#B07F3C" />
+            <Ionicons name="book-outline" size={18} color={t.palette.douradoAmanhecer} />
           </View>
           <View style={styles.introducaoText}>
             <Text style={styles.introducaoTitle}>Introdução</Text>
@@ -275,7 +275,7 @@ export default function Biblioteca() {
                   </View>
                 ) : item.tem_audio ? (
                   <View style={styles.badgeAudio}>
-                    <Ionicons name="play" size={11} color="#B07F3C" />
+                    <Ionicons name="play" size={11} color={t.palette.douradoAmanhecer} />
                     <Text style={styles.badgeAudioText}>Áudio</Text>
                   </View>
                 ) : null}
@@ -379,7 +379,7 @@ const makeStyles = (t: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    numText: { fontFamily: fonts.serifBold, fontSize: 14, color: '#B07F3C' },
+    numText: { fontFamily: fonts.serifBold, fontSize: 14, color: t.palette.douradoAmanhecer },
     rowText: { flex: 1, minWidth: 0 },
     rowTitle: { fontFamily: fonts.serif, fontSize: 15, color: t.palette.cafeEscuro },
     rowMeta: { fontFamily: fonts.sans, fontSize: 11.5, color: t.palette.salvia, marginTop: 2 },
@@ -394,7 +394,7 @@ const makeStyles = (t: Theme) =>
       paddingHorizontal: 10,
       paddingVertical: 5,
     },
-    badgeAudioText: { fontFamily: fonts.sansBold, fontSize: 11, color: '#B07F3C' },
+    badgeAudioText: { fontFamily: fonts.sansBold, fontSize: 11, color: t.palette.douradoAmanhecer },
     badgeLido: {
       flexDirection: 'row',
       alignItems: 'center',

@@ -106,7 +106,7 @@ export default function MeuEspaco() {
               {user?.email ?? 'Para salvar progresso, favoritos e anotações'}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#C9BAA8" />
+          <Ionicons name="chevron-forward" size={20} color={t.ui.textoSuave} />
         </Pressable>
 
         {/* Jornada (logado) */}
@@ -147,7 +147,7 @@ export default function MeuEspaco() {
             >
               <Ionicons name={m.icon} size={20} color={t.palette.cafe} />
               <Text style={styles.menuLabel}>{m.label}</Text>
-              <Ionicons name="chevron-forward" size={18} color="#C9BAA8" />
+              <Ionicons name="chevron-forward" size={18} color={t.ui.textoSuave} />
             </Pressable>
           ))}
         </View>
@@ -194,7 +194,7 @@ const makeStyles = (t: Theme) =>
       paddingHorizontal: 8,
       paddingVertical: 2,
     },
-    premiumPillText: { fontFamily: fonts.sansBold, fontSize: 11, color: '#B07F3C' },
+    premiumPillText: { fontFamily: fonts.sansBold, fontSize: 11, color: t.palette.douradoAmanhecer },
 
     jornada: {
       backgroundColor: t.ui.superficie,
@@ -211,7 +211,7 @@ const makeStyles = (t: Theme) =>
     barraFill: { height: 10, borderRadius: 5 },
     chips: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' },
     chip: { backgroundColor: t.ui.painel, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
-    chipText: { fontFamily: fonts.sansBold, fontSize: 12, color: '#B07F3C' },
+    chipText: { fontFamily: fonts.sansBold, fontSize: 12, color: t.palette.douradoAmanhecer },
 
     menu: {
       backgroundColor: t.ui.superficie,
@@ -228,7 +228,7 @@ const makeStyles = (t: Theme) =>
       paddingHorizontal: 18,
       paddingVertical: 14,
     },
-    menuDivider: { borderBottomWidth: 1, borderBottomColor: '#F0E8DC' },
+    menuDivider: { borderBottomWidth: 1, borderBottomColor: t.ui.linha },
     menuLabel: { flex: 1, fontFamily: fonts.sans, fontSize: 15, color: t.ui.texto },
 
     sair: {

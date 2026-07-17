@@ -78,7 +78,7 @@ export default function NoteSheet({
           },
         ]}
       >
-        <View style={styles.handle} />
+        <View style={[styles.handle, { backgroundColor: t.ui.linha }]} />
         <View style={styles.header}>
           <Text style={styles.title}>
             {anotacaoExistente ? 'Editar anotação' : 'Nova anotação'}
@@ -124,7 +124,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 5,
     borderRadius: radius.pill,
-    backgroundColor: '#D8C4A8',
     marginBottom: spacing.md,
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
