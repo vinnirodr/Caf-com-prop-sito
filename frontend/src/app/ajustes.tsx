@@ -14,9 +14,16 @@ import { useAuth } from '@/auth/AuthContext';
 import { usarMusicaFundo } from '@/audio/BackgroundMusicContext';
 import { obterPushToken, sincronizarToken, pedirPermissaoNotificacoes } from '@/lib/notifications';
 import { agendarLembretes, cancelarLembretes } from '@/lib/reminders';
-import { getReminderPrefs, saveReminderPrefs, REMINDER_PADRAO } from '@/lib/storage';
+import { getReminderPrefs, saveReminderPrefs, REMINDER_PADRAO, type TemaModo } from '@/lib/storage';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { useTheme, type Theme } from '@/theme/useTheme';
+import { useThemeMode } from '@/theme/ThemeModeContext';
+
+const OPCOES_APARENCIA: { valor: TemaModo; label: string; sub: string; icone: keyof typeof Ionicons.glyphMap }[] = [
+  { valor: 'auto', label: 'Automático', sub: 'Segue o tema do celular', icone: 'phone-portrait-outline' },
+  { valor: 'claro', label: 'Claro', sub: 'Fundo claro, sempre.', icone: 'sunny-outline' },
+  { valor: 'escuro', label: 'Escuro', sub: 'Fundo escuro, sempre.', icone: 'moon-outline' },
+];
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -25,6 +32,7 @@ export default function Ajustes() {
   const router = useRouter();
   const { user } = useAuth();
   const musica = usarMusicaFundo();
+  const { modo, definirModo } = useThemeMode();
   const styles = useMemo(() => makeStyles(t), [t]);
 
   const [broadcast, setBroadcast] = useState(user?.notificacoes_ativas ?? true);
@@ -143,6 +151,48 @@ export default function Ajustes() {
               <Text style={styles.horarioDica}>Todo dia às {pad(hora)}:{pad(minuto)}.</Text>
             </View>
           )}
+        </View>
+
+        {/* Aparência — tema claro/escuro/automático */}
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Ionicons name="contrast-outline" size={20} color={t.palette.cafe} />
+            <View style={styles.rowText}>
+              <Text style={styles.rowLabel}>Aparência</Text>
+              <Text style={styles.rowSub}>Escolha como o app deve parecer.</Text>
+            </View>
+          </View>
+
+          <View style={styles.faixas}>
+            {OPCOES_APARENCIA.map((op) => {
+              const selecionada = modo === op.valor;
+              return (
+                <Pressable
+                  key={op.valor}
+                  onPress={() => definirModo(op.valor)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: selecionada }}
+                  accessibilityLabel={op.label}
+                  style={styles.faixaItem}
+                >
+                  <Ionicons
+                    name={op.icone}
+                    size={18}
+                    color={selecionada ? t.palette.cafeEscuro : t.ui.textoSuave}
+                  />
+                  <View style={styles.rowText}>
+                    <Text style={[styles.faixaTitulo, selecionada && styles.faixaTituloAtiva]}>
+                      {op.label}
+                    </Text>
+                    <Text style={styles.rowSub}>{op.sub}</Text>
+                  </View>
+                  {selecionada && (
+                    <Ionicons name="checkmark-circle" size={20} color={t.palette.douradoAmanhecer} />
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
 
         {/* Música de fundo — trilha suave durante a leitura */}
