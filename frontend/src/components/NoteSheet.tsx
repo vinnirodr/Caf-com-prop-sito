@@ -80,7 +80,7 @@ export default function NoteSheet({
       >
         <View style={[styles.handle, { backgroundColor: t.ui.linha }]} />
         <View style={styles.header}>
-          <Text style={styles.title}>
+          <Text style={[styles.title, { color: t.ui.texto }]}>
             {anotacaoExistente ? 'Editar anotação' : 'Nova anotação'}
           </Text>
           <Pressable onPress={onClose} hitSlop={8} accessibilityLabel="Fechar">
