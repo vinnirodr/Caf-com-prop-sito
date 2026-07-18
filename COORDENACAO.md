@@ -31,6 +31,17 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-18 · ☁️ CLOUD · chave pública RevenueCat no eas.json + .gitignore de segredos
+- **`eas.json`:** adicionada `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` (`goog_…`, chave **pública** de
+  SDK) nos 3 perfis (development/preview/production). Com isso o `src/lib/purchases.ts` deixa de
+  ser no-op **no próximo build** — a monetização passa a inicializar de verdade.
+  ⚠️ **Irmã:** só **adicionei** a env; não toquei no `submit`/`serviceAccountKeyPath`.
+- **`.gitignore` (raiz, criado):** protege os service accounts secretos — `credentials/`
+  (o `play-publisher.json` do EAS submit) e os JSON do RevenueCat (`*.iam.gserviceaccount.com.json`,
+  `winged-ray-442120-v2-*.json`). **Nunca commitar esses JSON.**
+- **Ainda falta (dono, fora do código):** criar produtos no Play (`premium` mensal/anual + doações),
+  montar entitlement `premium` + offerings (`default`/`doacao`) no RevenueCat, gerar build e testar.
+
 ### 2026-07-17 · 💻 LOCAL · Onboarding 1x + tema na leitura + Introdução v2 (oficial da autora)
 - **Onboarding:** flag versionada (`ccp.onboarding_done_v2`) → carrossel aparece 1x pra todos;
   música ambiente no onboarding (modo demo no `BackgroundMusicContext.definirDemo`).
