@@ -81,7 +81,8 @@ function RootInner() {
                 <Stack.Screen name="(auth)" />
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="capitulo/[numero]" />
-                <Stack.Screen name="introducao" />
+                <Stack.Screen name="introducao/index" />
+                <Stack.Screen name="introducao/[pagina]" />
                 <Stack.Screen name="anotacoes" />
                 <Stack.Screen name="favoritos" />
                 <Stack.Screen name="ajustes" />

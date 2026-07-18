@@ -120,14 +120,14 @@ export default function Biblioteca() {
           style={({ pressed }) => [styles.introducaoRow, pressed && styles.rowPressed]}
           onPress={() => router.push('/introducao')}
           accessibilityRole="button"
-          accessibilityLabel="Abrir Introdução: sobre o livro e a autora"
+          accessibilityLabel="Abrir Introdução: sobre o livro, a autora e o convite"
         >
           <View style={styles.introducaoIcon}>
             <Ionicons name="book-outline" size={18} color={t.palette.douradoAmanhecer} />
           </View>
           <View style={styles.introducaoText}>
             <Text style={styles.introducaoTitle}>Introdução</Text>
-            <Text style={styles.introducaoSubtitle}>Sobre o livro e a autora</Text>
+            <Text style={styles.introducaoSubtitle}>Sobre o livro, a autora e o convite</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={t.ui.linha} />
         </Pressable>

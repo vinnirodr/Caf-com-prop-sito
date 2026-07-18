@@ -8,7 +8,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEYS = {
-  onboardingDone: 'ccp.onboarding_done',
+  onboardingDone: 'ccp.onboarding_done_v2',
   readingTheme: 'ccp.reading.theme',
   readingFontStep: 'ccp.reading.fontStep',
   accessToken: 'ccp.auth.access',

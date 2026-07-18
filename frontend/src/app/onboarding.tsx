@@ -3,7 +3,7 @@
  * Deslizável (swipe) + bolinhas. "Pular"/"Começar" entram nas abas; "Entrar" vai ao login.
  * Todas as saídas marcam o onboarding como visto.
  */
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import BrandSeal from '@/components/BrandSeal';
 import Button from '@/components/Button';
@@ -24,6 +24,7 @@ import { fonts, palette, spacing } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 import { useTheme, type Theme } from '@/theme/useTheme';
 import { setOnboardingDone } from '@/lib/storage';
+import { usarMusicaFundo } from '@/audio/BackgroundMusicContext';
 
 type Grad = {
   colors: readonly [string, string, ...string[]];
@@ -70,6 +71,14 @@ export default function Onboarding() {
   const listRef = useRef<FlatList<Slide>>(null);
   const t = useTheme();
   const styles = useMemo(() => makeStyles(t), [t]);
+  const musica = usarMusicaFundo();
+
+  useFocusEffect(
+    useCallback(() => {
+      musica.definirDemo(true);
+      return () => musica.definirDemo(false);
+    }, [musica.definirDemo])
+  );
 
   const começar = async () => {
     await setOnboardingDone();

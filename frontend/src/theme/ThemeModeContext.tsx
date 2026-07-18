@@ -4,7 +4,7 @@
  */
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import { getTemaModo, saveTemaModo, type TemaModo } from '@/lib/storage';
+import { getTemaModo, saveTemaModo, saveReadingPrefs, type TemaModo } from '@/lib/storage';
 
 type Valor = {
   modo: TemaModo;                 // preferência escolhida
@@ -22,10 +22,15 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
     getTemaModo().then(setModo);
   }, []);
 
-  const definirModo = useCallback((m: TemaModo) => {
-    setModo(m);
-    saveTemaModo(m);
-  }, []);
+  const definirModo = useCallback(
+    (m: TemaModo) => {
+      setModo(m);
+      saveTemaModo(m);
+      const resolvido = m === 'auto' ? (sistema === 'dark' ? 'dark' : 'light') : m === 'escuro' ? 'dark' : 'light';
+      saveReadingPrefs({ theme: resolvido === 'dark' ? 'escuro' : 'claro' });
+    },
+    [sistema]
+  );
 
   const mode: 'light' | 'dark' =
     modo === 'auto' ? (sistema === 'dark' ? 'dark' : 'light') : modo === 'escuro' ? 'dark' : 'light';

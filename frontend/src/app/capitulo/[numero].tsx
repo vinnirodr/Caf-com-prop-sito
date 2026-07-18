@@ -28,6 +28,7 @@ import { usePremium } from '@/subscription/PremiumContext';
 import NoteSheet from '@/components/NoteSheet';
 import { fonts, spacing, radius, palette, reading } from '@/theme/ccpTheme';
 import { getReadingPrefs, saveReadingPrefs } from '@/lib/storage';
+import { useResolvedMode } from '@/theme/ThemeModeContext';
 
 const FONT_STEPS = [0.9, 1, 1.15, 1.3] as const;
 
@@ -89,7 +90,11 @@ export default function CapituloLeitura() {
   const [notaSheet, setNotaSheet] = useState(false);
   const [notaDoCapitulo, setNotaDoCapitulo] = useState<Anotacao | null>(null);
 
-  const [themeName, setThemeName] = useState<ReadingThemeName>('claro');
+  // Tema resolvido do app (Ajustes > Aparência) — usado como default do tema de leitura.
+  const appMode = useResolvedMode();
+  const temaAppPadrao: ReadingThemeName = appMode === 'dark' ? 'escuro' : 'claro';
+
+  const [themeName, setThemeName] = useState<ReadingThemeName>(temaAppPadrao);
   const [fontStepIndex, setFontStepIndex] = useState(1);
 
   // Carrega preferências salvas (tema + tamanho).
@@ -97,11 +102,14 @@ export default function CapituloLeitura() {
     getReadingPrefs().then((p) => {
       if (p.theme && ORDER.includes(p.theme as ReadingThemeName)) {
         setThemeName(p.theme as ReadingThemeName);
+      } else {
+        setThemeName(temaAppPadrao);
       }
       if (p.fontStep != null && p.fontStep >= 0 && p.fontStep < FONT_STEPS.length) {
         setFontStepIndex(p.fontStep);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const tema = reading[themeName];

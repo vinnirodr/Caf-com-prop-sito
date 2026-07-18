@@ -54,7 +54,7 @@ export default function Player() {
         </LinearGradient>
 
         <Text style={styles.titulo} numberOfLines={2}>{faixaAtual?.titulo ?? 'Narração'}</Text>
-        <Text style={styles.sub}>Capítulo {faixaAtual?.numero ?? ''} · Café com Propósito</Text>
+        <Text style={styles.sub}>{faixaAtual?.numero != null ? `Capítulo ${faixaAtual.numero}` : 'Introdução'} · Café com Propósito</Text>
 
         {/* Progresso */}
         <Pressable onPress={onTrack} onLayout={(e: LayoutChangeEvent) => setLargura(e.nativeEvent.layout.width)} style={styles.trackWrap} accessibilityLabel="Barra de progresso">

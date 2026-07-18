@@ -35,6 +35,7 @@ type MusicaValue = {
   escolherFaixa: (id: number) => void;
   entrarLeitura: () => void;
   sairLeitura: () => void;
+  definirDemo: (ligar: boolean) => void;
 };
 
 const MusicaContext = createContext<MusicaValue | undefined>(undefined);
@@ -47,6 +48,7 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
   const [ativa, setAtiva] = useState(false);
   const [faixaId, setFaixaId] = useState<number | null>(null);
   const [emLeitura, setEmLeitura] = useState(false); // está numa tela de leitura de capítulo
+  const [demoAtiva, setDemoAtiva] = useState(false); // demo (ex.: onboarding) — ignora `ativa`/prefs
 
   const rampaRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sairTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -122,7 +124,9 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
   // sessão de narração ativa). Usar `faixaAtual != null` (sessão aberta) em vez de só
   // `tocando` mantém a música contínua durante o "Ouvir" mesmo que a narração demore
   // alguns instantes pra iniciar, e acompanha a escuta em qualquer tela (player/mini).
-  const deveTocar = ativa && !!faixaSelecionada && (emLeitura || narracao.faixaAtual != null);
+  const deveTocar =
+    (ativa && !!faixaSelecionada && (emLeitura || narracao.faixaAtual != null)) ||
+    (demoAtiva && !!faixaSelecionada);
   // Volume-alvo: abaixa sob a narração (ducking), volume de leitura caso contrário.
   const alvo = narracao.tocando ? VOL_DUCK : VOL_LEITURA;
 
@@ -173,6 +177,8 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     }, GRACA_SAIR_MS);
   }, []);
 
+  const definirDemo = useCallback((ligar: boolean) => setDemoAtiva(ligar), []);
+
   const alternar = useCallback(() => {
     const nova = !ativa;
     saveMusicaFundoPrefs({ ativa: nova, faixaId });
@@ -202,8 +208,18 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
       escolherFaixa,
       entrarLeitura,
       sairLeitura,
+      definirDemo,
     }),
-    [ativa, faixas, faixaSelecionada, alternar, escolherFaixa, entrarLeitura, sairLeitura]
+    [
+      ativa,
+      faixas,
+      faixaSelecionada,
+      alternar,
+      escolherFaixa,
+      entrarLeitura,
+      sairLeitura,
+      definirDemo,
+    ]
   );
 
   return <MusicaContext.Provider value={value}>{children}</MusicaContext.Provider>;

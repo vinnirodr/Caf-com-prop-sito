@@ -77,10 +77,10 @@ class ChapterAdmin(admin.ModelAdmin):
 
 @admin.register(SpecialPage)
 class SpecialPageAdmin(admin.ModelAdmin):
-    list_display = ("ordem", "titulo", "publicado")
+    list_display = ("ordem", "titulo", "subtitulo", "publicado")
     list_display_links = ("titulo",)
     list_editable = ("ordem", "publicado")
-    search_fields = ("titulo", "conteudo")
+    search_fields = ("titulo", "subtitulo", "conteudo")
     ordering = ("ordem",)
 
 

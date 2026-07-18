@@ -31,6 +31,21 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-17 · 💻 LOCAL · Onboarding 1x + tema na leitura + Introdução v2 (oficial da autora)
+- **Onboarding:** flag versionada (`ccp.onboarding_done_v2`) → carrossel aparece 1x pra todos;
+  música ambiente no onboarding (modo demo no `BackgroundMusicContext.definirDemo`).
+- **Tema:** Aparência re-sincroniza o tema de leitura (`definirModo` → saveReadingPrefs) e a
+  Leitura deriva o default do modo do app (`useResolvedMode`).
+- **Introdução v2:** `SpecialPage` += `subtitulo`/`audio` (migration 0006 content); comando
+  **`seed_introducao`** (idempotente, protege edições da autora; no build.sh) com as 5 páginas
+  oficiais; app: hub `/introducao` (índice numerado) + leitor `/introducao/[pagina]` (mock do DS:
+  gradiente dourado-creme, Aa, áudio condicional, música, CTA "Iniciar Capítulo 1"). Leitor antigo
+  `introducao.tsx` removido; `_layout` atualizado; card da Biblioteca com o novo subtítulo.
+- **Hotspots:** storage.ts, BackgroundMusicContext, ThemeModeContext, capitulo/[numero].tsx,
+  _layout.tsx, biblioteca.tsx, content.ts, content/{models,serializers,admin}, build.sh.
+- Backlog da autora (Meu Espaço informativo + fim de jornada) salvo na memória da sessão local.
+
+
 ### 2026-07-17 · 💻 LOCAL · Modo escuro
 - `ThemeModeProvider` (Automático/Claro/Escuro persistido) + `useTheme()` rewire (mesma API);
   seção "Aparência" em Ajustes; varredura de cores cravadas → tokens em ~20 telas/componentes;
