@@ -23,7 +23,7 @@ import {
   type AudioSource,
 } from 'expo-audio';
 
-export type Faixa = { numero: number; titulo: string };
+export type Faixa = { numero: number | null; titulo: string };
 
 const VELOCIDADES = [1, 1.25, 1.5, 0.75] as const;
 

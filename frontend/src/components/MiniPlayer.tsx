@@ -35,7 +35,7 @@ export default function MiniPlayer() {
         </LinearGradient>
         <View style={styles.texts}>
           <Text style={styles.titulo} numberOfLines={1}>{faixaAtual.titulo}</Text>
-          <Text style={styles.sub}>Capítulo {faixaAtual.numero}</Text>
+          <Text style={styles.sub}>{faixaAtual.numero != null ? `Capítulo ${faixaAtual.numero}` : 'Introdução'}</Text>
         </View>
         <Pressable
           onPress={(e) => {

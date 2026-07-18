@@ -110,7 +110,7 @@ export default function IntroducaoPagina() {
     );
   }
 
-  if (error || paginas.length === 0 || !Number.isFinite(n) || n < 1 || n > paginas.length) {
+  if (error || paginas.length === 0 || !Number.isInteger(n) || n < 1 || n > paginas.length) {
     return (
       <View style={[styles.safe, { backgroundColor: tema.fundo }, styles.center, { paddingTop: insets.top }]}>
         <Ionicons name="cloud-offline-outline" size={40} color={tema.texto} />
@@ -132,7 +132,7 @@ export default function IntroducaoPagina() {
   const ouvir = () => {
     const uri = mediaUrl(paginaAtual.audio);
     if (!uri) return;
-    tocar({ numero: 0, titulo: paginaAtual.titulo }, { uri });
+    tocar({ numero: null, titulo: paginaAtual.titulo }, { uri });
     router.push('/player');
   };
 
