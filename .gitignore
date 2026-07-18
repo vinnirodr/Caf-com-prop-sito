@@ -1,0 +1,8 @@
+# Service accounts / chaves secretas — NUNCA commitar.
+# JSON do RevenueCat (Google Cloud) e o do EAS submit (frontend/credentials/).
+credentials/
+frontend/credentials/
+*.iam.gserviceaccount.com.json
+winged-ray-442120-v2-*.json
+*-service-account*.json
+secrets/
