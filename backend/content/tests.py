@@ -7,6 +7,7 @@ inacessível (ex.: R2 não configurado).
 """
 from django.contrib.admin.sites import AdminSite
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
 
 from content.admin import ChapterAdmin
@@ -111,6 +112,71 @@ class SpecialPageApiTests(TestCase):
 
         sem_audio = next(r for r in results if r["titulo"] == "Sem áudio")
         self.assertIsNone(sem_audio["audio"])
+
+
+class SeedIntroducaoCommandTests(TestCase):
+    """Comando `seed_introducao`: garante a estrutura oficial da Introdução
+    (5 páginas da autora), sem nunca sobrescrever conteúdo já editado."""
+
+    OFICIAIS = [
+        (1, "Boas-vindas", "Sua jornada com Deus começa com um simples passo de fé."),
+        (2, "Sobre o Livro e a Autora", "Toda grande transformação começa com um encontro na presença de Deus."),
+        (3, "Como Utilizar o Aplicativo", "Reserve alguns minutos. Deus pode transformar todo o seu dia."),
+        (4, "Uma Palavra ao Seu Coração", "Nenhum coração chega até aqui por acaso."),
+        (5, "Comece Sua Jornada", "Que hoje seja o primeiro de muitos encontros inesquecíveis com Deus."),
+    ]
+
+    def test_cria_as_5_paginas_oficiais_publicadas_em_ordem_com_subtitulos(self):
+        call_command("seed_introducao")
+
+        publicadas = SpecialPage.objects.filter(publicado=True).order_by("ordem")
+        self.assertEqual(publicadas.count(), 5)
+
+        for (ordem_esperada, titulo_esperado, subtitulo_esperado), pagina in zip(
+            self.OFICIAIS, publicadas
+        ):
+            self.assertEqual(pagina.ordem, ordem_esperada)
+            self.assertEqual(pagina.titulo, titulo_esperado)
+            self.assertEqual(pagina.subtitulo, subtitulo_esperado)
+            self.assertTrue(pagina.publicado)
+
+    def test_rodar_2x_nao_duplica(self):
+        call_command("seed_introducao")
+        call_command("seed_introducao")
+
+        self.assertEqual(SpecialPage.objects.filter(publicado=True).count(), 5)
+
+    def test_idempotencia_preserva_edicao_da_autora(self):
+        call_command("seed_introducao")
+
+        pagina = SpecialPage.objects.get(titulo="Boas-vindas")
+        pagina.conteudo = "TEXTO EDITADO PELA AUTORA"
+        pagina.save(update_fields=["conteudo"])
+
+        call_command("seed_introducao")
+
+        pagina.refresh_from_db()
+        self.assertEqual(pagina.conteudo, "TEXTO EDITADO PELA AUTORA")
+
+    def test_pagina_publicada_fora_da_lista_oficial_e_despublicada(self):
+        SpecialPage.objects.create(titulo="Contracapa", conteudo="x", publicado=True)
+
+        call_command("seed_introducao")
+
+        contracapa = SpecialPage.objects.get(titulo="Contracapa")
+        self.assertFalse(contracapa.publicado)
+
+    def test_sobre_o_livro_herda_conteudo_da_apresentacao_da_autora_existente(self):
+        SpecialPage.objects.create(
+            titulo="Apresentação da Autora",
+            conteudo="TEXTO DA APRESENTACAO",
+            publicado=True,
+        )
+
+        call_command("seed_introducao")
+
+        pagina = SpecialPage.objects.get(titulo="Sobre o Livro e a Autora")
+        self.assertEqual(pagina.conteudo, "TEXTO DA APRESENTACAO")
 
 
 class LandingPageTests(TestCase):

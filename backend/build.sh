@@ -14,6 +14,10 @@ python manage.py import_capitulos dados/capitulos.json || true
 # só cria o que falta e pula capítulos já existentes, então não desfaz a carga acima.
 python manage.py import_planilha dados/Cafe-com-Proposito-CONTEUDO-75-capitulos.xlsx || true
 
+# Garante a estrutura oficial da Introdução (5 páginas da autora). Idempotente:
+# nunca sobrescreve conteúdo já editado no painel.
+python manage.py seed_introducao || true
+
 # Cria o usuário administrador automaticamente, a partir das variáveis de ambiente
 # DJANGO_SUPERUSER_USERNAME / _EMAIL / _PASSWORD (não falha se já existir).
 python manage.py createsuperuser --no-input || true
