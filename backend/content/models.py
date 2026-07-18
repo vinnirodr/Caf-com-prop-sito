@@ -70,7 +70,11 @@ class SpecialPage(models.Model):
     """Páginas de abertura/encerramento (apresentação, contracapa, etc.)."""
 
     titulo = models.CharField("título", max_length=200)
+    subtitulo = models.CharField("subtítulo", max_length=200, blank=True, default="")
     conteudo = models.TextField("conteúdo")
+    audio = models.FileField(
+        "áudio (narração)", upload_to="paginas/", null=True, blank=True
+    )
     ordem = models.PositiveIntegerField("ordem", default=0)
     publicado = models.BooleanField("publicado", default=True)
 

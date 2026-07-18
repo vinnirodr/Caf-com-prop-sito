@@ -30,9 +30,14 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
 
 
 class SpecialPageSerializer(serializers.ModelSerializer):
+    audio = serializers.SerializerMethodField()
+
     class Meta:
         model = SpecialPage
-        fields = ("id", "titulo", "conteudo", "ordem")
+        fields = ("id", "titulo", "subtitulo", "conteudo", "audio", "ordem")
+
+    def get_audio(self, obj):
+        return obj.audio.url if obj.audio else None
 
 
 class LembreteTextoSerializer(serializers.ModelSerializer):

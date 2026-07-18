@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase, TestCase
 
 from content.admin import ChapterAdmin
-from content.models import Chapter, MusicaFundo
+from content.models import Chapter, MusicaFundo, SpecialPage
 
 
 class _MidiaQueFalha:
@@ -84,6 +84,33 @@ class MusicaFundoApiTests(TestCase):
         self.assertIn("url", item)
         self.assertTrue(item["url"])
         self.assertEqual(item["ordem"], 1)
+
+
+class SpecialPageApiTests(TestCase):
+    def test_lista_traz_subtitulo_e_audio(self):
+        SpecialPage.objects.create(
+            titulo="Bem-vinda",
+            subtitulo="Frase inspiradora",
+            conteudo="Texto de abertura.",
+            ordem=1,
+            audio=SimpleUploadedFile("intro.mp3", b"fake-audio"),
+        )
+        SpecialPage.objects.create(
+            titulo="Sem áudio",
+            conteudo="Texto sem narração.",
+            ordem=2,
+        )
+        resp = self.client.get("/api/paginas-especiais/")
+        self.assertEqual(resp.status_code, 200)
+        results = resp.json()["results"]
+        self.assertEqual(len(results), 2)
+
+        com_audio = next(r for r in results if r["titulo"] == "Bem-vinda")
+        self.assertEqual(com_audio["subtitulo"], "Frase inspiradora")
+        self.assertTrue(com_audio["audio"])
+
+        sem_audio = next(r for r in results if r["titulo"] == "Sem áudio")
+        self.assertIsNone(sem_audio["audio"])
 
 
 class LandingPageTests(TestCase):
