@@ -44,8 +44,10 @@ export type Chapter = ChapterListItem & {
 export type SpecialPage = {
   id: number;
   titulo: string;
+  subtitulo: string;
   conteudo: string;
   ordem: number;
+  audio: string | null;
 };
 
 /** Busca todos os capítulos publicados, seguindo a paginação da API. */
