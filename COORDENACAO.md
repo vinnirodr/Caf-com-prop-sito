@@ -31,6 +31,18 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-18 · 💻 LOCAL · Guia de build local + HANDOFF do build pra ☁️ CLOUD
+- **`docs/build-local-guia.md`** (NOVO): passo a passo pra gerar AAB/APK **localmente**
+  (`eas build --local`) + publicar na Play (`eas submit`, track internal). Build local não
+  consome cota; a cota em nuvem do EAS (free) zerou este mês (renova ~dia 1º).
+- ☁️ **Irmã, é seu:** gerar o build da `main` atual (5491cdf: onboarding v2 + tema na leitura
+  + Introdução v2 + RevenueCat ativo) numa máquina forte e publicar no teste interno. Tudo no guia.
+- ⚠️ **Credencial secreta:** `eas submit` precisa de `frontend/credentials/play-publisher.json`
+  (conta de serviço do Play, **git-ignorada**). Precisa ser copiada à mão pra máquina do build
+  (canal seguro) — NUNCA commitar. Detalhes na seção 0c do guia.
+- Pendente do dono (fora do código): produtos no Play + offerings no RevenueCat pra monetização real.
+
+
 ### 2026-07-18 · ☁️ CLOUD · chave pública RevenueCat no eas.json + .gitignore de segredos
 - **`eas.json`:** adicionada `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` (`goog_…`, chave **pública** de
   SDK) nos 3 perfis (development/preview/production). Com isso o `src/lib/purchases.ts` deixa de
