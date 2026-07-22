@@ -28,10 +28,11 @@ services:
         generateValue: true            # o Render gera uma chave segura
       - key: DEBUG
         value: "False"
+      # Banco em Neon (Postgres grátis, sem prazo de validade) desde 22/07/2026.
+      # Defina a connection string do Neon no painel do Render (Environment).
+      # (Antes vinha do banco 'cafe-db' free do Render, que é apagado após 90 dias.)
       - key: DATABASE_URL
-        fromDatabase:
-          name: cafe-db
-          property: connectionString
+        sync: false
       - key: PYTHON_VERSION
         value: "3.12.4"
       # Segredo compartilhado com o cron do GitHub Actions que dispara as
@@ -47,11 +48,11 @@ services:
       - key: DJANGO_SUPERUSER_PASSWORD
         sync: false
 
-databases:
-  - name: cafe-db
-    # ⚠️ PLANO: o Postgres 'free' do Render é APAGADO após 90 dias. Para um app
-    # publicado, troque por um plano pago (ex.: 'basic-256mb'/'basic-1gb', ~US$7/mês)
-    # ANTES de lançar, senão você perde o banco (usuários, anotações, progresso).
-    plan: free
-    # plan: basic-1gb
-    databaseName: cafe
+# Banco agora é externo (Neon) — ver DATABASE_URL acima. O 'cafe-db' free do
+# Render foi migrado pro Neon em 22/07/2026 (dados conferidos 1:1). Mantido aqui
+# comentado como rede de segurança até o Render apagá-lo (~23/07); depois disso
+# pode remover de vez.
+# databases:
+#   - name: cafe-db
+#     plan: free
+#     databaseName: cafe
