@@ -24,6 +24,7 @@ def _saude():
     banco_ok = True
     migracoes_total = 0
     ultima_migracao = "—"
+    tabelas = 0
     try:
         with connection.cursor() as cur:
             cur.execute("SELECT 1")
@@ -35,6 +36,7 @@ def _saude():
             linha = cur.fetchone()
             if linha:
                 ultima_migracao = f"{linha[0]}.{linha[1]}"
+        tabelas = len(connection.introspection.table_names())
     except Exception:
         banco_ok = False
         latencia_ms = round((time.perf_counter() - inicio) * 1000, 1)
@@ -45,7 +47,7 @@ def _saude():
         "latencia_ms": latencia_ms,
         "migracoes_total": migracoes_total,
         "ultima_migracao": ultima_migracao,
-        "tabelas": len(connection.introspection.table_names()),
+        "tabelas": tabelas,
         "hora_local": timezone.localtime(agora).strftime("%d/%m/%Y %H:%M"),
         "hora_utc": agora.strftime("%H:%M UTC"),
     }
@@ -144,6 +146,18 @@ def _tendencia(dias=14):
     return linhas
 
 
+def _seguro(funcao, padrao):
+    """Roda um bloco do painel sem deixar que ele derrube a página.
+
+    Se o banco cair, o bloco de Saúde é justamente o que precisa aparecer — então
+    nenhum outro bloco pode quebrar a renderização.
+    """
+    try:
+        return funcao()
+    except Exception:
+        return padrao
+
+
 @staff_member_required
 def status(request):
     return render(
@@ -151,8 +165,8 @@ def status(request):
         "site/status.html",
         {
             "saude": _saude(),
-            "conteudo": _conteudo(),
-            "uso": _uso(),
-            "tendencia": _tendencia(),
+            "conteudo": _seguro(_conteudo, None),
+            "uso": _seguro(_uso, None),
+            "tendencia": _seguro(_tendencia, []),
         },
     )

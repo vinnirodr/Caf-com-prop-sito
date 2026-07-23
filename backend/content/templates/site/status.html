@@ -59,6 +59,7 @@
     <div class="legenda">Última migração: {{ saude.ultima_migracao }}</div>
 
     <h2>Conteúdo</h2>
+    {% if conteudo %}
     <div class="grid">
       <div class="card"><div class="rotulo">Capítulos publicados</div>
         <div class="valor">{{ conteudo.capitulos_publicados }}<small> de {{ conteudo.capitulos_total }}</small></div></div>
@@ -67,6 +68,9 @@
       <div class="card"><div class="rotulo">Páginas da introdução</div>
         <div class="valor">{{ conteudo.paginas_publicadas }}</div></div>
     </div>
+    {% else %}
+    <div class="legenda">Indisponível — não foi possível consultar o banco.</div>
+    {% endif %}
 
     {% include "site/_status_uso.html" %}
 

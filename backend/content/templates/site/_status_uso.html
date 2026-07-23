@@ -1,3 +1,4 @@
+{% if uso %}
 <h2>Uso</h2>
 <div class="grid">
   <div class="card"><div class="rotulo">Usuários</div>
@@ -18,6 +19,9 @@
     <div class="valor">{{ uso.anotacoes_total }}<small> · {{ uso.anotacoes_7d }} em 7d</small></div></div>
 </div>
 
+{% endif %}
+
+{% if tendencia %}
 <h2>Últimos 14 dias</h2>
 <table>
   {% for linha in tendencia %}
@@ -31,3 +35,6 @@
   {% endfor %}
 </table>
 <div class="legenda">Barra dourada = novos cadastros · barra café = usuários ativos no dia.</div>
+{% else %}
+<div class="legenda">Uso indisponível — não foi possível consultar o banco.</div>
+{% endif %}

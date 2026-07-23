@@ -1,4 +1,6 @@
 """Testes do projeto (configuração + painel de status)."""
+from unittest.mock import patch
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import SimpleTestCase, TestCase
@@ -77,3 +79,35 @@ class StatusUsoTests(TestCase):
         tendencia = resp.context["tendencia"]
         self.assertEqual(len(tendencia), 14)
         self.assertIn("pct_ativos", tendencia[0])
+
+
+class StatusResilienciaTests(TestCase):
+    """O painel precisa abrir JUSTAMENTE quando o banco está com problema."""
+
+    def setUp(self):
+        User.objects.create_user(
+            username="chefe3@x.com", email="chefe3@x.com", password="s3nha123", is_staff=True
+        )
+        self.client.login(username="chefe3@x.com", password="s3nha123")
+
+    def test_saude_nao_quebra_com_banco_fora(self):
+        from cafe_backend.status import _saude
+
+        with patch("cafe_backend.status.connection") as conexao:
+            conexao.cursor.side_effect = Exception("banco fora")
+            conexao.introspection.table_names.side_effect = Exception("banco fora")
+            dados = _saude()
+
+        self.assertFalse(dados["banco_ok"])
+        self.assertEqual(dados["tabelas"], 0)
+
+    def test_pagina_abre_mesmo_se_os_blocos_falharem(self):
+        falha = Exception("consulta falhou")
+        with patch("cafe_backend.status._conteudo", side_effect=falha), patch(
+            "cafe_backend.status._uso", side_effect=falha
+        ), patch("cafe_backend.status._tendencia", side_effect=falha):
+            resp = self.client.get("/status/")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Saúde")
+        self.assertIsNone(resp.context["conteudo"])
