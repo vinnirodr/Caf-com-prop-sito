@@ -1,1 +1,33 @@
-{# Preenchido na Task 3 (blocos Uso e Tendência). #}
+<h2>Uso</h2>
+<div class="grid">
+  <div class="card"><div class="rotulo">Usuários</div>
+    <div class="valor">{{ uso.usuarios_total }}</div></div>
+  <div class="card"><div class="rotulo">Novos (hoje / 7d / 30d)</div>
+    <div class="valor">{{ uso.novos_hoje }}<small> / {{ uso.novos_7d }} / {{ uso.novos_30d }}</small></div></div>
+  <div class="card"><div class="rotulo">Ativos (hoje / 7d / 30d)</div>
+    <div class="valor">{{ uso.ativos_hoje }}<small> / {{ uso.ativos_7d }} / {{ uso.ativos_30d }}</small></div></div>
+  <div class="card"><div class="rotulo">Premium ativos</div>
+    <div class="valor">{{ uso.premium_ativos }}</div></div>
+  <div class="card"><div class="rotulo">Capítulos lidos</div>
+    <div class="valor">{{ uso.lidos_total }}<small> · {{ uso.lidos_7d }} em 7d</small></div></div>
+  <div class="card"><div class="rotulo">Capítulos ouvidos</div>
+    <div class="valor">{{ uso.ouvidos_total }}<small> · {{ uso.ouvidos_7d }} em 7d</small></div></div>
+  <div class="card"><div class="rotulo">Favoritos</div>
+    <div class="valor">{{ uso.favoritos_total }}<small> · {{ uso.favoritos_7d }} em 7d</small></div></div>
+  <div class="card"><div class="rotulo">Anotações</div>
+    <div class="valor">{{ uso.anotacoes_total }}<small> · {{ uso.anotacoes_7d }} em 7d</small></div></div>
+</div>
+
+<h2>Últimos 14 dias</h2>
+<table>
+  {% for linha in tendencia %}
+  <tr>
+    <td class="dia">{{ linha.dia }}</td>
+    <td><div class="barra"><i style="width: {{ linha.pct_cadastros }}%"></i></div></td>
+    <td class="num">{{ linha.cadastros }}</td>
+    <td><div class="barra alt"><i style="width: {{ linha.pct_ativos }}%"></i></div></td>
+    <td class="num">{{ linha.ativos }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<div class="legenda">Barra dourada = novos cadastros · barra café = usuários ativos no dia.</div>
