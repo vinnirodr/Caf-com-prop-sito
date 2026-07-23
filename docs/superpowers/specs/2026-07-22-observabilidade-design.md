@@ -44,9 +44,11 @@ e-mails/nomes.
 **Bloco Tendência (14 dias)**
 - Barras em CSS puro (sem biblioteca): cadastros/dia e ativos/dia.
 
-**Implementação:** view em `backend/cafe_backend/status.py` (ou `content/views_status.py`),
-template `templates/site/status.html` (estilo da marca, autocontido como a landing), rota
-`path("status/", ...)` em `cafe_backend/urls.py`. Poucas queries agregadas (volume baixo).
+**Implementação:** view em `backend/cafe_backend/status.py` (fica no pacote do projeto porque
+cruza três apps: accounts, content e engagement), template
+`backend/content/templates/site/status.html` (mesma pasta e estilo autocontido da landing),
+rota `path("status/", ...)` em `backend/cafe_backend/urls.py`. Poucas queries agregadas
+(volume baixo, sem paginação nem cache).
 
 ### 1.2 Sentry no Django (erros + latência do backend)
 - Dependência: `sentry-sdk[django]` em `backend/requirements.txt`.
