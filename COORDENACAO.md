@@ -31,6 +31,18 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
 
 ## Log (mais recente no topo)
 
+### 2026-07-22 · 💻 LOCAL · Observabilidade (Fase 1 — backend)
+- **Painel `/status/`** (staff-only): saúde (banco/latência/migrações), conteúdo (capítulos
+  publicados e com narração) e uso (novos/ativos/lidos/ouvidos/favoritos/anotações + 14 dias).
+  Só agregados, sem PII. Arquivos: `cafe_backend/status.py`, `cafe_backend/urls.py`,
+  `content/templates/site/status.html` + `_status_uso.html`.
+- **Sentry no Django** gracioso (liga com a env `SENTRY_DSN`; sem ela, no-op),
+  `send_default_pii=False`, `traces_sample_rate=0.1`. `render.yaml` ganhou `SENTRY_DSN` (sync:false).
+- **Guia:** `docs/observabilidade.md` (painel + Sentry + UptimeRobot; e o que falta na Fase 2).
+- **Resiliente a queda do banco:** se o banco cair, o painel continua abrindo (bloco de saúde
+  mostra "falha", os demais mostram "indisponível" em vez de dar erro 500).
+- ☁️ **Fase 2 é do app e precisa de build:** Firebase Analytics + Sentry React Native.
+
 ### 2026-07-18 · 💻 LOCAL · Guia de build local + HANDOFF do build pra ☁️ CLOUD
 - **`docs/build-local-guia.md`** (NOVO): passo a passo pra gerar AAB/APK **localmente**
   (`eas build --local`) + publicar na Play (`eas submit`, track internal). Build local não
