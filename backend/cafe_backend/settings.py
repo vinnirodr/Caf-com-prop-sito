@@ -195,3 +195,19 @@ else:
     CORS_ALLOWED_ORIGINS = [
         o for o in env("CORS_ALLOWED_ORIGINS", "").split(",") if o
     ]
+
+# ── Observabilidade ───────────────────────────────────────────────────────────
+# Sentry: erros + amostra de performance. Gracioso — só liga se SENTRY_DSN existir,
+# então dev e CI rodam sem nada configurado.
+SENTRY_DSN = env("SENTRY_DSN", "") or ""
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment="development" if DEBUG else "production",
+        # 10% das requisições viram trace de performance (o "está lento?").
+        traces_sample_rate=0.1,
+        # Privacidade: não enviar e-mail/IP dos leitores para o Sentry.
+        send_default_pii=False,
+    )

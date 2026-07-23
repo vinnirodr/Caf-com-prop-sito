@@ -39,6 +39,10 @@ services:
       # notificações agendadas. Use o MESMO valor aqui e em GitHub → Secrets.
       - key: CRON_SECRET
         sync: false
+      # Observabilidade: cole o DSN do projeto Sentry aqui no painel do Render.
+      # Sem ele, o Sentry fica desligado (a app funciona igual).
+      - key: SENTRY_DSN
+        sync: false
       # Login do painel administrativo (a conta da autora).
       # O Render vai te pedir o e-mail e a senha durante a criação.
       - key: DJANGO_SUPERUSER_USERNAME
