@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Status · Café com Propósito</title>
+  <style>
+    :root { --cafe:#5B4636; --escuro:#3A2D22; --dourado:#C8924A; --bg:#FAF7F2;
+            --texto:#2A2422; --suave:#6E625A; --linha:#EAE0D4; --ok:#4B7F52; --erro:#B3453A; }
+    * { box-sizing: border-box; margin: 0; }
+    body { background: var(--bg); color: var(--texto); line-height: 1.5;
+           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .wrap { max-width: 940px; margin: 0 auto; padding: 28px 20px 64px; }
+    h1 { font-size: 24px; color: var(--escuro); }
+    .sub { font-size: 13px; color: var(--suave); margin-top: 4px; }
+    h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase;
+         color: var(--dourado); margin: 32px 0 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    .card { background: #fff; border: 1px solid var(--linha); border-radius: 12px; padding: 14px 16px; }
+    .rotulo { font-size: 12px; color: var(--suave); }
+    .valor { font-size: 24px; color: var(--escuro); margin-top: 2px; }
+    .valor small { font-size: 13px; color: var(--suave); }
+    .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px;
+            border-radius: 999px; color: #fff; }
+    .ok { background: var(--ok); } .erro { background: var(--erro); }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    td { padding: 5px 0; font-size: 12px; color: var(--suave); vertical-align: middle; }
+    td.dia { width: 52px; } td.num { width: 34px; text-align: right; color: var(--escuro); }
+    .barra { background: var(--linha); border-radius: 3px; height: 9px; }
+    .barra i { display: block; height: 9px; border-radius: 3px; background: var(--dourado); }
+    .barra.alt i { background: var(--cafe); }
+    .legenda { font-size: 12px; color: var(--suave); margin-top: 10px; }
+    .nota { font-size: 12px; color: var(--suave); margin-top: 28px;
+            border-top: 1px solid var(--linha); padding-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Status · Café com Propósito</h1>
+    <div class="sub">{{ saude.hora_local }} (Brasília) · {{ saude.hora_utc }}</div>
+
+    <h2>Saúde</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="rotulo">Banco de dados</div>
+        <div class="valor">
+          {% if saude.banco_ok %}<span class="pill ok">no ar</span>
+          {% else %}<span class="pill erro">falha</span>{% endif %}
+        </div>
+      </div>
+      <div class="card"><div class="rotulo">Latência da consulta</div>
+        <div class="valor">{{ saude.latencia_ms }}<small> ms</small></div></div>
+      <div class="card"><div class="rotulo">Migrações aplicadas</div>
+        <div class="valor">{{ saude.migracoes_total }}</div></div>
+      <div class="card"><div class="rotulo">Tabelas</div>
+        <div class="valor">{{ saude.tabelas }}</div></div>
+    </div>
+    <div class="legenda">Última migração: {{ saude.ultima_migracao }}</div>
+
+    <h2>Conteúdo</h2>
+    <div class="grid">
+      <div class="card"><div class="rotulo">Capítulos publicados</div>
+        <div class="valor">{{ conteudo.capitulos_publicados }}<small> de {{ conteudo.capitulos_total }}</small></div></div>
+      <div class="card"><div class="rotulo">Com narração</div>
+        <div class="valor">{{ conteudo.capitulos_com_audio }}</div></div>
+      <div class="card"><div class="rotulo">Páginas da introdução</div>
+        <div class="valor">{{ conteudo.paginas_publicadas }}</div></div>
+    </div>
+
+    {% include "site/_status_uso.html" %}
+
+    <div class="nota">Somente números agregados — nenhum dado pessoal de leitor é exibido aqui.</div>
+  </div>
+</body>
+</html>

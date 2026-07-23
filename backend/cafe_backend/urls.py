@@ -6,6 +6,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 
 from accounts.assinaturas import RevenueCatWebhook
+from cafe_backend.status import status as status_view
 
 
 def healthz(request):
@@ -18,6 +19,8 @@ urlpatterns = [
     # https://cafecomproposito.luminaflow.io/ via domínio customizado no Render.
     path("", TemplateView.as_view(template_name="site/landing.html"), name="landing"),
     path("healthz/", healthz, name="healthz"),
+    # Painel de status do serviço (staff-only).
+    path("status/", status_view, name="status"),
     # Páginas legais públicas (exigidas pela Play Store; linkadas no app).
     path(
         "privacidade/",
