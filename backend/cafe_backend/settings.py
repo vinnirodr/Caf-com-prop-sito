@@ -104,6 +104,11 @@ if env("DATABASE_URL"):
         DATABASES["default"] = dj_database_url.parse(
             env("DATABASE_URL"), conn_max_age=600
         )
+        # O Neon (Postgres serverless) suspende o compute na inatividade. Sem health
+        # check, o Django reaproveita uma conexão que morreu durante a suspensão e a
+        # 1ª requisição depois disso dá 500 (a 2ª já reconecta e funciona). Isto valida
+        # a conexão persistente e reconecta de forma transparente. (Django 4.1+)
+        DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
     except ImportError:
         pass
 
