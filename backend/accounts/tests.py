@@ -370,3 +370,17 @@ class AvatarTests(APITestCase):
         self.client.force_authenticate(user=u)
         resp = self.client.post("/api/auth/avatar/", {}, format="multipart")
         self.assertEqual(resp.status_code, 400)
+
+
+class UltimoLoginTests(APITestCase):
+    """O login por JWT deve registrar o last_login (aparece no admin)."""
+
+    def test_login_atualiza_last_login(self):
+        u = criar_usuario()
+        self.assertIsNone(u.last_login)
+        resp = self.client.post(
+            "/api/auth/login/", {"email": u.email, "senha": "Cafe12345"}, format="json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        u.refresh_from_db()
+        self.assertIsNotNone(u.last_login)

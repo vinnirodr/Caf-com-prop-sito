@@ -1,5 +1,6 @@
 """Serializers de autenticação: cadastro, login (por e-mail) e perfil."""
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.models import update_last_login
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -10,7 +11,13 @@ User = get_user_model()
 
 
 def tokens_para(user):
-    """Gera o par de tokens (access + refresh) para um usuário."""
+    """Gera o par de tokens (access + refresh) para um usuário.
+
+    Atualiza também o `last_login`: como a autenticação é por JWT (login/Google/
+    registro), ela não passa pelo login de sessão do Django, então sem isto o campo
+    ficaria sempre vazio no admin. Chamado só em autenticação real, não no refresh.
+    """
+    update_last_login(None, user)
     refresh = RefreshToken.for_user(user)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
 
