@@ -213,27 +213,24 @@ export default function Ajustes() {
           </View>
 
           {musica.temFaixas ? (
-            <View style={styles.faixas}>
-              {musica.faixas.map((f) => {
-                const selecionada = musica.faixaSelecionada?.id === f.id;
-                return (
-                  <Pressable
-                    key={f.id}
-                    onPress={() => musica.escolherFaixa(f.id)}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: selecionada }}
-                    style={styles.faixaItem}
-                  >
-                    <Text style={[styles.faixaTitulo, selecionada && styles.faixaTituloAtiva]}>
-                      {f.titulo}
-                    </Text>
-                    {selecionada && (
-                      <Ionicons name="checkmark-circle" size={20} color={t.palette.douradoAmanhecer} />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
+            <Pressable
+              style={styles.gerenciar}
+              onPress={() => router.push('/musica')}
+              accessibilityRole="button"
+              accessibilityLabel="Escolher faixas e playlist"
+            >
+              <View style={styles.rowText}>
+                <Text style={styles.gerenciarLabel}>Escolher faixas e playlist</Text>
+                <Text style={styles.rowSub}>
+                  {musica.playlist.length > 0
+                    ? `${musica.playlist.length} ${musica.playlist.length === 1 ? 'faixa' : 'faixas'} · ${
+                        musica.modo === 'aleatorio' ? 'aleatório' : 'em ordem'
+                      }`
+                    : 'Tocando todas as faixas'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={t.ui.textoSuave} />
+            </Pressable>
           ) : (
             <Text style={styles.faixasVazio}>Nenhuma faixa disponível ainda.</Text>
           )}
@@ -336,6 +333,16 @@ const makeStyles = (t: Theme) =>
       borderTopWidth: 1,
       borderTopColor: t.ui.linha,
     },
+    gerenciar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginTop: 16,
+      paddingTop: 14,
+      borderTopWidth: 1,
+      borderTopColor: t.ui.linha,
+    },
+    gerenciarLabel: { fontFamily: fonts.sansBold, fontSize: 14, color: t.ui.texto },
 
     horario: {
       marginTop: 18,

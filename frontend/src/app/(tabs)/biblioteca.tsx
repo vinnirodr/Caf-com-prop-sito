@@ -3,7 +3,7 @@
  * filtro. "Todos" é real; "Em andamento" e "Favoritos" dependem de conta —
  * por ora mostram um empty-state gentil.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getAllChapters, ChapterListItem, getSpecialPages, SpecialPage } from '@/api/content';
+import { getChaptersPage, ChapterListItem, getSpecialPages, SpecialPage } from '@/api/content';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
 import { fonts, spacing, radius, typography } from '@/theme/ccpTheme';
@@ -42,7 +42,14 @@ export default function Biblioteca() {
   const { isFavorito, statusCapitulo } = useEngagement();
 
   const [items, setItems] = useState<ChapterListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Total real de capítulos publicados (vem do `count` da API — o topo mostra isto,
+  // mesmo com a lista ainda paginada). Nunca usar items.length aqui.
+  const [total, setTotal] = useState<number | null>(null);
+  // Próxima página a carregar; null = não há mais.
+  const [proximaPagina, setProximaPagina] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true); // carga inicial
+  const [carregandoMais, setCarregandoMais] = useState(false); // "Ver mais"
+  const [carregandoTudo, setCarregandoTudo] = useState(false); // varredura p/ busca/filtro
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -50,21 +57,83 @@ export default function Biblioteca() {
 
   const [paginas, setPaginas] = useState<SpecialPage[]>([]);
 
-  const load = useCallback(async () => {
+  const tudoRef = useRef(false); // trava contra varreduras concorrentes
+
+  // Anexa itens novos deduplicando por número (evita chaves repetidas na lista).
+  const anexar = (prev: ChapterListItem[], novos: ChapterListItem[]) => {
+    const vistos = new Set(prev.map((c) => c.numero));
+    return [...prev, ...novos.filter((c) => !vistos.has(c.numero))];
+  };
+
+  // Carrega uma página: repõe (página 1) ou anexa (demais). Atualiza total e próxima.
+  const carregarPagina = useCallback(async (pagina: number, repor = false) => {
+    const data = await getChaptersPage(pagina);
+    setTotal(data.count);
+    setItems((prev) => (repor ? data.results : anexar(prev, data.results)));
+    setProximaPagina(data.next ? pagina + 1 : null);
+  }, []);
+
+  const carregarInicial = useCallback(async () => {
     setError(null);
     try {
-      setItems(await getAllChapters());
+      await carregarPagina(1, true);
     } catch {
       setError('Não foi possível carregar os capítulos. Verifique sua conexão.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [carregarPagina]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    carregarInicial();
+  }, [carregarInicial]);
+
+  const verMais = useCallback(async () => {
+    if (proximaPagina == null || carregandoMais) return;
+    setCarregandoMais(true);
+    try {
+      await carregarPagina(proximaPagina);
+    } catch {
+      /* mantém o que já tem; o usuário pode tentar de novo */
+    } finally {
+      setCarregandoMais(false);
+    }
+  }, [proximaPagina, carregandoMais, carregarPagina]);
+
+  // Busca e os filtros pessoais varrem o livro inteiro (a busca é client-side).
+  // Quando um deles está ativo e ainda há páginas, carrega todas em segundo plano.
+  const precisaTudo = query.trim() !== '' || (!!user && filtro !== 'todos');
+
+  useEffect(() => {
+    if (loading || !precisaTudo || proximaPagina == null || tudoRef.current) return;
+    tudoRef.current = true;
+    setCarregandoTudo(true);
+    let vivo = true;
+    (async () => {
+      let p: number | null = proximaPagina;
+      try {
+        while (p != null && vivo) {
+          const data = await getChaptersPage(p);
+          if (!vivo) break;
+          setTotal(data.count);
+          setItems((prev) => anexar(prev, data.results));
+          p = data.next ? p + 1 : null;
+          setProximaPagina(p); // mantém consistente caso a varredura seja interrompida
+        }
+      } catch {
+        /* ignora — mantém o carregado */
+      }
+      tudoRef.current = false;
+      setCarregandoTudo(false);
+    })();
+    return () => {
+      vivo = false;
+      tudoRef.current = false;
+    };
+    // proximaPagina não entra nas deps: a varredura roda até o fim de uma vez.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, precisaTudo]);
 
   // Páginas especiais do livro (abertura, apresentação da autora etc.) — leitura livre.
   useEffect(() => {
@@ -112,7 +181,7 @@ export default function Biblioteca() {
     <View style={styles.header}>
       <Text style={styles.title}>Biblioteca</Text>
       <Text style={styles.subtitle}>
-        {error ? 'Verifique a conexão' : `${items.length} capítulos`}
+        {error ? 'Verifique a conexão' : `${total ?? items.length} capítulos`}
       </Text>
 
       {paginas.length > 0 && (
@@ -177,7 +246,7 @@ export default function Biblioteca() {
         <View style={styles.center}>
           <Ionicons name="cloud-offline-outline" size={40} color={t.ui.linha} />
           <Text style={styles.errorText}>{error}</Text>
-          <Pressable style={styles.retry} onPress={load}>
+          <Pressable style={styles.retry} onPress={carregarInicial}>
             <Text style={styles.retryText}>Tentar de novo</Text>
           </Pressable>
         </View>
@@ -201,7 +270,9 @@ export default function Biblioteca() {
             refreshing={refreshing}
             onRefresh={() => {
               setRefreshing(true);
-              load();
+              setItems([]);
+              setProximaPagina(null);
+              carregarInicial();
             }}
             tintColor={t.palette.douradoAmanhecer}
           />
@@ -232,6 +303,33 @@ export default function Biblioteca() {
               </Text>
             </View>
           )
+        }
+        ListFooterComponent={
+          semConta || filtrados.length === 0 ? null : precisaTudo ? (
+            carregandoTudo ? (
+              <View style={styles.rodapeCarga}>
+                <ActivityIndicator color={t.palette.douradoAmanhecer} />
+                <Text style={styles.rodapeCargaText}>Buscando em todos os capítulos…</Text>
+              </View>
+            ) : null
+          ) : proximaPagina != null ? (
+            <Pressable
+              style={({ pressed }) => [styles.verMais, pressed && styles.rowPressed]}
+              onPress={verMais}
+              disabled={carregandoMais}
+              accessibilityRole="button"
+              accessibilityLabel="Ver mais capítulos"
+            >
+              {carregandoMais ? (
+                <ActivityIndicator color={t.palette.douradoAmanhecer} />
+              ) : (
+                <>
+                  <Text style={styles.verMaisText}>Ver mais capítulos</Text>
+                  <Ionicons name="chevron-down" size={16} color={t.palette.douradoAmanhecer} />
+                </>
+              )}
+            </Pressable>
+          ) : null
         }
         renderItem={({ item }) => (
           <View style={styles.cardWrap}>
@@ -356,6 +454,25 @@ const makeStyles = (t: Theme) =>
     chipActive: { backgroundColor: t.palette.cafe, borderColor: t.palette.cafe },
     chipText: { fontFamily: fonts.sansBold, fontSize: 12, color: t.ui.textoSuave },
     chipTextActive: { color: '#FAF7F2' },
+
+    verMais: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      marginHorizontal: spacing.md,
+      marginTop: spacing.xs,
+      marginBottom: spacing.md,
+      backgroundColor: t.ui.superficie,
+      borderWidth: 1,
+      borderColor: t.ui.linha,
+      borderRadius: radius.md,
+      paddingVertical: 14,
+      minHeight: 48,
+    },
+    verMaisText: { fontFamily: fonts.sansBold, fontSize: 14, color: t.palette.douradoAmanhecer },
+    rodapeCarga: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg },
+    rodapeCargaText: { fontFamily: fonts.sans, fontSize: 12.5, color: t.ui.textoSuave },
 
     cardWrap: { paddingHorizontal: spacing.md },
     row: {
