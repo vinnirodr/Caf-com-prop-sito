@@ -64,6 +64,11 @@ export async function getAllChapters(): Promise<ChapterListItem[]> {
   return all;
 }
 
+/** Uma página de capítulos publicados (paginada, 25 por página). Traz `count` (total)
+ *  e `next` (há mais páginas), usados pela Biblioteca para "Ver mais capítulos". */
+export const getChaptersPage = (page: number) =>
+  apiGet<Paginated<ChapterListItem>>(`/capitulos/?page=${page}`);
+
 /** Total de capítulos publicados (o livro cresce com o tempo — nada de número fixo). */
 export async function getTotalCapitulos(): Promise<number> {
   const data = await apiGet<Paginated<ChapterListItem>>('/capitulos/?page=1');
