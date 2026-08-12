@@ -3,7 +3,7 @@
  * −15s / play-pause / +15s e velocidade. Lê o estado do AudioContext global.
  */
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, type LayoutChangeEvent } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image, type LayoutChangeEvent } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +11,9 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import BrandSeal from '@/components/BrandSeal';
 import { useAudioControls, useAudioStatus } from '@/audio/AudioContext';
+import { usarMusicaFundo } from '@/audio/BackgroundMusicContext';
 import { formatarTempo } from '@/lib/audio';
+import { mediaUrl } from '@/api/content';
 import { fonts, spacing, radius } from '@/theme/ccpTheme';
 import { gradients } from '@/theme/gradients';
 
@@ -20,7 +22,10 @@ export default function Player() {
   const insets = useSafeAreaInsets();
   const { faixaAtual, tocando, posicao, duracao, velocidade } = useAudioStatus();
   const { alternar, avancar15, voltar15, seek, ciclarVelocidade } = useAudioControls();
+  const musica = usarMusicaFundo();
   const [largura, setLargura] = useState(0);
+
+  const capa = mediaUrl(faixaAtual?.imagem ?? null);
 
   const frac = duracao > 0 ? Math.min(posicao / duracao, 1) : 0;
   const restante = Math.max(duracao - posicao, 0);
@@ -49,9 +54,13 @@ export default function Player() {
           <View style={{ width: 26 }} />
         </View>
 
-        <LinearGradient colors={['#8A5E34', '#C8924A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.artwork}>
-          <BrandSeal size={108} color="#FBEAC8" />
-        </LinearGradient>
+        {capa ? (
+          <Image source={{ uri: capa }} style={styles.artwork} resizeMode="cover" accessibilityIgnoresInvertColors />
+        ) : (
+          <LinearGradient colors={['#8A5E34', '#C8924A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.artwork}>
+            <BrandSeal size={108} color="#FBEAC8" />
+          </LinearGradient>
+        )}
 
         <Text style={styles.titulo} numberOfLines={2}>{faixaAtual?.titulo ?? 'Narração'}</Text>
         <Text style={styles.sub}>{faixaAtual?.numero != null ? `Capítulo ${faixaAtual.numero}` : 'Introdução'} · Café com Propósito</Text>
@@ -82,10 +91,28 @@ export default function Player() {
         </View>
 
         <View style={styles.rodape}>
-          <Pressable onPress={ciclarVelocidade} style={styles.pill} accessibilityLabel="Velocidade">
-            <Ionicons name="speedometer-outline" size={16} color="#FBEAC8" />
-            <Text style={styles.pillText}>{velocidade.toFixed(velocidade % 1 === 0 ? 1 : 2)}×</Text>
-          </Pressable>
+          <View style={styles.rodapeRow}>
+            <Pressable onPress={ciclarVelocidade} style={styles.pill} accessibilityLabel="Velocidade">
+              <Ionicons name="speedometer-outline" size={16} color="#FBEAC8" />
+              <Text style={styles.pillText}>{velocidade.toFixed(velocidade % 1 === 0 ? 1 : 2)}×</Text>
+            </Pressable>
+            {musica.temFaixas && (
+              <Pressable
+                onPress={musica.alternar}
+                style={styles.pill}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: musica.ativa }}
+                accessibilityLabel="Música de fundo"
+              >
+                <Ionicons
+                  name={musica.ativa ? 'musical-notes' : 'musical-notes-outline'}
+                  size={16}
+                  color={musica.ativa ? '#F0E0C6' : '#B9A588'}
+                />
+                <Text style={[styles.pillText, !musica.ativa && styles.pillTextOff]}>Música</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
       </View>
     </LinearGradient>
@@ -105,6 +132,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 38,
     marginBottom: 30,
+    overflow: 'hidden',
+    backgroundColor: '#8A5E34',
     shadowColor: '#000',
     shadowOpacity: 0.5,
     shadowRadius: 50,
@@ -133,7 +162,8 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 10 },
   },
-  rodape: { flex: 1, justifyContent: 'flex-end', width: '100%', alignItems: 'flex-start', paddingTop: spacing.lg },
+  rodape: { flex: 1, justifyContent: 'flex-end', width: '100%', paddingTop: spacing.lg },
+  rodapeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -144,4 +174,5 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   pillText: { fontFamily: fonts.sansBold, fontSize: 13, color: '#FAF7F2' },
+  pillTextOff: { color: '#B9A588' },
 });

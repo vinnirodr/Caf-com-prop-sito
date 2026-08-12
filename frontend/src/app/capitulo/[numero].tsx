@@ -21,7 +21,7 @@ import { getChapter, getTotalCapitulos, Chapter } from '@/api/content';
 import { listarAnotacoes, type Anotacao } from '@/api/engagement';
 import { useAuth } from '@/auth/AuthContext';
 import { useEngagement } from '@/engagement/EngagementContext';
-import { useAudioControls } from '@/audio/AudioContext';
+import { useAudioControls, useAudioStatus } from '@/audio/AudioContext';
 import { usarMusicaFundo } from '@/audio/BackgroundMusicContext';
 import { audioFontePara, temAudioDisponivel, bloqueadoPremium } from '@/lib/audio';
 import { usePremium } from '@/subscription/PremiumContext';
@@ -59,7 +59,8 @@ export default function CapituloLeitura() {
 
   const { user, loading: authLoading } = useAuth();
   const { isFavorito, statusCapitulo, alternarFavorito, marcarLido, registrarLeitura } = useEngagement();
-  const { tocar } = useAudioControls();
+  const { tocar, alternar } = useAudioControls();
+  const { faixaAtual, tocando } = useAudioStatus();
   const { premium } = usePremium();
   const musica = usarMusicaFundo();
 
@@ -168,15 +169,23 @@ export default function CapituloLeitura() {
   const alternarLido = () =>
     user ? marcarLido(num, statusCapitulo(num) !== 'lido') : exigirLogin();
 
+  // Esta narração é a que está carregada no player global?
+  const narracaoDesteCap = !!chapter && faixaAtual?.numero === chapter.numero;
+
   const ouvir = () => {
     if (!chapter) return;
+    // Já é a faixa ativa → pausa/retoma no lugar (sem sair da leitura).
+    if (narracaoDesteCap) {
+      alternar();
+      return;
+    }
     if (bloqueadoPremium(chapter, premium)) {
       router.push('/premium');
       return;
     }
     const fonte = audioFontePara(chapter);
     if (!fonte) return;
-    tocar({ numero: chapter.numero, titulo: chapter.titulo }, fonte);
+    tocar({ numero: chapter.numero, titulo: chapter.titulo, imagem: chapter.imagem }, fonte);
     router.push('/player');
   };
 
@@ -335,13 +344,28 @@ export default function CapituloLeitura() {
             })}
           </View>
           {(temAudioDisponivel(chapter) || chapter.audio_acesso === 'premium') && (
-            <Pressable style={styles.ouvir} onPress={ouvir} accessibilityRole="button">
+            <Pressable
+              style={[styles.ouvir, narracaoDesteCap && styles.ouvirAtivo]}
+              onPress={ouvir}
+              accessibilityRole="button"
+              accessibilityLabel={
+                narracaoDesteCap ? (tocando ? 'Pausar narração' : 'Retomar narração') : 'Ouvir narração'
+              }
+            >
               <Ionicons
-                name={bloqueadoPremium(chapter, premium) ? 'lock-closed' : 'play'}
+                name={
+                  bloqueadoPremium(chapter, premium)
+                    ? 'lock-closed'
+                    : narracaoDesteCap && tocando
+                      ? 'pause'
+                      : 'play'
+                }
                 size={16}
                 color={palette.cafeEscuro}
               />
-              <Text style={styles.ouvirText}>Ouvir</Text>
+              <Text style={styles.ouvirText}>
+                {narracaoDesteCap ? (tocando ? 'Pausar' : 'Retomar') : 'Ouvir'}
+              </Text>
             </Pressable>
           )}
           {musica.temFaixas && (
@@ -525,6 +549,7 @@ const makeStyles = (
       paddingHorizontal: 18,
       borderRadius: 13,
     },
+    ouvirAtivo: { backgroundColor: palette.douradoSuave },
     ouvirText: { fontFamily: fonts.sansBold, fontSize: 14, color: palette.cafeEscuro },
     musicaBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
 
