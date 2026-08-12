@@ -1,9 +1,12 @@
 /**
- * Música de fundo da leitura. 2º player expo-audio (em loop, volume baixo) que toca
- * por baixo da experiência de leitura/escuta: enquanto o usuário lê um capítulo OU
- * enquanto a narração está tocando (inclusive no player e no mini-player, em qualquer
- * tela). Ducking dinâmico (abaixa sob a narração) + fades. Gracioso: sem faixa, nada
- * toca e nada quebra.
+ * Música de fundo da leitura. 2º player expo-audio (volume baixo) que toca por baixo
+ * da experiência de leitura/escuta: enquanto o usuário lê um capítulo OU enquanto a
+ * narração está tocando (inclusive no player e no mini-player, em qualquer tela).
+ *
+ * O usuário monta uma **playlist** (faixas + ordem) e escolhe o modo (sequência ou
+ * aleatório); ao terminar uma faixa, avança para a próxima (a fila repete em loop).
+ * Sem playlist explícita, cai no acervo inteiro como padrão. Ducking dinâmico (abaixa
+ * sob a narração) + fades. Gracioso: sem faixa, nada toca e nada quebra.
  */
 import {
   createContext,
@@ -15,9 +18,9 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
-import { useAudioPlayer } from 'expo-audio';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { getMusicasFundo, mediaUrl, type MusicaFundo } from '@/api/content';
-import { getMusicaFundoPrefs, saveMusicaFundoPrefs } from '@/lib/storage';
+import { getMusicaFundoPrefs, saveMusicaFundoPrefs, type MusicaModo } from '@/lib/storage';
 import { useAudioStatus } from '@/audio/AudioContext';
 
 const VOL_LEITURA = 0.4; // leitura silenciosa
@@ -28,11 +31,17 @@ const GRACA_SAIR_MS = 600; // janela p/ não reiniciar entre capítulos
 
 type MusicaValue = {
   ativa: boolean;
+  faixas: MusicaFundo[]; // acervo completo disponível
   temFaixas: boolean;
-  faixas: MusicaFundo[];
-  faixaSelecionada: MusicaFundo | null;
-  alternar: () => void;
-  escolherFaixa: (id: number) => void;
+  playlist: MusicaFundo[]; // seleção do usuário, na ordem (vazio = "todas")
+  modo: MusicaModo;
+  tocandoAgora: MusicaFundo | null; // faixa da fila tocando no momento
+  alternar: () => void; // liga/desliga a música de fundo
+  estaNaPlaylist: (id: number) => boolean;
+  adicionar: (id: number) => void;
+  remover: (id: number) => void;
+  mover: (id: number, dir: -1 | 1) => void;
+  definirModo: (m: MusicaModo) => void;
   entrarLeitura: () => void;
   sairLeitura: () => void;
   definirDemo: (ligar: boolean) => void;
@@ -40,23 +49,62 @@ type MusicaValue = {
 
 const MusicaContext = createContext<MusicaValue | undefined>(undefined);
 
+/** Próximo índice na fila conforme o modo (sequência = +1 circular; aleatório ≠ atual). */
+function proximoIndice(atual: number, tamanho: number, modo: MusicaModo): number {
+  if (tamanho <= 1) return 0;
+  if (modo === 'aleatorio') {
+    let n = atual;
+    while (n === atual) n = Math.floor(Math.random() * tamanho);
+    return n;
+  }
+  return (atual + 1) % tamanho;
+}
+
 export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
   const player = useAudioPlayer();
-  const narracao = useAudioStatus(); // { tocando, ... }
+  const status = useAudioPlayerStatus(player);
+  const narracao = useAudioStatus(); // { tocando, faixaAtual, ... }
 
   const [faixas, setFaixas] = useState<MusicaFundo[]>([]);
   const [ativa, setAtiva] = useState(false);
-  const [faixaId, setFaixaId] = useState<number | null>(null);
-  const [emLeitura, setEmLeitura] = useState(false); // está numa tela de leitura de capítulo
-  const [demoAtiva, setDemoAtiva] = useState(false); // demo (ex.: onboarding) — ignora `ativa`/prefs
+  const [playlistIds, setPlaylistIds] = useState<number[]>([]);
+  const [modo, setModo] = useState<MusicaModo>('sequencia');
+  const [indice, setIndice] = useState(0); // posição na fila de reprodução
+  const [emLeitura, setEmLeitura] = useState(false); // está numa tela de leitura
+  const [demoAtiva, setDemoAtiva] = useState(false); // demo (ex.: onboarding)
 
   const rampaRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sairTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const carregadaRef = useRef<number | null>(null); // id da faixa já carregada no player
+  const carregadaRef = useRef<number | null>(null); // id da faixa carregada no player
 
-  const faixaSelecionada = useMemo(
-    () => faixas.find((f) => f.id === faixaId) ?? null,
-    [faixas, faixaId]
+  const porId = useMemo(() => new Map(faixas.map((f) => [f.id, f])), [faixas]);
+
+  // Playlist explícita do usuário (só faixas que ainda existem, na ordem escolhida).
+  const playlist = useMemo(
+    () => playlistIds.map((id) => porId.get(id)).filter((f): f is MusicaFundo => !!f),
+    [playlistIds, porId]
+  );
+
+  // Fila de reprodução: a playlist do usuário, ou o acervo inteiro como padrão.
+  const fila = playlist.length > 0 ? playlist : faixas;
+  const tocandoAgora = fila[indice] ?? fila[0] ?? null;
+
+  // Persiste o estado atual das prefs (mescla o que mudou).
+  const persistir = useCallback(
+    (patch: Partial<{ ativa: boolean; playlist: number[]; modo: MusicaModo }>) => {
+      const nova = {
+        ativa: patch.ativa ?? ativa,
+        playlist: patch.playlist ?? playlistIds,
+        modo: patch.modo ?? modo,
+      };
+      saveMusicaFundoPrefs({
+        ativa: nova.ativa,
+        faixaId: nova.playlist[0] ?? null, // compat com versões antigas
+        playlist: nova.playlist,
+        modo: nova.modo,
+      });
+    },
+    [ativa, playlistIds, modo]
   );
 
   // Rampa de volume manual (expo-audio não tem fade nativo).
@@ -86,18 +134,19 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
 
   // Garante a faixa certa carregada no player (recarrega só se mudou).
   const garantirCarregada = useCallback(() => {
-    if (!faixaSelecionada?.url) return false;
-    if (carregadaRef.current !== faixaSelecionada.id) {
+    if (!tocandoAgora?.url) return false;
+    if (carregadaRef.current !== tocandoAgora.id) {
       try {
-        player.replace({ uri: mediaUrl(faixaSelecionada.url) as string });
-        player.loop = true;
-        carregadaRef.current = faixaSelecionada.id;
+        player.replace({ uri: mediaUrl(tocandoAgora.url) as string });
+        // Loop nativo só quando a fila tem 1 faixa; com várias, avançamos ao terminar.
+        player.loop = fila.length <= 1;
+        carregadaRef.current = tocandoAgora.id;
       } catch {
         return false;
       }
     }
     return true;
-  }, [faixaSelecionada, player]);
+  }, [tocandoAgora, fila.length, player]);
 
   // Boot: carrega prefs + faixas.
   useEffect(() => {
@@ -110,8 +159,10 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
       if (!vivo) return;
       setFaixas(lista);
       setAtiva(prefs.ativa);
-      // faixa salva, ou a primeira disponível como padrão
-      setFaixaId(prefs.faixaId ?? lista[0]?.id ?? null);
+      setModo(prefs.modo);
+      // mantém só ids que existem no acervo
+      const validos = prefs.playlist.filter((id) => lista.some((f) => f.id === id));
+      setPlaylistIds(validos);
     })();
     return () => {
       vivo = false;
@@ -120,26 +171,23 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // A música deve tocar quando: ligada + tem faixa + (lendo um capítulo OU há uma
+  // A música deve tocar quando: ligada + tem fila + (lendo um capítulo OU há uma
   // sessão de narração ativa). Usar `faixaAtual != null` (sessão aberta) em vez de só
-  // `tocando` mantém a música contínua durante o "Ouvir" mesmo que a narração demore
-  // alguns instantes pra iniciar, e acompanha a escuta em qualquer tela (player/mini).
+  // `tocando` mantém a música contínua durante o "Ouvir" e acompanha a escuta em
+  // qualquer tela (player/mini).
   const deveTocar =
-    (ativa && !!faixaSelecionada && (emLeitura || narracao.faixaAtual != null)) ||
-    (demoAtiva && !!faixaSelecionada);
+    (ativa && fila.length > 0 && (emLeitura || narracao.faixaAtual != null)) ||
+    (demoAtiva && fila.length > 0);
   // Volume-alvo: abaixa sob a narração (ducking), volume de leitura caso contrário.
   const alvo = narracao.tocando ? VOL_DUCK : VOL_LEITURA;
 
   // Reconcilia o player com o estado desejado (play/pause + volume), com fades.
-  // Reage a deveTocar (liga/desliga/entra-sai/narração) e a alvo (ducking).
   useEffect(() => {
     if (deveTocar) {
       if (!garantirCarregada()) return;
       if (player.playing) {
-        // já tocando → ajusta o volume (ex.: ducking quando a narração começa/para)
         rampaVolume(alvo, DUCK_MS);
       } else {
-        // começa com fade-in a partir do silêncio
         try {
           player.volume = 0;
           player.play();
@@ -159,8 +207,26 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     }
   }, [deveTocar, alvo, garantirCarregada, player, rampaVolume]);
 
-  // Entrar/sair da tela de leitura do capítulo. `sairLeitura` tem janela de graça
-  // (~600ms) p/ não derrubar a música numa transição capítulo→capítulo.
+  // Ao terminar uma faixa, avança para a próxima da fila (com várias faixas; com 1, o
+  // loop nativo cuida). O reconcile acima recarrega e retoma com fade.
+  useEffect(() => {
+    if (!status.didJustFinish) return;
+    if (fila.length <= 1) return;
+    carregadaRef.current = null;
+    setIndice((i) => proximoIndice(i, fila.length, modo));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status.didJustFinish]);
+
+  // Se a fila encolher (usuário removeu faixas), mantém o índice válido.
+  useEffect(() => {
+    if (fila.length > 0 && indice >= fila.length) {
+      carregadaRef.current = null;
+      setIndice(0);
+    }
+  }, [fila.length, indice]);
+
+  // Entrar/sair da tela de leitura. `sairLeitura` tem janela de graça (~600ms) p/ não
+  // derrubar a música numa transição capítulo→capítulo.
   const entrarLeitura = useCallback(() => {
     if (sairTimerRef.current) {
       clearTimeout(sairTimerRef.current);
@@ -180,32 +246,75 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
   const definirDemo = useCallback((ligar: boolean) => setDemoAtiva(ligar), []);
 
   const alternar = useCallback(() => {
-    const nova = !ativa;
-    saveMusicaFundoPrefs({ ativa: nova, faixaId });
-    setAtiva(nova);
-  }, [ativa, faixaId]);
+    setAtiva((prev) => {
+      const nova = !prev;
+      persistir({ ativa: nova });
+      return nova;
+    });
+  }, [persistir]);
 
-  const escolherFaixa = useCallback(
+  const estaNaPlaylist = useCallback((id: number) => playlistIds.includes(id), [playlistIds]);
+
+  const adicionar = useCallback(
     (id: number) => {
-      if (id === faixaId) return;
-      saveMusicaFundoPrefs({ ativa, faixaId: id });
-      // Aplica o estado na hora (não num callback de fade — senão um reconcile
-      // concorrente poderia descartar a troca). O reconcile recarrega a nova faixa
-      // (carregadaRef limpo) e ajusta o volume.
-      carregadaRef.current = null;
-      setFaixaId(id);
+      setPlaylistIds((prev) => {
+        if (prev.includes(id)) return prev;
+        const nova = [...prev, id];
+        persistir({ playlist: nova });
+        return nova;
+      });
     },
-    [ativa, faixaId]
+    [persistir]
+  );
+
+  const remover = useCallback(
+    (id: number) => {
+      setPlaylistIds((prev) => {
+        const nova = prev.filter((x) => x !== id);
+        persistir({ playlist: nova });
+        return nova;
+      });
+    },
+    [persistir]
+  );
+
+  const mover = useCallback(
+    (id: number, dir: -1 | 1) => {
+      setPlaylistIds((prev) => {
+        const i = prev.indexOf(id);
+        const j = i + dir;
+        if (i < 0 || j < 0 || j >= prev.length) return prev;
+        const nova = [...prev];
+        [nova[i], nova[j]] = [nova[j], nova[i]];
+        persistir({ playlist: nova });
+        return nova;
+      });
+    },
+    [persistir]
+  );
+
+  const definirModo = useCallback(
+    (m: MusicaModo) => {
+      setModo(m);
+      persistir({ modo: m });
+    },
+    [persistir]
   );
 
   const value = useMemo<MusicaValue>(
     () => ({
       ativa,
-      temFaixas: faixas.length > 0,
       faixas,
-      faixaSelecionada,
+      temFaixas: faixas.length > 0,
+      playlist,
+      modo,
+      tocandoAgora,
       alternar,
-      escolherFaixa,
+      estaNaPlaylist,
+      adicionar,
+      remover,
+      mover,
+      definirModo,
       entrarLeitura,
       sairLeitura,
       definirDemo,
@@ -213,9 +322,15 @@ export function BackgroundMusicProvider({ children }: { children: ReactNode }) {
     [
       ativa,
       faixas,
-      faixaSelecionada,
+      playlist,
+      modo,
+      tocandoAgora,
       alternar,
-      escolherFaixa,
+      estaNaPlaylist,
+      adicionar,
+      remover,
+      mover,
+      definirModo,
       entrarLeitura,
       sairLeitura,
       definirDemo,

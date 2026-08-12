@@ -86,6 +86,7 @@ function RootInner() {
                 <Stack.Screen name="anotacoes" />
                 <Stack.Screen name="favoritos" />
                 <Stack.Screen name="ajustes" />
+                <Stack.Screen name="musica" />
                 <Stack.Screen name="loja" />
                 <Stack.Screen name="conta" />
                 <Stack.Screen name="conta/senha" />

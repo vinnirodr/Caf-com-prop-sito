@@ -18,6 +18,8 @@ const KEYS = {
   reminderMinute: 'ccp.reminder.minute',
   musicaAtiva: 'ccp.musica.ativa',
   musicaFaixaId: 'ccp.musica.faixaId',
+  musicaPlaylist: 'ccp.musica.playlist',
+  musicaModo: 'ccp.musica.modo',
   temaModo: 'ccp.tema.modo',
 } as const;
 
@@ -143,20 +145,44 @@ export async function saveReminderPrefs(prefs: ReminderPrefs): Promise<void> {
 }
 
 // Preferência da música de fundo da leitura (local, sem conta).
-export type MusicaFundoPrefs = { ativa: boolean; faixaId: number | null };
+// `playlist` é a ordem escolhida pelo usuário; `modo` toca em sequência ou aleatório.
+// `faixaId` é mantido só por compatibilidade com versões antigas (migração abaixo).
+export type MusicaModo = 'sequencia' | 'aleatorio';
+export type MusicaFundoPrefs = {
+  ativa: boolean;
+  faixaId: number | null;
+  playlist: number[];
+  modo: MusicaModo;
+};
 
 export async function getMusicaFundoPrefs(): Promise<MusicaFundoPrefs> {
   try {
-    const [ativa, faixaId] = await Promise.all([
+    const [ativa, faixaId, playlistRaw, modoRaw] = await Promise.all([
       AsyncStorage.getItem(KEYS.musicaAtiva),
       AsyncStorage.getItem(KEYS.musicaFaixaId),
+      AsyncStorage.getItem(KEYS.musicaPlaylist),
+      AsyncStorage.getItem(KEYS.musicaModo),
     ]);
+    const fid = faixaId ? Number(faixaId) : null;
+    let playlist: number[] = [];
+    if (playlistRaw) {
+      try {
+        const arr = JSON.parse(playlistRaw);
+        if (Array.isArray(arr)) playlist = arr.filter((n) => typeof n === 'number');
+      } catch {
+        /* ignora json inválido */
+      }
+    }
+    // Migração: versão antiga guardava só uma faixa — vira uma playlist de 1.
+    if (playlist.length === 0 && fid != null) playlist = [fid];
     return {
       ativa: ativa === '1',
-      faixaId: faixaId != null ? Number(faixaId) : null,
+      faixaId: fid,
+      playlist,
+      modo: modoRaw === 'aleatorio' ? 'aleatorio' : 'sequencia',
     };
   } catch {
-    return { ativa: false, faixaId: null };
+    return { ativa: false, faixaId: null, playlist: [], modo: 'sequencia' };
   }
 }
 
@@ -165,6 +191,8 @@ export async function saveMusicaFundoPrefs(prefs: MusicaFundoPrefs): Promise<voi
     await AsyncStorage.multiSet([
       [KEYS.musicaAtiva, prefs.ativa ? '1' : '0'],
       [KEYS.musicaFaixaId, prefs.faixaId != null ? String(prefs.faixaId) : ''],
+      [KEYS.musicaPlaylist, JSON.stringify(prefs.playlist ?? [])],
+      [KEYS.musicaModo, prefs.modo === 'aleatorio' ? 'aleatorio' : 'sequencia'],
     ]);
   } catch {
     // ignora
