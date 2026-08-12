@@ -129,22 +129,32 @@ class SeedIntroducaoCommandTests(TestCase):
     def test_cria_as_5_paginas_oficiais_publicadas_em_ordem_com_subtitulos(self):
         call_command("seed_introducao")
 
+        # 5 páginas de introdução + o testemunho de encerramento (ordem 100).
         publicadas = SpecialPage.objects.filter(publicado=True).order_by("ordem")
-        self.assertEqual(publicadas.count(), 5)
+        self.assertEqual(publicadas.count(), 6)
 
+        intro = list(publicadas)[:5]
         for (ordem_esperada, titulo_esperado, subtitulo_esperado), pagina in zip(
-            self.OFICIAIS, publicadas
+            self.OFICIAIS, intro
         ):
             self.assertEqual(pagina.ordem, ordem_esperada)
             self.assertEqual(pagina.titulo, titulo_esperado)
             self.assertEqual(pagina.subtitulo, subtitulo_esperado)
             self.assertTrue(pagina.publicado)
 
+    def test_cria_o_testemunho_de_encerramento_publicado(self):
+        call_command("seed_introducao")
+
+        testemunho = SpecialPage.objects.get(titulo="Quando Deus Trabalha em Silêncio")
+        self.assertTrue(testemunho.publicado)
+        self.assertEqual(testemunho.ordem, 100)
+        self.assertTrue(testemunho.conteudo.strip())
+
     def test_rodar_2x_nao_duplica(self):
         call_command("seed_introducao")
         call_command("seed_introducao")
 
-        self.assertEqual(SpecialPage.objects.filter(publicado=True).count(), 5)
+        self.assertEqual(SpecialPage.objects.filter(publicado=True).count(), 6)
 
     def test_idempotencia_preserva_edicao_da_autora(self):
         call_command("seed_introducao")
