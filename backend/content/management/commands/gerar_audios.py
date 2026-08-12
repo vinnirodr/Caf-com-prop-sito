@@ -128,7 +128,13 @@ class Command(BaseCommand):
                 with open(os.path.join(o["saida"], nome), "wb") as fh:
                     fh.write(audio)
             else:
-                c.audio.save(nome, ContentFile(audio), save=True)
+                # save=False + update_fields=["audio"]: grava SÓ a coluna de áudio.
+                # Se salvássemos o modelo inteiro (save=True), a instância — carregada
+                # em memória no início do lote — sobrescreveria os demais campos,
+                # revertendo qualquer edição de conteúdo feita no banco durante o lote
+                # (foi o que aconteceu com o cap 21 quando um deploy rodou junto).
+                c.audio.save(nome, ContentFile(audio), save=False)
+                c.save(update_fields=["audio"])
             gerados += 1
             self.stdout.write(
                 f"  cap {c.numero}: OK ({len(audio)//1024} KB, ~{len(texto)} caracteres)"
