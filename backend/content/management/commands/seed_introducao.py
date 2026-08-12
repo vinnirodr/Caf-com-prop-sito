@@ -1,4 +1,7 @@
-"""Garante a estrutura oficial da Introdução (5 páginas da autora). Idempotente."""
+"""Garante as páginas especiais oficiais (Introdução + Testemunho). Idempotente."""
+import os
+
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from content.models import SpecialPage
 
@@ -32,9 +35,41 @@ OFICIAIS = [
 ]
 PLACEHOLDER = "Conteúdo em preparo — a autora pode editá-lo aqui no painel. ☕"
 
+# Testemunho de encerramento (vem no fim do manuscrito oficial). Conteúdo em
+# dados/testemunho.txt; ordem alta para ficar após as páginas de introdução.
+TESTEMUNHO_TITULO = "Quando Deus Trabalha em Silêncio"
+TESTEMUNHO_SUB = "Um testemunho da autora"
+TESTEMUNHO_ORDEM = 100
+
+
+def _ler_testemunho():
+    caminho = os.path.join(settings.BASE_DIR, "dados", "testemunho.txt")
+    try:
+        with open(caminho, encoding="utf-8") as fh:
+            return fh.read().strip()
+    except OSError:
+        return ""
+
 
 class Command(BaseCommand):
-    help = "Garante as 5 páginas oficiais da Introdução (não sobrescreve conteúdo editado)."
+    help = "Garante as páginas oficiais (Introdução + Testemunho); não sobrescreve conteúdo editado."
+
+    def _seed_testemunho(self):
+        pagina = SpecialPage.objects.filter(titulo__iexact=TESTEMUNHO_TITULO).first()
+        if pagina:
+            pagina.ordem = TESTEMUNHO_ORDEM
+            pagina.publicado = True
+            if not pagina.subtitulo:
+                pagina.subtitulo = TESTEMUNHO_SUB
+            pagina.save(update_fields=["ordem", "publicado", "subtitulo"])
+            self.stdout.write(f"= {TESTEMUNHO_TITULO} (atualizada)")
+        else:
+            SpecialPage.objects.create(
+                titulo=TESTEMUNHO_TITULO, subtitulo=TESTEMUNHO_SUB,
+                conteudo=_ler_testemunho() or PLACEHOLDER,
+                ordem=TESTEMUNHO_ORDEM, publicado=True,
+            )
+            self.stdout.write(f"+ {TESTEMUNHO_TITULO} (criada)")
 
     def handle(self, *args, **options):
         titulos_oficiais = [t for _, t, _, _, _ in OFICIAIS]
@@ -57,8 +92,11 @@ class Command(BaseCommand):
                 ordem=ordem, publicado=True,
             )
             self.stdout.write(f"+ {titulo} (criada)")
-        fora = SpecialPage.objects.filter(publicado=True).exclude(titulo__in=titulos_oficiais)
+        self._seed_testemunho()
+        # Despublica o que não é oficial (mantém a introdução E o testemunho).
+        protegidas = titulos_oficiais + [TESTEMUNHO_TITULO]
+        fora = SpecialPage.objects.filter(publicado=True).exclude(titulo__in=protegidas)
         n = fora.update(publicado=False)
         if n:
             self.stdout.write(f"- {n} página(s) fora da estrutura oficial despublicada(s)")
-        self.stdout.write(self.style.SUCCESS("Introdução oficial garantida."))
+        self.stdout.write(self.style.SUCCESS("Páginas especiais oficiais garantidas."))
