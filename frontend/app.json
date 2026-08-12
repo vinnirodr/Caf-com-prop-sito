@@ -8,7 +8,11 @@
     "scheme": "cafecomproposito",
     "userInterfaceStyle": "light",
     "ios": {
-      "bundleIdentifier": "com.cafecomproposito.app"
+      "bundleIdentifier": "com.cafecomproposito.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.cafecomproposito.app",
@@ -55,6 +59,13 @@
           "icon": "./assets/images/splash-icon.png",
           "color": "#5B4636",
           "sounds": []
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Café com Propósito acessa suas fotos apenas para você escolher uma imagem de perfil.",
+          "cameraPermission": "O Café com Propósito usa a câmera apenas se você quiser tirar uma foto para o perfil."
         }
       ],
       "@react-native-google-signin/google-signin"
