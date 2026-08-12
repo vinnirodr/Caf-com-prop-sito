@@ -7,10 +7,9 @@ services:
     # Sem isto, o Render pode voltar a seguir a branch de uma das sessões e
     # deixar de publicar o que foi mergeado na main. Trava permanente.
     branch: main
-    # PLANO: 'free' hiberna após ~15 min sem tráfego (cold start ao acordar).
-    # Para produção, troque por 'starter' (~US$7/mês): NÃO hiberna, fica sempre no ar.
-    plan: free
-    # plan: starter
+    # PLANO: 'starter' (~US$7/mês) NÃO hiberna — sem cold start (a versão 'free'
+    # dormia após ~15 min sem tráfego e demorava ~50s pra acordar).
+    plan: starter
     runtime: python
     # Monorepo: o backend Django fica em backend/. O Render roda os comandos
     # e resolve build.sh / dados/ a partir desta pasta.
