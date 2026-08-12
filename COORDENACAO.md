@@ -54,6 +54,15 @@ não pisarmos no mesmo código nem perder trabalho, mantemos este arquivo como p
   (canal seguro) — NUNCA commitar. Detalhes na seção 0c do guia.
 - Pendente do dono (fora do código): produtos no Play + offerings no RevenueCat pra monetização real.
 
+### 2026-07-18 · ☁️ CLOUD · prep iOS (TestFlight) no app.json
+- **`app.json` (só config, sem lógica):** `ios.buildNumber="1"`,
+  `ios.infoPlist.ITSAppUsesNonExemptEncryption=false` (pula export compliance no TestFlight) e
+  plugin **`expo-image-picker`** com `photosPermission`/`cameraPermission` em PT-BR (o iOS rejeita
+  build sem esses textos; usado no avatar em `conta.tsx`). Localização já coberta pelo plugin
+  `expo-location`. **Android não é afetado.**
+- **Falta (dono, fora do código):** conta Apple Developer ($99/ano) → app no App Store Connect →
+  `eas build/submit --platform ios` → TestFlight (teste interno). `eas.json submit.ios` e
+  Google Sign-In no iOS ficam pra depois da conta (login por e-mail funciona sem isso).
 
 ### 2026-07-18 · ☁️ CLOUD · chave pública RevenueCat no eas.json + .gitignore de segredos
 - **`eas.json`:** adicionada `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` (`goog_…`, chave **pública** de
